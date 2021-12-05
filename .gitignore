@@ -33,3 +33,4 @@ typechain
 #Truffle files
 /Truffle/build
 /Truffle/data
+/data
