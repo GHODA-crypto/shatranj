@@ -3,7 +3,6 @@ import ReactDOM from "react-dom";
 import App from "./App";
 import { MoralisProvider } from "react-moralis";
 import "./index.css";
-import QuickStart from "components/QuickStart";
 
 /** Get your free Moralis Account https://moralis.io/ */
 
@@ -18,15 +17,6 @@ const Application = () => {
 				<App isServerInfo />
 			</MoralisProvider>
 		);
-	else {
-		return (
-			<MoralisProvider appId={APP_ID} serverUrl={SERVER_URL}>
-				<div style={{ display: "flex", justifyContent: "center" }}>
-					<QuickStart />
-				</div>
-			</MoralisProvider>
-		);
-	}
 };
 
 ReactDOM.render(
