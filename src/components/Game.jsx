@@ -1,5 +1,6 @@
 import React from "react";
 import { GameBoard } from "./Chessboard";
+import { useWindowSize } from "../hooks/useWindowSize";
 
 import { ReactComponent as Send } from "../assets/send.svg";
 import { ReactComponent as WhiteKing } from "../assets/chess_svgs/white_king.svg";
@@ -17,7 +18,9 @@ import { ReactComponent as BlackPawn } from "../assets/chess_svgs/black_pawn.svg
 
 import "../styles/game.scss";
 
-const Game = ({ user, isMatching2x }) => {
+const Game = ({ user }) => {
+	const winSize = useWindowSize();
+
 	return (
 		<div className="game">
 			<section className="game-btns">
@@ -54,10 +57,7 @@ const Game = ({ user, isMatching2x }) => {
 
 				<GameBoard
 					user={user}
-					boardWidth={Math.min(
-						window.innerWidth * 0.45,
-						window.innerHeight * 0.7
-					)}
+					boardWidth={Math.min(winSize.width * 0.45, winSize.height * 0.7)}
 				/>
 
 				<div className="players self">

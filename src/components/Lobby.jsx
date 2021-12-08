@@ -17,40 +17,21 @@ const Lobby = () => {
 	return (
 		<div className="lobby">
 			<section className="play">
-				{/* <div className="game-options">
-					<Radio.Group
-						value={color}
-						onChange={(e) => setColor(e.target.value)}
-						className="wb-group"
-						defaultValue="w"
-						size="large"
-						buttonStyle="solid">
-						<Radio.Button className="wb" value="w">
-							<WKing />
-						</Radio.Button>
-						<Radio.Button className="wb" value="b">
-							<BKing />
-						</Radio.Button>
-					</Radio.Group>
-					<div className="time">
-						<div className="icon fast">🚀</div>
-						<Slider
-							min={1}
-							max={10}
-							style={{ width: "10rem", margin: "0 2rem" }}
-							onChange={handleChange}
-							value={time}
-						/>
-						<div className="icon slow">🕰️</div>
-					</div>
-					<div className="time-value">{time} min</div>
-				</div> */}
 				<div className="join-game">
-					<button>
+					<div className="stakes">
+						<div className="stakes-title">Staked Tokens</div>
+						<div className="amount">{10}</div>
+						<div className="stake-btns">
+							<button className="stake-more">Stake More</button>
+							<button className="unstake">Unstake</button>
+						</div>
+					</div>
+					<button className="join-game-btn">
 						<Play width="30pt" height="30pt" />
 						<span className="btn-text">Play Now</span>
 					</button>
 				</div>
+
 				<div className="create-game">
 					<Radio.Group
 						value={color}
@@ -67,29 +48,39 @@ const Lobby = () => {
 						</Radio.Button>
 					</Radio.Group>
 					<div className="rating">
-						<InputNumber
-							size="large"
-							min={1}
-							max={10000}
-							value={rangeLower}
-							onChange={(e) => {
-								setRangeLower(e.target.value);
-							}}
-						/>
-						<InputNumber
-							size="large"
-							min={1}
-							max={10000}
-							value={rangeUpper}
-							onChange={(e) => {
-								setRangeUpper(e.target.value);
-							}}
-						/>
+						<span className="title">Rating Range</span>
+						<div className="rating-input">
+							<span className="label inc">+</span>
+							<InputNumber
+								size="large"
+								min={1}
+								max={10000}
+								value={rangeLower}
+								onChange={(e) => {
+									setRangeLower(e.target.value);
+								}}
+							/>
+							<span className="label dec">-</span>
+							<InputNumber
+								size="large"
+								min={1}
+								max={10000}
+								value={rangeUpper}
+								onChange={(e) => {
+									setRangeUpper(e.target.value);
+								}}
+							/>
+						</div>
 					</div>
+					<button className="create-game-btn">
+						<Play width="30pt" height="30pt" />
+						<span className="btn-text">Create Game</span>
+					</button>
 				</div>
 			</section>
+
 			<section className="spectate-wrapper">
-				<div className="title"></div>
+				<div className="separator"></div>
 				<div className="spectate">
 					<div className="game game-1">
 						<div className="p1 p">
@@ -99,6 +90,7 @@ const Lobby = () => {
 						<div className="board">
 							<ShowBoard boardWidth={300} pgn={SamplePgn} />
 						</div>
+
 						<div className="p2 p">
 							<span className="username">0x123122312233</span>
 							<span className="ilo">(1345)</span>
