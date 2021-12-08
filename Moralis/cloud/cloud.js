@@ -1,36 +1,22 @@
-// const config = await Moralis.Config.get({ useMasterKey: true });
-// const arbitorKey = config.get("arbitorKey");
-
 // Pool and Pairing Functions
 
 // Join Pairing Pool
 Moralis.Cloud.define(
-	"joinPool",
+	"quickMatch",
 	async (request) => {
 		const Challenge = Moralis.Object.extend("Challenge");
+		const challengesQuery = new Moralis.Query(Challenge);
+
 		const user = request.user;
 
-		let pipeline = [
-			{
-				match: {
-					challenger: user.get("ethAddress"),
-				},
-			},
-			{
-				match: {
-					$or: [{ gameStatus: 0 }, { gameStatus: 1 }, { gameStatus: 2 }],
-				},
-			},
-		];
-
-		const challengesQuery = new Moralis.Query(Challenge);
-		const existingChallenges = await challengesQuery.aggregate(pipeline);
-
-		if (existingChallenges.length > 0) {
+		const existingChallenges = await checkExistingChallenges(
+			user.get("ethAddress")
+		);
+		if (existingChallenges.length) {
 			return existingChallenges[0];
 		}
 
-		pipeline = [
+		let pipeline = [
 			{
 				match: {
 					challenger: {
@@ -48,6 +34,8 @@ Moralis.Cloud.define(
 					},
 				},
 			},
+			{ sort: { createdAt: -1 } },
+			{ limit: 2 },
 		];
 
 		const challenges = await challengesQuery.aggregate(pipeline);
@@ -68,7 +56,33 @@ Moralis.Cloud.define(
 			challenge.set("gameStatus", 1);
 
 			await challenge.save({ useMasterKey: true });
-			return challenge;
+
+			// send request to api
+			const res = await Moralis.Cloud.httpRequest({
+				method: "POST",
+				url: "http://shatranj.herokuapp.com/createChallenge",
+				headers: {
+					"Content-Type": "application/json;charset=utf-8",
+				},
+				body: {
+					challengeId: challenge.get("objectId"),
+				},
+			}).catch((err) => {
+				console.log(err);
+			});
+
+			if (res.statusCode === 200) {
+				challenge.set("gameStatus", 2);
+
+				await challenge.save({ useMasterKey: true });
+
+				return challenge;
+			}
+
+			challenge.set("gameStatus", 4);
+			challenge.save({ useMasterKey: true });
+
+			return "Challenge could not be created";
 		}
 
 		// Create a new challenge
@@ -84,18 +98,6 @@ Moralis.Cloud.define(
 		return newChallenge;
 	},
 	{
-		requireUser: true,
-	}
-);
-
-// Confirm game Join
-Moralis.Cloud.define(
-	"confirmGameJoin",
-	(request) => {
-		return hello();
-	},
-	{
-		fields: ["movie"],
 		requireUser: true,
 	}
 );
@@ -116,6 +118,14 @@ Moralis.Cloud.define(
 Moralis.Cloud.define(
 	"sendMove",
 	(request) => {
+		// Verify Signatures
+
+		// Verify Move
+
+		// Save Move
+
+		// Check Game Status
+
 		return hello();
 	},
 	{
