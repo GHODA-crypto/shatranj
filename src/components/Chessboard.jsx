@@ -38,6 +38,8 @@ export function ShowBoard({ boardWidth, pgn }) {
 				animationDuration={200}
 				boardWidth={boardWidth}
 				position={game.fen()}
+				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
+				customLightSquareStyle={{ backgroundColor: "#D3FFD8" }}
 				customBoardStyle={{
 					borderRadius: "8px",
 					boxShadow: "0 0 10px 0px rgba(0, 0, 0, 0.15)",
@@ -137,7 +139,7 @@ export const GameBoard = ({ user, boardWidth }) => {
 	return (
 		<div className="board">
 			<Chessboard
-				// arePiecesDraggable={user === null}
+				arePiecesDraggable={!!user}
 				boardWidth={boardWidth}
 				arePremovesAllowed={true}
 				animationDuration={200}
@@ -147,6 +149,8 @@ export const GameBoard = ({ user, boardWidth }) => {
 				onSquareClick={onSquareClick}
 				onSquareRightClick={onSquareRightClick}
 				onPieceDrop={onDrop}
+				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
+				customLightSquareStyle={{ backgroundColor: "#D3FFD8" }}
 				customBoardStyle={{
 					borderRadius: "4px",
 					boxShadow: "0 0px 15px rgba(0, 0, 0, 0.25)",
@@ -155,6 +159,37 @@ export const GameBoard = ({ user, boardWidth }) => {
 					...moveSquares,
 					...optionSquares,
 					...rightClickedSquares,
+				}}
+				ref={chessboardRef}
+			/>
+		</div>
+	);
+};
+
+export const DipslayBoard = ({ boardWidth }) => {
+	const chessboardRef = useRef();
+	const [game, setGame] = useState(new Chess());
+
+	function safeGameMutate(modify) {
+		setGame((g) => {
+			const update = { ...g };
+			modify(update);
+			return update;
+		});
+	}
+
+	return (
+		<div className="board">
+			<Chessboard
+				arePiecesDraggable={false}
+				boardWidth={boardWidth}
+				animationDuration={200}
+				position={game.fen()}
+				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
+				customLightSquareStyle={{ backgroundColor: "#D3FFD8" }}
+				customBoardStyle={{
+					borderRadius: "4px",
+					boxShadow: "0 0px 15px rgba(0, 0, 0, 0.25)",
 				}}
 				ref={chessboardRef}
 			/>
