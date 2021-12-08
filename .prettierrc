@@ -5,5 +5,7 @@
     "jsxBracketSameLine": true,
     "jsxSingleQuote": false,
     "printWidth": 80,
-    "useTabs": true
+    "useTabs": true,
+    "formatOnSave": true,
+    "formatOnPaste": true,
 }
