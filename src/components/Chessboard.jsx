@@ -137,10 +137,10 @@ export const GameBoard = ({ user, boardWidth }) => {
 	return (
 		<div className="board">
 			<Chessboard
-				arePiecesDraggable={user === null}
+				// arePiecesDraggable={user === null}
+				boardWidth={boardWidth}
 				arePremovesAllowed={true}
 				animationDuration={200}
-				boardWidth={boardWidth}
 				position={game.fen()}
 				onMouseOverSquare={onMouseOverSquare}
 				onMouseOutSquare={onMouseOutSquare}

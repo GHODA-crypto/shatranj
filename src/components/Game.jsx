@@ -52,7 +52,13 @@ const Game = ({ user, isMatching2x }) => {
 					</div>
 				</div>
 
-				<GameBoard user={user} boardWidth={750} />
+				<GameBoard
+					user={user}
+					boardWidth={Math.min(
+						window.innerWidth * 0.45,
+						window.innerHeight * 0.7
+					)}
+				/>
 
 				<div className="players self">
 					<div className="player-info">
