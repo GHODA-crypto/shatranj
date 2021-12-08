@@ -9,15 +9,15 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ChessGame is Ownable {
-	address private _masterContract;
+	address private _serverAddress;
 
-	modifier onlyMaster() {
-		require(_masterContract == msg.sender, "Function only for Core contract!");
+	modifier onlyServer() {
+		require(_serverAddress == msg.sender, "Function only for Core contract!");
 		_;
 	}
 
-	function changeMaster(address newMaster) public onlyOwner {
-		_masterContract = newMaster;
+	function changeServer(address newMaster) public onlyOwner {
+		_serverAddress = newMaster;
 	}
 
 	IERC20 public chessToken;
@@ -38,8 +38,8 @@ contract ChessGame is Ownable {
 		address black;
 		address blackProxy;
 		uint32 blackState;
-		uint8 status;
-		uint8 outcome;
+		uint8 status; // 0: default, 1: game started, 2: game ended
+		uint8 outcome; // 0: not concluded, 1:draw, 2:white win, 3:black win
 		bool startingTurnBlack;
 		uint256 gameState;
 		bytes32 ipfsHash;
@@ -55,11 +55,13 @@ contract ChessGame is Ownable {
 		address _chessToken,
 		address _chessNFT,
 		address _chessLogic,
-		address _elo
+		address _elo,
+		address serverAddress
 	) {
 		chessToken = IERC20(_chessToken);
 		chessNFT = IChessNFT(_chessNFT);
 		chessLogic = IChessLogic(_chessLogic);
+		_serverAddress = serverAddress;
 		elo = IElo(_elo);
 		bet = 10**19;
 		fee = 10**18;
@@ -110,7 +112,7 @@ contract ChessGame is Ownable {
 		address _black,
 		address _blackProxy,
 		bytes memory _blackSig
-	) public {
+	) public onlyServer {
 		// Check and reduce staked balance
 		require(
 			keccak256(abi.encode(_gameId, _whiteProxy))
@@ -147,22 +149,55 @@ contract ChessGame is Ownable {
 		);
 	}
 
+	function endGameForce(
+		uint256 _gameId,
+		uint256 _gameState,
+		uint32 _whiteState,
+		uint32 _blackState,
+		uint8 _outcome,
+		bytes32 _ipfsHash
+	) public onlyServer {
+		Game storage gs = games[_gameId];
+		gs.status = 2;
+		gs.gameState = _gameState;
+		gs.whiteState = _whiteState;
+		gs.blackState = _blackState;
+		gs.outcome = _outcome;
+		elo.recordResult(gs.white, gs.black, _outcome);
+		address winner;
+		if (_outcome == 1) {
+			stakedBalance[gs.white] += bet;
+			stakedBalance[gs.black] += bet;
+			return;
+		}
+		if (_outcome == 2) {
+			winner = gs.white;
+		} else if (_outcome == 3) {
+			winner = gs.black;
+		}
+		if (_ipfsHash != bytes32(0) && winner != address(0)) {
+			gs.ipfsHash = _ipfsHash;
+			chessNFT.mint(winner, uint256(_ipfsHash), 1, "");
+			stakedBalance[winner] += bet + bet - fee - NFTfee;
+		} else stakedBalance[winner] += bet + bet - fee;
+	}
+
 	function endGame(
 		uint256 _gameId,
 		uint256 _gameState,
 		uint32 _whiteState,
 		uint32 _blackState,
 		uint16 _move,
-		bytes memory signature,
-		bytes32 ipfsHash,
-		bool turnBlack
-	) public {
+		bytes memory _signature,
+		bytes32 _ipfsHash,
+		bool _turnBlack
+	) public onlyServer {
 		Game memory game = games[_gameId];
 		require(game.status == 1, "Game ended");
 		IChessLogic.Board memory board;
 		{
 			address signer;
-			if (turnBlack) {
+			if (_turnBlack) {
 				signer = game.whiteProxy;
 				board = IChessLogic.Board(
 					_gameState,
@@ -183,7 +218,7 @@ contract ChessGame is Ownable {
 			require(
 				keccak256(
 					abi.encode("CHESS", _gameId, _gameState, _whiteState, _blackState)
-				).recover(signature) == signer,
+				).toEthSignedMessageHash().recover(_signature) == signer,
 				"Signature does not match"
 			);
 		}
@@ -217,9 +252,9 @@ contract ChessGame is Ownable {
 		} else if (outcome == 3) {
 			winner = game.black;
 		}
-		if (ipfsHash != bytes32(0) && winner != address(0)) {
-			gs.ipfsHash = ipfsHash;
-			chessNFT.mint(winner, uint256(ipfsHash), 1, "");
+		if (_ipfsHash != bytes32(0) && winner != address(0)) {
+			gs.ipfsHash = _ipfsHash;
+			chessNFT.mint(winner, uint256(_ipfsHash), 1, "");
 			stakedBalance[winner] += bet + bet - fee - NFTfee;
 		} else stakedBalance[winner] += bet + bet - fee;
 	}

@@ -5,6 +5,8 @@ const Elo = artifacts.require("Elo");
 const ChessGame = artifacts.require("ChessGame");
 
 module.exports = async function (deployer) {
+	const serverAddress = "0x515B031Bcd06Df41cF1C244864A9b0cBbABa0AAE";
+
 	await deployer.deploy(ChessERC20);
 	const chessERC20 = await ChessERC20.deployed();
 	await deployer.deploy(ChessNFT);
@@ -18,7 +20,8 @@ module.exports = async function (deployer) {
 		chessERC20.address,
 		chessNFT.address,
 		chessLogic.address,
-		elo.address
+		elo.address,
+		serverAddress
 	);
 	const chessGame = await ChessGame.deployed();
 
