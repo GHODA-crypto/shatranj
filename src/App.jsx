@@ -19,6 +19,8 @@ import "./style.css";
 import MenuItems from "./components/MenuItems";
 import Lobby from "./components/Lobby";
 import LiveChess from "./components/LiveChess";
+import TestCloudFunctions from "components/TestCloudFunctions";
+
 const { Header } = Layout;
 
 const styles = {
@@ -101,6 +103,9 @@ const App = ({ isServerInfo }) => {
 						</Route>
 						<Route user={user} path="/live-chess">
 							<LiveChess user={user} />
+						</Route>
+						<Route path="/testcloud">
+							<TestCloudFunctions />
 						</Route>
 						<Route path="/">
 							<Redirect to="/lobby" />
