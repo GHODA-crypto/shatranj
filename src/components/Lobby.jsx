@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import { ReactComponent as Play } from "../assets/chess.svg";
-import { ReactComponent as Loader } from "../assets/loader.svg";
-import ShowBoard from "./Chessboard.jsx";
+import { ReactComponent as WKing } from "../assets/chess_svgs/white_king.svg";
+import { ReactComponent as BKing } from "../assets/chess_svgs/black_king.svg";
+import { ShowBoard } from "./Chessboard.jsx";
+import { Radio, InputNumber } from "antd";
 import "../styles/lobby.scss";
 
 const Lobby = () => {
-	const [isMatching, setIsMatching] = useState(false);
+	const [rangeUpper, setRangeUpper] = useState(1);
+	const [color, setColor] = useState("w");
 
-	const handlePlay = () => {
-		setIsMatching(true);
+	const handleChange = (value) => {
+		setTime(value);
 	};
 
 	const SamplePgn =
@@ -16,58 +19,105 @@ const Lobby = () => {
 
 	return (
 		<div className="lobby">
-			{isMatching && (
-				<div className="matching">
-					<Loader />
-					<div className="loader-text">Finding you a match...</div>
-				</div>
-			)}
 			<section className="play">
-				<button>
-					<Play width="30pt" height="30pt" />
-					<span className="btn-text">Play Now</span>
-				</button>
+				{/* <div className="game-options">
+					<Radio.Group
+						value={color}
+						onChange={(e) => setColor(e.target.value)}
+						className="wb-group"
+						defaultValue="w"
+						size="large"
+						buttonStyle="solid">
+						<Radio.Button className="wb" value="w">
+							<WKing />
+						</Radio.Button>
+						<Radio.Button className="wb" value="b">
+							<BKing />
+						</Radio.Button>
+					</Radio.Group>
+					<div className="time">
+						<div className="icon fast">🚀</div>
+						<Slider
+							min={1}
+							max={10}
+							style={{ width: "10rem", margin: "0 2rem" }}
+							onChange={handleChange}
+							value={time}
+						/>
+						<div className="icon slow">🕰️</div>
+					</div>
+					<div className="time-value">{time} min</div>
+				</div> */}
+				<div className="join-game">
+					<button>
+						<Play width="30pt" height="30pt" />
+						<span className="btn-text">Play Now</span>
+					</button>
+				</div>
+				<div className="create-game">
+					<Radio.Group
+						value={color}
+						onChange={(e) => setColor(e.target.value)}
+						className="wb-group"
+						defaultValue="w"
+						size="large"
+						buttonStyle="solid">
+						<Radio.Button className="wb" value="w">
+							<WKing />
+						</Radio.Button>
+						<Radio.Button className="wb" value="b">
+							<BKing />
+						</Radio.Button>
+					</Radio.Group>
+					<InputNumber
+						size="large"
+						min={1}
+						max={100000}
+						defaultValue={3}
+						onChange={onChange}
+					/>
+				</div>
 			</section>
 			<section className="spectate-wrapper">
 				<div className="title"></div>
 				<div className="spectate">
 					<div className="game game-1">
 						<div className="p1 p">
-							<span className="username">John</span>
-							<span className="ilo">1414</span>
+							<span className="username">0x123122312233</span>
+							<span className="ilo">(1414)</span>
 						</div>
 						<div className="board">
 							<ShowBoard boardWidth={300} pgn={SamplePgn} />
 						</div>
 						<div className="p2 p">
-							<span className="username">Dave</span>
-							<span className="ilo">1345</span>
+							<span className="username">0x123122312233</span>
+							<span className="ilo">(1345)</span>
 						</div>
 					</div>
 					<div className="game game-2">
 						<div className="p1 p">
-							<span className="username">John</span>
-							<span className="ilo">1414</span>
+							<span className="username">0x123122312233</span>
+							<span className="ilo">(1414)</span>
 						</div>
 						<div className="board">
 							<ShowBoard boardWidth={300} pgn={SamplePgn} />
 						</div>
 						<div className="p2 p">
-							<span className="username">Dave</span>
-							<span className="ilo">1345</span>
+							<span className="username">0x123122312233</span>
+							<span className="ilo">(1345)</span>
 						</div>
 					</div>
 					<div className="game game-3">
 						<div className="p1 p">
-							<span className="username">John</span>
-							<span className="ilo">1414</span>
+							<span className="username">0x123122312233</span>
+							<span className="ilo">(1414)</span>
 						</div>
 						<div className="board">
 							<ShowBoard boardWidth={300} pgn={SamplePgn} />
 						</div>
 						<div className="p2 p">
-							<span className="username">Dave</span>
-							<span className="ilo">1345</span>
+							<span className="username">0x123122312233</span>
+							<span className="ilo">(1345)</span>
 						</div>
 					</div>
 				</div>

@@ -18,6 +18,7 @@ import NativeBalance from "./components/NativeBalance";
 import "./style.css";
 import MenuItems from "./components/MenuItems";
 import Lobby from "./components/Lobby";
+import LiveChess from "./components/LiveChess";
 const { Header } = Layout;
 
 const styles = {
@@ -26,7 +27,7 @@ const styles = {
 		justifyContent: "center",
 		fontFamily: "Roboto, sans-serif",
 		color: "#041836",
-		marginTop: "130px",
+		marginTop: "40px",
 		padding: "10px",
 	},
 	header: {
@@ -52,8 +53,13 @@ const styles = {
 };
 
 const App = ({ isServerInfo }) => {
-	const { isWeb3Enabled, enableWeb3, isAuthenticated, isWeb3EnableLoading } =
-		useMoralis();
+	const {
+		isWeb3Enabled,
+		enableWeb3,
+		isAuthenticated,
+		isWeb3EnableLoading,
+		user,
+	} = useMoralis();
 
 	useEffect(() => {
 		if (isAuthenticated && !isWeb3Enabled && !isWeb3EnableLoading) enableWeb3();
@@ -93,6 +99,9 @@ const App = ({ isServerInfo }) => {
 						<Route path="/nftBalance">
 							<NFTBalance />
 						</Route>
+						<Route user={user} path="/live-chess">
+							<LiveChess user={user} />
+						</Route>
 						<Route path="/">
 							<Redirect to="/lobby" />
 						</Route>
@@ -105,6 +114,20 @@ const App = ({ isServerInfo }) => {
 		</Layout>
 	);
 };
+
+function PrivateRoute({ user, children, ...rest }) {
+	// const { user } = useMoralis();
+	// console.log("isAuthenticated", isAuthenticated);
+	console.log("user", user);
+	return (
+		<Route
+			{...rest}
+			render={() => {
+				return user ? children : <Redirect to="/lobby" />;
+			}}
+		/>
+	);
+}
 
 export const Logo = () => (
 	<div
