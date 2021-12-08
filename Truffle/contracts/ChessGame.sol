@@ -158,6 +158,10 @@ contract ChessGame is Ownable {
 		bytes32 _ipfsHash
 	) public onlyServer {
 		Game storage gs = games[_gameId];
+		require(
+			gs.status == 1 && gs.outcome == 0,
+			"Game not started or already ended"
+		);
 		gs.status = 2;
 		gs.gameState = _gameState;
 		gs.whiteState = _whiteState;
@@ -189,16 +193,20 @@ contract ChessGame is Ownable {
 		uint32 _blackState,
 		uint16 _move,
 		bytes memory _signature,
-		bytes32 _ipfsHash,
-		bool _turnBlack
+		bytes32 _ipfsHash
 	) public onlyServer {
 		Game memory game = games[_gameId];
 		require(game.status == 1, "Game ended");
 		IChessLogic.Board memory board;
 		{
-			address signer;
-			if (_turnBlack) {
-				signer = game.whiteProxy;
+			address signer = keccak256(
+				abi.encode("CHESS", _gameId, _gameState, _whiteState, _blackState)
+			).toEthSignedMessageHash().recover(_signature);
+			require(
+				signer == game.whiteProxy || signer == game.blackProxy,
+				"Invalid signature"
+			);
+			if (signer == game.whiteProxy) {
 				board = IChessLogic.Board(
 					_gameState,
 					game.blackState,
@@ -214,13 +222,6 @@ contract ChessGame is Ownable {
 					false
 				);
 			}
-
-			require(
-				keccak256(
-					abi.encode("CHESS", _gameId, _gameState, _whiteState, _blackState)
-				).toEthSignedMessageHash().recover(_signature) == signer,
-				"Signature does not match"
-			);
 		}
 		uint8 outcome;
 		{
