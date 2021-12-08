@@ -17,23 +17,20 @@ const Lobby = () => {
 	return (
 		<div className="lobby">
 			<section className="play">
-				<div className="join-game">
-					<div className="stakes">
+				{/* <div className="join-game"> */}
+				{/* <div className="stakes">
 						<div className="stakes-title">Staked Tokens</div>
 						<div className="amount">{10}</div>
-						<div className="stake-btns">
-							<button className="stake-more">Stake More</button>
-							<button className="unstake">Unstake</button>
-						</div>
-					</div>
-					<button className="join-game-btn">
-						<Play width="30pt" height="30pt" />
-						<span className="btn-text">Play Now</span>
-					</button>
-				</div>
+					</div> */}
+				<button className="join-game-btn">
+					{/* <Play width="30pt" height="30pt" /> */}
+					🚀
+					<span className="btn-text">Quick Match</span>
+				</button>
+				{/* </div> */}
 
-				<div className="create-game">
-					<Radio.Group
+				{/* <div className="create-game"> */}
+				{/* <Radio.Group
 						value={color}
 						onChange={(e) => setColor(e.target.value)}
 						className="wb-group"
@@ -71,12 +68,13 @@ const Lobby = () => {
 								}}
 							/>
 						</div>
-					</div>
-					<button className="create-game-btn">
-						<Play width="30pt" height="30pt" />
-						<span className="btn-text">Create Game</span>
-					</button>
-				</div>
+					</div> */}
+				<button className="create-game-btn">
+					{/* <Play width="30pt" height="30pt" /> */}
+					🛠️
+					<span className="btn-text">Create Game</span>
+				</button>
+				{/* </div> */}
 			</section>
 
 			<section className="spectate-wrapper">
