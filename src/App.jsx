@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMoralis } from "react-moralis";
 import {
 	BrowserRouter as Router,
@@ -63,6 +63,8 @@ const App = ({ isServerInfo }) => {
 		user,
 	} = useMoralis();
 
+	const [isPairing, setIsPairing] = useState(false);
+
 	useEffect(() => {
 		if (isAuthenticated && !isWeb3Enabled && !isWeb3EnableLoading) enableWeb3();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -90,7 +92,7 @@ const App = ({ isServerInfo }) => {
 				<div style={styles.content}>
 					<Switch>
 						<Route exact path="/lobby">
-							<Lobby />
+							<Lobby setIsPairing={setIsPairing} />
 						</Route>
 						<Route path="/erc20balance">
 							<ERC20Balance />
@@ -114,6 +116,7 @@ const App = ({ isServerInfo }) => {
 							<>Please login using the "Authenticate" button</>
 						</Route> */}
 					</Switch>
+					{isPairing && <Redirect to="/live-chess" />}
 				</div>
 			</Router>
 		</Layout>

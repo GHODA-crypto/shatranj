@@ -137,7 +137,7 @@ export const GameBoard = ({ user, boardWidth }) => {
 	return (
 		<div className="board">
 			<Chessboard
-				// arePiecesDraggable={user === null}
+				arePiecesDraggable={!!user}
 				boardWidth={boardWidth}
 				arePremovesAllowed={true}
 				animationDuration={200}
