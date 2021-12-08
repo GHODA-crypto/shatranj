@@ -3,19 +3,29 @@ import { ReactComponent as WKing } from "../assets/chess_svgs/white_king.svg";
 import { ReactComponent as BKing } from "../assets/chess_svgs/black_king.svg";
 import { ShowBoard } from "./Chessboard.jsx";
 import { useWindowSize } from "../hooks/useWindowSize";
-import { Radio, InputNumber, Modal } from "antd";
+import { Radio, InputNumber, Modal, message } from "antd";
 import "../styles/lobby.scss";
 import { useMoralis, useMoralisQuery } from "react-moralis";
 
-const Lobby = ({ setIsPairing }) => {
-	const [rangeUpper, setRangeUpper] = useState(100);
-	const [rangeLower, setRangeLower] = useState(100);
-	const [color, setColor] = useState("w");
+const Lobby = ({ user, setIsPairing }) => {
+	const [gameOptions, setGameOptions] = useState({
+		color: "w",
+		rangeUpper: 100,
+		rangeLower: 100,
+	});
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const winSize = useWindowSize();
 
+	const handleCreateGame = () => {
+		!user ? error() : showModal();
+	};
+
 	const showModal = () => {
 		setIsModalVisible(true);
+	};
+
+	const error = () => {
+		message.error("Wallet not Connected! Connect Wallet!");
 	};
 
 	const { Moralis, isAuthenticated } = useMoralis();
@@ -23,6 +33,10 @@ const Lobby = ({ setIsPairing }) => {
 		"1.e4 Nf6 2.e5 Nd5 3.d4 d6 4.Nf3 g6 5.Bc4 Nb6 6.Bb3 Bg7 7.Qe2 Nc6 8.O-O O-O 9.h3 a5 10.a4 dxe5 11.dxe5 Nd4 12.Nxd4 Qxd4 13.Re1 e6 14.Nd2 Nd5 15.Nf3 Qc5 16.Qe4 Qb4 17.Bc4 Nb6 18.b3 Nxc4 19.bxc4 Re8 20.Rd1 Qc5 21.Qh4 b6 22.Be3 Qc6 23.Bh6 Bh8 24.Rd8 Bb7 25.Rad1 Bg7 26.R8d7 Rf8 27.Bxg7 Kxg7 28.R1d4 Rae8 29.Qf6+ Kg8 30.h4 h5 31.Kh2 Rc8 32.Kg3 Rce8 33.Kf4 Bc8 34.Kg5 1-0";
 
 	const quickMatch = (e) => {
+		if (!user) {
+			error();
+			return;
+		}
 		console.log(isAuthenticated);
 		if (isAuthenticated) {
 			setIsPairing(true);
@@ -35,12 +49,8 @@ const Lobby = ({ setIsPairing }) => {
 				winSize={winSize}
 				isModalVisible={isModalVisible}
 				setIsModalVisible={setIsModalVisible}
-				color={color}
-				setColor={setColor}
-				rangeLower={rangeLower}
-				setRangeLower={setRangeLower}
-				rangeUpper={rangeUpper}
-				setRangeUpper={setRangeUpper}
+				gameOptions={gameOptions}
+				setGameOptions={setGameOptions}
 			/>
 
 			<section className="play">
@@ -48,7 +58,7 @@ const Lobby = ({ setIsPairing }) => {
 					🚀
 					<span className="btn-text">Quick Match</span>
 				</button>
-				<button className="create-game-btn" onClick={showModal}>
+				<button className="create-game-btn" onClick={handleCreateGame}>
 					🛠️
 					<span className="btn-text">Create Game</span>
 				</button>
@@ -107,12 +117,8 @@ const GameOptionsModal = ({
 	winSize,
 	isModalVisible,
 	setIsModalVisible,
-	color,
-	setColor,
-	rangeUpper,
-	setRangeUpper,
-	rangeLower,
-	setRangeLower,
+	gameOptions,
+	setGameOptions,
 }) => {
 	const handleOk = () => {
 		setIsModalVisible(false);
@@ -140,14 +146,17 @@ const GameOptionsModal = ({
 			onOk={handleOk}
 			onCancel={handleCancel}>
 			<Radio.Group
-				value={color}
+				value={gameOptions.color}
 				style={{
 					width: "35%",
 					display: "flex",
 					justifyContent: "space-around",
 					alignItems: "center",
 				}}
-				onChange={(e) => setColor(e.target.value)}
+				onChange={(e) => {
+					// console.log(e);
+					setGameOptions({ ...gameOptions, color: e.target.value });
+				}}
 				className="wb-group"
 				defaultValue="w"
 				size="large"
@@ -224,9 +233,9 @@ const GameOptionsModal = ({
 						size="large"
 						min={1}
 						max={10000}
-						value={rangeLower}
-						onChange={(e) => {
-							setRangeLower(e.target.value);
+						value={gameOptions.rangeUpper}
+						onChange={(val) => {
+							setGameOptions({ ...gameOptions, rangeUpper: val });
 						}}
 					/>
 					<span
@@ -243,9 +252,10 @@ const GameOptionsModal = ({
 						size="large"
 						min={1}
 						max={10000}
-						value={rangeUpper}
-						onChange={(e) => {
-							setRangeUpper(e.target.value);
+						value={gameOptions.rangeLower}
+						onChange={(val) => {
+							// console.log(e);
+							setGameOptions({ ...gameOptions, rangeLower: val });
 						}}
 					/>
 				</div>

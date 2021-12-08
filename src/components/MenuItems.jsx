@@ -20,8 +20,8 @@ function MenuItems() {
 			<Menu.Item key="/lobby">
 				<NavLink to="/lobby">♟️ Lobby</NavLink>
 			</Menu.Item>
-			<Menu.Item key="/erc20balance">
-				<NavLink to="/erc20balance">💰 Balances</NavLink>
+			<Menu.Item key="/stakes">
+				<NavLink to="/stakes">💰 Stakes</NavLink>
 			</Menu.Item>
 			<Menu.Item key="/erc20transfers">
 				<NavLink to="/erc20transfers">💸 Transfers</NavLink>
