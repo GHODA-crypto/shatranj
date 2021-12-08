@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { ReactComponent as Play } from "../assets/chess.svg";
 import { ReactComponent as WKing } from "../assets/chess_svgs/white_king.svg";
 import { ReactComponent as BKing } from "../assets/chess_svgs/black_king.svg";
 import { ShowBoard } from "./Chessboard.jsx";
-import { Radio, InputNumber } from "antd";
+import { useWindowSize } from "../hooks/useWindowSize";
+import { Radio, InputNumber, Modal } from "antd";
 import "../styles/lobby.scss";
 import { useMoralis, useMoralisQuery } from "react-moralis";
 
@@ -11,6 +11,12 @@ const Lobby = ({ setIsPairing }) => {
 	const [rangeUpper, setRangeUpper] = useState(100);
 	const [rangeLower, setRangeLower] = useState(100);
 	const [color, setColor] = useState("w");
+	const [isModalVisible, setIsModalVisible] = useState(false);
+	const winSize = useWindowSize();
+
+	const showModal = () => {
+		setIsModalVisible(true);
+	};
 
 	const { Moralis, isAuthenticated } = useMoralis();
 	const SamplePgn =
@@ -25,65 +31,27 @@ const Lobby = ({ setIsPairing }) => {
 
 	return (
 		<div className="lobby">
+			<GameOptionsModal
+				winSize={winSize}
+				isModalVisible={isModalVisible}
+				setIsModalVisible={setIsModalVisible}
+				color={color}
+				setColor={setColor}
+				rangeLower={rangeLower}
+				setRangeLower={setRangeLower}
+				rangeUpper={rangeUpper}
+				setRangeUpper={setRangeUpper}
+			/>
+
 			<section className="play">
-				{/* <div className="join-game"> */}
-				{/* <div className="stakes">
-						<div className="stakes-title">Staked Tokens</div>
-						<div className="amount">{10}</div>
-					</div> */}
-				<button onClick={quickMatch} className="join-game-btn">
-					{/* <Play width="30pt" height="30pt" /> */}
+				<button className="join-game-btn" onClick={quickMatch}>
 					🚀
 					<span className="btn-text">Quick Match</span>
 				</button>
-				{/* </div> */}
-
-				{/* <div className="create-game"> */}
-				{/* <Radio.Group
-						value={color}
-						onChange={(e) => setColor(e.target.value)}
-						className="wb-group"
-						defaultValue="w"
-						size="large"
-						buttonStyle="solid">
-						<Radio.Button className="wb" value="w">
-							<WKing />
-						</Radio.Button>
-						<Radio.Button className="wb" value="b">
-							<BKing />
-						</Radio.Button>
-					</Radio.Group>
-					<div className="rating">
-						<span className="title">Rating Range</span>
-						<div className="rating-input">
-							<span className="label inc">+</span>
-							<InputNumber
-								size="large"
-								min={1}
-								max={10000}
-								value={rangeLower}
-								onChange={(e) => {
-									setRangeLower(e.target.value);
-								}}
-							/>
-							<span className="label dec">-</span>
-							<InputNumber
-								size="large"
-								min={1}
-								max={10000}
-								value={rangeUpper}
-								onChange={(e) => {
-									setRangeUpper(e.target.value);
-								}}
-							/>
-						</div>
-					</div> */}
-				<button className="create-game-btn">
-					{/* <Play width="30pt" height="30pt" /> */}
+				<button className="create-game-btn" onClick={showModal}>
 					🛠️
 					<span className="btn-text">Create Game</span>
 				</button>
-				{/* </div> */}
 			</section>
 
 			<section className="spectate-wrapper">
@@ -132,6 +100,157 @@ const Lobby = ({ setIsPairing }) => {
 				</div>
 			</section>
 		</div>
+	);
+};
+
+const GameOptionsModal = ({
+	winSize,
+	isModalVisible,
+	setIsModalVisible,
+	color,
+	setColor,
+	rangeUpper,
+	setRangeUpper,
+	rangeLower,
+	setRangeLower,
+}) => {
+	const handleOk = () => {
+		setIsModalVisible(false);
+	};
+
+	const handleCancel = () => {
+		setIsModalVisible(false);
+	};
+
+	return (
+		<Modal
+			title="Game Options"
+			className="options-modal"
+			okText="Create Game"
+			width={winSize.width > 600 ? "20%" : "100%"}
+			height={winSize.height > 300 ? "50%" : "100%"}
+			bodyStyle={{
+				display: "flex",
+				flexDirection: "column",
+				justifyContent: "space-around",
+				alignItems: "center",
+				padding: "2rem",
+			}}
+			visible={isModalVisible}
+			onOk={handleOk}
+			onCancel={handleCancel}>
+			<Radio.Group
+				value={color}
+				style={{
+					width: "35%",
+					display: "flex",
+					justifyContent: "space-around",
+					alignItems: "center",
+				}}
+				onChange={(e) => setColor(e.target.value)}
+				className="wb-group"
+				defaultValue="w"
+				size="large"
+				buttonStyle="solid">
+				<Radio.Button
+					style={{
+						display: "flex",
+						justifyContent: "center",
+						alignItems: "center",
+						borderRadius: "0.5rem",
+						width: "4rem",
+						height: "4rem",
+						marginRight: "1rem",
+					}}
+					className="wb"
+					value="w">
+					<WKing style={{ marginTop: "0.5rem" }} />
+				</Radio.Button>
+				<Radio.Button
+					style={{
+						display: "flex",
+						justifyContent: "center",
+						alignItems: "center",
+						borderRadius: "0.5rem",
+						width: "4rem",
+						height: "4rem",
+					}}
+					className="wb"
+					value="b">
+					<BKing style={{ marginTop: "0.5rem" }} />
+				</Radio.Button>
+			</Radio.Group>
+			<div
+				className="rating"
+				style={{
+					marginTop: "2rem",
+					display: "flex",
+					flexDirection: "column",
+					justifyContent: "space-around",
+					alignItems: "center",
+					width: "80%",
+					height: "40%",
+				}}>
+				<span
+					className="title"
+					style={{
+						width: "100%",
+						fontSize: "1.2rem",
+						fontWeight: "600",
+						textAlign: "center",
+						marginBottom: "1rem",
+					}}>
+					Rating Range
+				</span>
+				<div
+					className="rating-input"
+					style={{
+						fontSize: "1.5rem",
+						fontWeight: 600,
+						display: "flex",
+						justifyContent: "center",
+						alignItems: "center",
+					}}>
+					<span
+						className="label inc"
+						style={{
+							fontSize: "1.5rem",
+							fontWeight: 600,
+							marginRight: "0.25rem",
+						}}>
+						+
+					</span>
+					<InputNumber
+						size="large"
+						min={1}
+						max={10000}
+						value={rangeLower}
+						onChange={(e) => {
+							setRangeLower(e.target.value);
+						}}
+					/>
+					<span
+						className="label dec"
+						style={{
+							fontSize: "1.5rem",
+							fontWeight: 600,
+							marginRight: "0.25rem",
+							marginLeft: "1rem",
+						}}>
+						-
+					</span>
+					<InputNumber
+						size="large"
+						min={1}
+						max={10000}
+						value={rangeUpper}
+						onChange={(e) => {
+							setRangeUpper(e.target.value);
+						}}
+					/>
+				</div>
+			</div>
+		</Modal>
 	);
 };
 
