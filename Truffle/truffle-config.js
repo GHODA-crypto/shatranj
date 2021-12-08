@@ -8,7 +8,7 @@ module.exports = {
 	networks: {
 		develop: {
 			host: "127.0.0.1",
-			port: 8545,
+			port: 7545,
 			chainId: 1337,
 			network_id: 1337,
 			deploymentPollingInterval: 10,
@@ -25,6 +25,20 @@ module.exports = {
 	// After you backed up your artifacts you can utilize db by running migrate as follows:
 	// $ truffle migrate --reset --compile-all
 	//
+	compilers: {
+		solc: {
+			version: "0.8.6", // Fetch exact version from solc-bin (default: truffle's version)
+			// docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
+			settings: {
+				// See the solidity docs for advice about optimization and evmVersion
+				optimizer: {
+					enabled: true,
+					runs: 1000000000,
+				},
+				//  evmVersion: "byzantium"
+			},
+		},
+	},
 	// db: {
 	//   enabled: true,
 	//   host: "127.0.0.1",

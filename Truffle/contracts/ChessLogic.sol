@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 
 pragma solidity ^0.8.2;
-import "../libraries/SafeMath.sol";
-import "../libraries/Math.sol";
+import "./libraries/SafeMath.sol";
+import "./libraries/Math.sol";
 
-contract Chess {
+contract ChessLogic {
 	using SafeMath for uint256;
 
 	uint8 constant empty_const = 0x0;
@@ -76,6 +76,13 @@ contract Chess {
     */
 	uint32 constant initial_black_state = 0x383f3cff;
 
+	struct Board {
+		uint256 gameState;
+		uint32 playerState;
+		uint32 opponentState;
+		bool turnBlack;
+	}
+
 	constructor() {}
 
 	function checkGameFromStart(uint16[] memory moves)
@@ -98,6 +105,31 @@ contract Chess {
 			);
 	}
 
+	function verifyGame(Board memory _board, uint16 _move)
+		public
+		pure
+		returns (uint8, Board memory)
+	{
+		uint16[] memory moves = new uint16[](1);
+		moves[0] = _move;
+		(
+			uint8 outcome,
+			uint256 gameState,
+			uint32 playerState,
+			uint32 opponentState
+		) = checkGame(
+				_board.gameState,
+				_board.playerState,
+				_board.opponentState,
+				_board.turnBlack,
+				moves
+			);
+		return (
+			outcome,
+			Board(gameState, playerState, opponentState, !_board.turnBlack)
+		);
+	}
+
 	/**
         @dev Calculates the outcome of a game depending on the moves from a starting position.
              Reverts when an invalid move is found.
@@ -115,7 +147,7 @@ contract Chess {
 		bool startingTurnBlack,
 		uint16[] memory moves
 	)
-		public
+		internal
 		pure
 		returns (
 			uint8 outcome,
@@ -188,7 +220,7 @@ contract Chess {
 		uint32 opponentState,
 		bool currentTurnBlack
 	)
-		public
+		internal
 		pure
 		returns (
 			uint256 newGameState,
