@@ -4,7 +4,7 @@ import { notification } from "antd";
 import { gameAbi, ERC20Abi } from "../contracts/abi";
 
 const Stakes = () => {
-	const { user } = useMoralis();
+	const { user, Moralis } = useMoralis();
 	const { chain } = useChain();
 	const chessGameAddress = "0xf130F47B6165A15dea881707E3aF662a5f25B941";
 	const chessERC20Address = "0xcF80141dA5BbFcD224a1817a2b0c3Cb04f55f91A";
@@ -20,6 +20,7 @@ const Stakes = () => {
 
 	// Erc20 => allowance => owner->user => spender->chessGame
 	// approve amount max
+	// stake and unstake -> Game
 
 	const {
 		data: gameData,
@@ -34,6 +35,8 @@ const Stakes = () => {
 			_player: user?.attributes?.ethAddress,
 		},
 	});
+
+	const { data, error, fetch, isFetching } = useWeb3ExecuteFunction();
 
 	const {
 		data: erc20Data,
@@ -76,7 +79,8 @@ const Stakes = () => {
 				Fetch Tokens
 			</button>
 			{erc20Error && <h1>{erc20Error.message}</h1>}
-			{erc20Data && <pre>{JSON.stringify(erc20Data)}</pre>}
+			{console.log(erc20Data)}
+			{erc20Data && <pre>{Moralis.Units.FromWei(Number(erc20Data))}</pre>}
 		</div>
 	);
 };
