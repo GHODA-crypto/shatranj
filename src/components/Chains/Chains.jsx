@@ -78,7 +78,7 @@ function Chains() {
 					key={selected?.key}
 					icon={selected?.icon}
 					style={{ ...styles.button, ...styles.item }}>
-					{chain.chainId === "0x13881" ? (
+					{chain?.chainId === "0x13881" ? (
 						<>
 							<span style={{ marginLeft: "5px" }}>{selected?.value}</span>
 							<DownOutlined />

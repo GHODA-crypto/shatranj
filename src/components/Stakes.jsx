@@ -1,12 +1,13 @@
 import React, { useEffect } from "react";
 import { useWeb3ExecuteFunction, useMoralis, useChain } from "react-moralis";
 import { notification } from "antd";
-import { abi } from "../contracts/chessGameAbi";
+import { gameAbi, ERC20Abi } from "../contracts/abi";
 
 const Stakes = () => {
 	const { user } = useMoralis();
 	const { chain } = useChain();
 	const chessGameAddress = "0xf130F47B6165A15dea881707E3aF662a5f25B941";
+	const chessERC20Address = "0xcF80141dA5BbFcD224a1817a2b0c3Cb04f55f91A";
 
 	const openErrorNotification = () => {
 		notification["error"]({
@@ -20,33 +21,62 @@ const Stakes = () => {
 	// Erc20 => allowance => owner->user => spender->chessGame
 	// approve amount max
 
-	const options = {
-		abi: abi,
+	const {
+		data: gameData,
+		error: gameError,
+		fetch: gameFetch,
+		isFetching: isGameFetching,
+	} = useWeb3ExecuteFunction({
+		abi: gameAbi,
 		contractAddress: chessGameAddress,
 		functionName: "getStakedBalance",
 		params: {
 			_player: user?.attributes?.ethAddress,
 		},
-	};
+	});
 
-	const { data, error, fetch, isFetching, isLoading } =
-		useWeb3ExecuteFunction(options);
+	const {
+		data: erc20Data,
+		error: erc20Error,
+		fetch: erc20Fetch,
+		isFetching: isErc20Fetching,
+	} = useWeb3ExecuteFunction({
+		abi: ERC20Abi,
+		contractAddress: chessERC20Address,
+		functionName: "balanceOf",
+		params: {
+			account: user?.attributes?.ethAddress,
+		},
+	});
 
 	return (
 		<div style={{ marginTop: "3rem" }}>
-			{error && <h1>{error.message}</h1>}
+			{gameError && <h1>{gameError.message}</h1>}
 			<button
 				onClick={() => {
-					if (chain.chainId !== "0x13881") {
+					if (chain?.chainId !== "0x13881") {
 						openErrorNotification();
 						return;
 					}
-					fetch();
+					gameFetch();
 				}}
-				disabled={isFetching}>
+				disabled={isGameFetching}>
 				Fetch data
 			</button>
-			{data && <pre>{JSON.stringify(data)}</pre>}
+			{gameData && <pre>{JSON.stringify(gameData)}</pre>}
+			<button
+				onClick={() => {
+					if (chain?.chainId !== "0x13881") {
+						openErrorNotification();
+						return;
+					}
+					erc20Fetch();
+				}}
+				disabled={isErc20Fetching}>
+				Fetch Tokens
+			</button>
+			{erc20Error && <h1>{erc20Error.message}</h1>}
+			{erc20Data && <pre>{JSON.stringify(erc20Data)}</pre>}
 		</div>
 	);
 };
