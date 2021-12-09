@@ -136,6 +136,7 @@ const Stakes = () => {
 							type="number"
 							className="stake-amount amount"
 							value={stakeAmount}
+							onWheel={(e) => e.target.blur()}
 							onChange={(e) => setStakeAmount(e.target.value)}
 						/>
 						<button
@@ -170,7 +171,7 @@ const Stakes = () => {
 				</div>
 				<div
 					className="unstake card"
-					style={stakeBalData === 0 ? { opacity: "50%" } : null}>
+					style={Number(stakeBalData) === 0 ? { opacity: "30%" } : null}>
 					<div className="title">Unstake GHD</div>
 					<div className="unstake-input input">
 						<span className="token">GHD</span>
@@ -179,11 +180,15 @@ const Stakes = () => {
 							type="number"
 							className="unstake-amount amount"
 							value={unstakeAmount}
+							onWheel={(e) => e.target.blur()}
 							onChange={(e) => setUnstakeAmount(e.target.value)}
+							disabled={Number(stakeBalData) === 0}
 						/>
 						<button
 							className="max"
-							onClick={() => setUnstakeAmount(stakeBalData)}>
+							onClick={() => setUnstakeAmount(Number(stakeBalData))}
+							disabled={Number(stakeBalData) === 0}
+							style={Number(stakeBalData) === 0 ? { cursor: "default" } : null}>
 							max
 						</button>
 					</div>
@@ -195,7 +200,10 @@ const Stakes = () => {
 									unstakeFetch();
 									console.log("stake error: ", unstakeError);
 								}}
-								disabled={stakeBalData === 0}>
+								style={
+									Number(stakeBalData) === 0 ? { cursor: "default" } : null
+								}
+								disabled={Number(stakeBalData) === 0}>
 								Unstake
 							</button>
 						) : (
