@@ -1,6 +1,7 @@
 @import "var";
 
 .Stakes {
+	position: relative;
 	width: 100vw;
 	height: 80vh;
 	margin-top: 5rem;
@@ -8,6 +9,17 @@
 	flex-direction: column;
 	justify-content: space-around;
 	align-items: center;
+	.loader {
+		background-color: rgba($dark, 0.75);
+		width: 100vw;
+		height: 100vh;
+		position: absolute;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		z-index: 1;
+		margin-bottom: 0.1rem;
+	}
 	.amounts {
 		width: 60%;
 		height: 30%;

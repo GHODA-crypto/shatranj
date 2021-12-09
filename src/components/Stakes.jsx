@@ -3,14 +3,16 @@ import { useWeb3ExecuteFunction, useMoralis, useChain } from "react-moralis";
 import { notification } from "antd";
 import { gameAbi, ERC20Abi } from "../contracts/abi";
 
+import { ReactComponent as Loader } from "../assets/loader.svg";
+
 import "../styles/stakes.scss";
 
 const Stakes = () => {
 	const [stakeAmount, setStakeAmount] = useState(0);
 	const [unstakeAmount, setUnstakeAmount] = useState(0);
 	const { user, Moralis, isWeb3Enabled, isWeb3EnableLoading } = useMoralis();
-	const chessGameAddress = "0xf130F47B6165A15dea881707E3aF662a5f25B941";
-	const chessERC20Address = "0xcF80141dA5BbFcD224a1817a2b0c3Cb04f55f91A";
+	const chessGameAddress = "0xa07879CB8E2A7c63a0D94e6969528539bf2E4433";
+	const chessERC20Address = "0x3bd4045D5eDC18dCdE77CAde9602C3756113A41B";
 
 	const {
 		data: stakeBalData,
@@ -103,7 +105,7 @@ const Stakes = () => {
 		erc20Fetch();
 		// approveFetch();
 		allowFetch();
-		console.log("approve ->", approveData?.status);
+		console.log("approve ->", approveData);
 		console.log("allow ->", allowData);
 		console.log("allow error:", allowError);
 		console.log("erc20 error:", erc20Data);
@@ -117,6 +119,16 @@ const Stakes = () => {
 
 	return (
 		<div className="Stakes" style={{ marginTop: "3rem" }}>
+			{(isAllowFetching ||
+				isApproveFetching ||
+				isStakeBalFetching ||
+				isStakeFetching ||
+				isErc20Fetching ||
+				isUnstakeFetching) && (
+				<section className="loader">
+					<Loader />
+				</section>
+			)}
 			<section className="amounts">
 				<div className="erc20-balance balance">
 					<span className="label">GHD Balance</span>
@@ -139,7 +151,7 @@ const Stakes = () => {
 							type="number"
 							className="stake-amount amount"
 							value={stakeAmount}
-							disabled={approveData === undefined}
+							disabled={!approveData || !approveData?.status}
 							onWheel={(e) => e.target.blur()}
 							onChange={(e) => setStakeAmount(e.target.value)}
 						/>
@@ -156,22 +168,25 @@ const Stakes = () => {
 						{approveData?.status && stakeAmount < Number(allowData) ? (
 							<button
 								className="stake-btn"
-								onClick={() => {
-									stakeFetch();
-									erc20Fetch();
-									stakeBalFetch();
+								onClick={async () => {
+									await stakeFetch();
+									await erc20Fetch();
+									await stakeBalFetch();
 									console.log("stake error: ", stakeError);
 									console.log("stakeBal error: ", stakeBalError);
 									console.log("erc20 error: ", erc20Error);
+									setStakeAmount(0);
 								}}>
 								Stake
 							</button>
 						) : (
 							<button
 								className="approve-btn"
-								onClick={() => {
-									approveFetch();
+								onClick={async () => {
+									await approveFetch();
+									await allowFetch();
 									console.log("approve error:", approveError);
+									console.log("allow error:", allowError);
 								}}>
 								Approve
 							</button>
@@ -189,9 +204,13 @@ const Stakes = () => {
 							type="number"
 							className="unstake-amount amount"
 							value={unstakeAmount}
+							disabled={
+								!approveData ||
+								!approveData?.status ||
+								Number(stakeBalData) === 0
+							}
 							onWheel={(e) => e.target.blur()}
 							onChange={(e) => setUnstakeAmount(e.target.value)}
-							disabled={Number(stakeBalData) === 0}
 						/>
 						<button
 							className="max"
@@ -205,13 +224,14 @@ const Stakes = () => {
 						{approveData?.status ? (
 							<button
 								className="unstake-btn"
-								onClick={() => {
-									unstakeFetch();
-									erc20Fetch();
-									stakeBalFetch();
+								onClick={async () => {
+									await unstakeFetch();
+									await erc20Fetch();
+									await stakeBalFetch();
 									console.log("stake error: ", unstakeError);
 									console.log("stakeBal error: ", stakeBalError);
 									console.log("erc20 error: ", erc20Error);
+									setUnstakeAmount(0);
 								}}
 								style={
 									Number(stakeBalData) === 0 ? { cursor: "default" } : null
@@ -222,9 +242,11 @@ const Stakes = () => {
 						) : (
 							<button
 								className="approve-btn"
-								onClick={() => {
-									approveFetch();
+								onClick={async () => {
+									await approveFetch();
+									await allowFetch();
 									console.log("approve error:", approveError);
+									console.log("allow error:", allowError);
 								}}>
 								Approve
 							</button>
