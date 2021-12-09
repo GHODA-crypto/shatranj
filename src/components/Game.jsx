@@ -1,4 +1,5 @@
 import React from "react";
+import { useMoralis } from "react-moralis";
 import { GameBoard } from "./Chessboard";
 import { useWindowSize } from "../hooks/useWindowSize";
 
@@ -18,7 +19,8 @@ import { ReactComponent as BlackPawn } from "../assets/chess_svgs/black_pawn.svg
 
 import "../styles/game.scss";
 
-const Game = ({ user }) => {
+const Game = () => {
+	const { enableWeb3, user } = useMoralis();
 	const winSize = useWindowSize();
 
 	return (
@@ -62,7 +64,10 @@ const Game = ({ user }) => {
 
 				<div className="players self">
 					<div className="player-info">
-						<div className="username">0x1234123412321432</div>
+						<div className="username">
+							{user?.attributes?.ethAddress.slice(0, 8)}...
+							{user?.attributes?.ethAddress.slice(-9, -1)}
+						</div>
 						<div className="ilo">(1456)</div>
 					</div>
 					<div className="fallen-peice fallen-peice-self">
