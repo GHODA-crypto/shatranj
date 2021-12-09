@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useWeb3ExecuteFunction, useMoralis, useChain } from "react-moralis";
-import { notification } from "antd";
+import { Modal } from "antd";
 import { gameAbi, ERC20Abi } from "../contracts/abi";
 
 import { ReactComponent as Loader } from "../assets/loader.svg";
@@ -10,6 +10,7 @@ import "../styles/stakes.scss";
 const Stakes = () => {
 	const [stakeAmount, setStakeAmount] = useState(0);
 	const [unstakeAmount, setUnstakeAmount] = useState(0);
+	const [isModalVisible, setIsModalVisible] = useState(false);
 	const { user, Moralis, isWeb3Enabled, isWeb3EnableLoading } = useMoralis();
 	const chessGameAddress = "0xa07879CB8E2A7c63a0D94e6969528539bf2E4433";
 	const chessERC20Address = "0x3bd4045D5eDC18dCdE77CAde9602C3756113A41B";
@@ -115,20 +116,52 @@ const Stakes = () => {
 	useEffect(() => {
 		initaliser();
 		if (!isWeb3Enabled) Moralis.enableWeb3();
-	}, [isWeb3Enabled]);
+	}, [isWeb3Enabled, erc20Data, stakeBalData]);
 
 	return (
 		<div className="Stakes" style={{ marginTop: "3rem" }}>
-			{(isAllowFetching ||
-				isApproveFetching ||
-				isStakeBalFetching ||
-				isStakeFetching ||
-				isErc20Fetching ||
-				isUnstakeFetching) && (
-				<section className="loader">
-					<Loader />
-				</section>
-			)}
+			<Modal
+				title="Loading"
+				visible={isStakeFetching}
+				footer={null}
+				closable={false}>
+				<p>Staking in progrss...</p>
+			</Modal>
+			<Modal
+				title="Loading"
+				visible={isAllowFetching}
+				footer={null}
+				closable={false}>
+				<p>Allowance Check in progrss...</p>
+			</Modal>
+			<Modal
+				title="Loading"
+				visible={isApproveFetching}
+				footer={null}
+				closable={false}>
+				<p>Approving in progrss...</p>
+			</Modal>
+			<Modal
+				title="Loading"
+				visible={isStakeBalFetching}
+				footer={null}
+				closable={false}>
+				<p>Staked GHODA Check in progrss...</p>
+			</Modal>
+			<Modal
+				title="Loading"
+				visible={isErc20Fetching}
+				footer={null}
+				closable={false}>
+				<p>GHODA Balance Check in progrss...</p>
+			</Modal>
+			<Modal
+				title="Loading"
+				visible={isUnstakeFetching}
+				footer={null}
+				closable={false}>
+				<p>Unstaking in progrss...</p>
+			</Modal>
 			<section className="amounts">
 				<div className="erc20-balance balance">
 					<span className="label">GHD Balance</span>
