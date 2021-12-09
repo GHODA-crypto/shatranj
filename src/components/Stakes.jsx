@@ -37,7 +37,7 @@ const Stakes = () => {
 		functionName: "approve",
 		params: {
 			spender: chessGameAddress,
-			amount: 10 ** 30,
+			amount: Moralis.Units.Token("1000000000", "18"),
 		},
 	});
 
@@ -80,7 +80,7 @@ const Stakes = () => {
 		contractAddress: chessGameAddress,
 		functionName: "stake",
 		params: {
-			_player: user?.attributes?.ethAddress,
+			_amount: Number(stakeAmount),
 		},
 	});
 
@@ -92,25 +92,27 @@ const Stakes = () => {
 	} = useWeb3ExecuteFunction({
 		abi: gameAbi,
 		contractAddress: chessGameAddress,
-		functionName: "getStakedBalance",
+		functionName: "unstake",
 		params: {
-			_amount: stakeAmount,
+			_amount: Number(unstakeAmount),
 		},
 	});
 
 	const initaliser = () => {
 		stakeBalFetch();
 		erc20Fetch();
-		approveFetch();
-		console.log("approve ->", approveData);
-		console.log("approve error:", approveError);
-		console.log("erc20 error:", erc20Error);
-		console.log("stakeBal error:", stakeBalError);
+		// approveFetch();
+		allowFetch();
+		console.log("approve ->", approveData?.status);
+		console.log("allow ->", allowData);
+		console.log("allow error:", allowError);
+		console.log("erc20 error:", erc20Data);
+		console.log("stakeBal error:", stakeBalData);
 	};
 
 	useEffect(() => {
 		initaliser();
-		if (!isWeb3Enabled && !isWeb3EnableLoading) Moralis.enableWeb3();
+		if (!isWeb3Enabled) Moralis.enableWeb3();
 	}, [isWeb3Enabled]);
 
 	return (
@@ -127,6 +129,7 @@ const Stakes = () => {
 					<span className="amount">{Number(stakeBalData)}</span>
 				</div>
 			</section>
+
 			<section className="stake-unstake">
 				<div className="stake card">
 					<div className="title">Stake GHD</div>
@@ -136,6 +139,7 @@ const Stakes = () => {
 							type="number"
 							className="stake-amount amount"
 							value={stakeAmount}
+							disabled={approveData === undefined}
 							onWheel={(e) => e.target.blur()}
 							onChange={(e) => setStakeAmount(e.target.value)}
 						/>
@@ -143,17 +147,22 @@ const Stakes = () => {
 							className="max"
 							onClick={() =>
 								setStakeAmount(Moralis.Units.FromWei(Number(erc20Data)))
-							}>
+							}
+							disabled={!approveData?.status}>
 							max
 						</button>
 					</div>
 					<div className="stake-submit submit">
-						{approveData === false || stakeAmount > allowData ? (
+						{approveData?.status && stakeAmount < Number(allowData) ? (
 							<button
 								className="stake-btn"
 								onClick={() => {
 									stakeFetch();
+									erc20Fetch();
+									stakeBalFetch();
 									console.log("stake error: ", stakeError);
+									console.log("stakeBal error: ", stakeBalError);
+									console.log("erc20 error: ", erc20Error);
 								}}>
 								Stake
 							</button>
@@ -187,18 +196,22 @@ const Stakes = () => {
 						<button
 							className="max"
 							onClick={() => setUnstakeAmount(Number(stakeBalData))}
-							disabled={Number(stakeBalData) === 0}
+							disabled={Number(stakeBalData) === 0 || !approveData?.status}
 							style={Number(stakeBalData) === 0 ? { cursor: "default" } : null}>
 							max
 						</button>
 					</div>
 					<div className="unstake-submit submit">
-						{approveData === false ? (
+						{approveData?.status ? (
 							<button
 								className="unstake-btn"
 								onClick={() => {
 									unstakeFetch();
+									erc20Fetch();
+									stakeBalFetch();
 									console.log("stake error: ", unstakeError);
+									console.log("stakeBal error: ", stakeBalError);
+									console.log("erc20 error: ", erc20Error);
 								}}
 								style={
 									Number(stakeBalData) === 0 ? { cursor: "default" } : null
@@ -207,7 +220,12 @@ const Stakes = () => {
 								Unstake
 							</button>
 						) : (
-							<button className="approve-btn" onClick={approveFetch}>
+							<button
+								className="approve-btn"
+								onClick={() => {
+									approveFetch();
+									console.log("approve error:", approveError);
+								}}>
 								Approve
 							</button>
 						)}
