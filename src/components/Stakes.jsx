@@ -1,32 +1,22 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useWeb3ExecuteFunction, useMoralis, useChain } from "react-moralis";
 import { notification } from "antd";
 import { gameAbi, ERC20Abi } from "../contracts/abi";
 
+import "../styles/stakes.scss";
+
 const Stakes = () => {
-	const { user, Moralis } = useMoralis();
-	const { chain } = useChain();
+	const [stakeAmount, setStakeAmount] = useState(0);
+	const [unstakeAmount, setUnstakeAmount] = useState(0);
+	const { user, Moralis, isWeb3Enabled, isWeb3EnableLoading } = useMoralis();
 	const chessGameAddress = "0xf130F47B6165A15dea881707E3aF662a5f25B941";
 	const chessERC20Address = "0xcF80141dA5BbFcD224a1817a2b0c3Cb04f55f91A";
 
-	const openErrorNotification = () => {
-		notification["error"]({
-			message: "User on Wrong Chain",
-			description:
-				"Please change the chain/network to Polygon Mumbai Testnet using the button left of the top right corner of the page",
-			placement: "bottomRight",
-		});
-	};
-
-	// Erc20 => allowance => owner->user => spender->chessGame
-	// approve amount max
-	// stake and unstake -> Game
-
 	const {
-		data: gameData,
-		error: gameError,
-		fetch: gameFetch,
-		isFetching: isGameFetching,
+		data: stakeBalData,
+		error: stakeBalError,
+		fetch: stakeBalFetch,
+		isFetching: isStakeBalFetching,
 	} = useWeb3ExecuteFunction({
 		abi: gameAbi,
 		contractAddress: chessGameAddress,
@@ -36,7 +26,35 @@ const Stakes = () => {
 		},
 	});
 
-	const { data, error, fetch, isFetching } = useWeb3ExecuteFunction();
+	const {
+		data: approveData,
+		error: approveError,
+		fetch: approveFetch,
+		isFetching: isApproveFetching,
+	} = useWeb3ExecuteFunction({
+		abi: ERC20Abi,
+		contractAddress: chessERC20Address,
+		functionName: "approve",
+		params: {
+			spender: chessGameAddress,
+			amount: 10 ** 30,
+		},
+	});
+
+	const {
+		data: allowData,
+		error: allowError,
+		fetch: allowFetch,
+		isFetching: isAllowFetching,
+	} = useWeb3ExecuteFunction({
+		abi: ERC20Abi,
+		contractAddress: chessERC20Address,
+		functionName: "allowance",
+		params: {
+			owner: user?.attributes?.ethAddress,
+			spender: chessGameAddress,
+		},
+	});
 
 	const {
 		data: erc20Data,
@@ -52,35 +70,142 @@ const Stakes = () => {
 		},
 	});
 
+	const {
+		data: stakeData,
+		error: stakeError,
+		fetch: stakeFetch,
+		isFetching: isStakeFetching,
+	} = useWeb3ExecuteFunction({
+		abi: gameAbi,
+		contractAddress: chessGameAddress,
+		functionName: "stake",
+		params: {
+			_player: user?.attributes?.ethAddress,
+		},
+	});
+
+	const {
+		data: unstakeData,
+		error: unstakeError,
+		fetch: unstakeFetch,
+		isFetching: isUnstakeFetching,
+	} = useWeb3ExecuteFunction({
+		abi: gameAbi,
+		contractAddress: chessGameAddress,
+		functionName: "getStakedBalance",
+		params: {
+			_amount: stakeAmount,
+		},
+	});
+
+	const initaliser = () => {
+		stakeBalFetch();
+		erc20Fetch();
+		approveFetch();
+		console.log("approve ->", approveData);
+		console.log("approve error:", approveError);
+		console.log("erc20 error:", erc20Error);
+		console.log("stakeBal error:", stakeBalError);
+	};
+
+	useEffect(() => {
+		initaliser();
+		if (!isWeb3Enabled && !isWeb3EnableLoading) Moralis.enableWeb3();
+	}, [isWeb3Enabled]);
+
 	return (
-		<div style={{ marginTop: "3rem" }}>
-			{gameError && <h1>{gameError.message}</h1>}
-			<button
-				onClick={() => {
-					if (chain?.chainId !== "0x13881") {
-						openErrorNotification();
-						return;
-					}
-					gameFetch();
-				}}
-				disabled={isGameFetching}>
-				Fetch data
-			</button>
-			{gameData && <pre>{JSON.stringify(gameData)}</pre>}
-			<button
-				onClick={() => {
-					if (chain?.chainId !== "0x13881") {
-						openErrorNotification();
-						return;
-					}
-					erc20Fetch();
-				}}
-				disabled={isErc20Fetching}>
-				Fetch Tokens
-			</button>
-			{erc20Error && <h1>{erc20Error.message}</h1>}
-			{console.log(erc20Data)}
-			{erc20Data && <pre>{Moralis.Units.FromWei(Number(erc20Data))}</pre>}
+		<div className="Stakes" style={{ marginTop: "3rem" }}>
+			<section className="amounts">
+				<div className="erc20-balance balance">
+					<span className="label">GHD Balance</span>
+					<span className="amount">
+						{Moralis.Units.FromWei(Number(erc20Data))}
+					</span>
+				</div>
+				<div className="staked-balance balance">
+					<span className="label">Staked GHD</span>
+					<span className="amount">{Number(stakeBalData)}</span>
+				</div>
+			</section>
+			<section className="stake-unstake">
+				<div className="stake card">
+					<div className="title">Stake GHD</div>
+					<div className="stake-input input">
+						<span className="token">GHD</span>
+						<input
+							type="number"
+							className="stake-amount amount"
+							value={stakeAmount}
+							onChange={(e) => setStakeAmount(e.target.value)}
+						/>
+						<button
+							className="max"
+							onClick={() =>
+								setStakeAmount(Moralis.Units.FromWei(Number(erc20Data)))
+							}>
+							max
+						</button>
+					</div>
+					<div className="stake-submit submit">
+						{approveData === false || stakeAmount > allowData ? (
+							<button
+								className="stake-btn"
+								onClick={() => {
+									stakeFetch();
+									console.log("stake error: ", stakeError);
+								}}>
+								Stake
+							</button>
+						) : (
+							<button
+								className="approve-btn"
+								onClick={() => {
+									approveFetch();
+									console.log("approve error:", approveError);
+								}}>
+								Approve
+							</button>
+						)}
+					</div>
+				</div>
+				<div
+					className="unstake card"
+					style={stakeBalData === 0 ? { opacity: "50%" } : null}>
+					<div className="title">Unstake GHD</div>
+					<div className="unstake-input input">
+						<span className="token">GHD</span>
+
+						<input
+							type="number"
+							className="unstake-amount amount"
+							value={unstakeAmount}
+							onChange={(e) => setUnstakeAmount(e.target.value)}
+						/>
+						<button
+							className="max"
+							onClick={() => setUnstakeAmount(stakeBalData)}>
+							max
+						</button>
+					</div>
+					<div className="unstake-submit submit">
+						{approveData === false ? (
+							<button
+								className="unstake-btn"
+								onClick={() => {
+									unstakeFetch();
+									console.log("stake error: ", unstakeError);
+								}}
+								disabled={stakeBalData === 0}>
+								Unstake
+							</button>
+						) : (
+							<button className="approve-btn" onClick={approveFetch}>
+								Approve
+							</button>
+						)}
+					</div>
+				</div>
+			</section>
 		</div>
 	);
 };
