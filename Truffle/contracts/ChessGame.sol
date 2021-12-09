@@ -51,6 +51,25 @@ contract ChessGame is Ownable {
 	uint256 fee;
 	uint256 NFTfee;
 
+	event StakedBalance(address indexed player, uint256 amount);
+
+	event GameStarted(
+		uint256 indexed gameId,
+		address indexed white,
+		address indexed black,
+		address whiteProxy,
+		address blackProxy
+	);
+
+	event GameEnded(
+		uint256 indexed gameId,
+		address indexed white,
+		address indexed black,
+		uint8 outcome,
+		uint256 eloW,
+		uint256 eloB
+	);
+
 	constructor(
 		address _chessToken,
 		address _chessNFT,
@@ -94,12 +113,14 @@ contract ChessGame is Ownable {
 			"Not enough tokens"
 		);
 		stakedBalance[msg.sender] = _amount;
+		emit StakedBalance(msg.sender, _amount);
 	}
 
 	function unstake(uint256 _amount) external {
 		uint256 balance = stakedBalance[msg.sender];
 		require(balance >= _amount, "Not enough tokens to unstake");
 		stakedBalance[msg.sender] = balance - _amount;
+		emit StakedBalance(msg.sender, _amount);
 	}
 
 	// function createGame
@@ -147,6 +168,7 @@ contract ChessGame is Ownable {
 			game_state_start,
 			bytes32(0)
 		);
+		emit GameStarted(_gameId, _white, _black, _whiteProxy, _blackProxy);
 	}
 
 	function endGameForce(
@@ -167,7 +189,14 @@ contract ChessGame is Ownable {
 		gs.whiteState = _whiteState;
 		gs.blackState = _blackState;
 		gs.outcome = _outcome;
-		elo.recordResult(gs.white, gs.black, _outcome);
+		{
+			(uint256 eloW, uint256 eloB) = elo.recordResult(
+				gs.white,
+				gs.black,
+				_outcome
+			);
+			emit GameEnded(_gameId, gs.white, gs.black, _outcome, eloW, eloB);
+		}
 		address winner;
 		if (_outcome == 1) {
 			stakedBalance[gs.white] += bet;
@@ -241,7 +270,14 @@ contract ChessGame is Ownable {
 			gs.whiteState = board.opponentState;
 			gs.blackState = board.playerState;
 		}
-		elo.recordResult(game.white, game.black, outcome);
+		{
+			(uint256 eloW, uint256 eloB) = elo.recordResult(
+				game.white,
+				game.black,
+				outcome
+			);
+			emit GameEnded(_gameId, game.white, game.black, outcome, eloW, eloB);
+		}
 		address winner;
 		if (outcome == 1) {
 			stakedBalance[game.white] += bet;

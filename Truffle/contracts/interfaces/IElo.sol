@@ -8,5 +8,5 @@ interface IElo {
 		address player1,
 		address player2,
 		uint8 outcome
-	) external;
+	) external returns (uint256, uint256);
 }

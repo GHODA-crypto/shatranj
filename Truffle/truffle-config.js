@@ -1,3 +1,10 @@
+require("dotenv").config();
+const HDWalletProvider = require("@truffle/hdwallet-provider");
+//
+// const fs = require("fs");
+// const mnemonic = fs.readFileSync(".secret").toString().trim();
+console.log(process.env.PRIVATE_KEY);
+
 module.exports = {
 	// Uncommenting the defaults below
 	// provides for an easier quick-start with Ganache.
@@ -12,6 +19,20 @@ module.exports = {
 			chainId: 1337,
 			network_id: 1337,
 			deploymentPollingInterval: 10,
+		},
+		mumbai: {
+			provider: () =>
+				new HDWalletProvider(
+					process.env.PRIVATE_KEY,
+					`https://polygon-mumbai.infura.io/v3/${process.env.INFURA_API_KEY}`
+				),
+			network_id: 80001, // Ropsten's id
+			gas: 6000000,
+			gasPrice: 10000000000,
+			// gas: 29999972, // Ropsten has a lower block limit than mainnet
+			confirmations: 2, // # of confs to wait between deployments. (default: 0)
+			timeoutBlocks: 200, // # of blocks before a deployment times out  (minimum/default: 50)
+			skipDryRun: true, // Skip dry run before migrations? (default: false for public nets )
 		},
 	},
 	//

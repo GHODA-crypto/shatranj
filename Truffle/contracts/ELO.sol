@@ -8,6 +8,8 @@ contract Elo is Ownable {
 
 	address private _masterContract;
 
+	event EloChanged(address indexed player, uint256 newElo);
+
 	modifier onlyMaster() {
 		require(_masterContract == msg.sender, "Function only for Core contract!");
 		_;
@@ -24,13 +26,14 @@ contract Elo is Ownable {
 
 	function setElo(address _player, uint256 _elo) public onlyMaster {
 		if (_elo > 100) elo[_player] = _elo;
+		emit EloChanged(_player, _elo);
 	}
 
 	function recordResult(
 		address player1,
 		address player2,
 		uint8 outcome
-	) external onlyMaster {
+	) external onlyMaster returns (uint256, uint256) {
 		// Get current scores
 		uint256 scoreA = getElo(player1);
 		uint256 scoreB = getElo(player2);
@@ -48,8 +51,11 @@ contract Elo is Ownable {
 			int256(scoreA) - int256(scoreB),
 			resultA
 		);
-		setElo(player1, uint256(int256(scoreA) + changeA));
-		setElo(player2, uint256(int256(scoreB) + changeB));
+		uint256 eloA = uint256(int256(scoreA) + changeA);
+		uint256 eloB = uint256(int256(scoreB) + changeB);
+		setElo(player1, eloA);
+		setElo(player2, eloB);
+		return ((eloA > 100 ? eloA : 100), (eloB > 100 ? eloB : 100));
 	}
 
 	function getScoreChange(int256 difference, int256 resultA)
