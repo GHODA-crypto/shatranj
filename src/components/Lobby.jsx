@@ -46,10 +46,7 @@ const Lobby = ({ setIsPairing }) => {
 			openErrorNotification();
 			return;
 		}
-		console.log(isAuthenticated);
-		if (isAuthenticated) {
-			setIsPairing(true);
-		}
+		setIsPairing(true);
 	};
 
 	return (

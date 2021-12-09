@@ -64,6 +64,7 @@ const App = ({ isServerInfo }) => {
 	} = useMoralis();
 
 	const [isPairing, setIsPairing] = useState(false);
+	const [pairingParams, setPairingParams] = useState({});
 
 	useEffect(() => {
 		if (isAuthenticated && !isWeb3Enabled && !isWeb3EnableLoading) enableWeb3();
@@ -74,8 +75,9 @@ const App = ({ isServerInfo }) => {
 	return (
 		<Layout style={{ height: "100vh", overflow: "auto" }}>
 			<Router>
-				<Nav />
+				{isPairing && <Redirect to="/live-chess" />}
 
+				<Nav />
 				<div style={styles.content}>
 					<Switch>
 						<Route exact path="/lobby">
@@ -91,7 +93,7 @@ const App = ({ isServerInfo }) => {
 							<NFTBalance />
 						</Route>
 						<Route user={user} path="/live-chess">
-							<LiveChess />
+							<LiveChess user={user} pairingParams={pairingParams} />
 						</Route>
 						<Route path="/testcloud">
 							<TestCloudFunctions />
@@ -103,7 +105,6 @@ const App = ({ isServerInfo }) => {
 							<>Please login using the "Authenticate" button</>
 						</Route> */}
 					</Switch>
-					{isPairing && <Redirect to="/live-chess" />}
 				</div>
 			</Router>
 		</Layout>
