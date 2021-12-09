@@ -1,5 +1,6 @@
 import { idToHex } from "helpers/idToInt";
 import { useMemo, useEffect, useState } from "react";
+import React, { useMemo, useEffect, useCallback, useState } from "react";
 import {
 	useMoralisQuery,
 	useMoralisCloudFunction,
@@ -28,6 +29,8 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 	// 	useMoralis();
 	const [gameId, setGameId] = useState();
 
+	const [currentTabletPage, setCurrentTabletPage] = useState(1);
+	const [currentMobilePage, setCurrentMobilePage] = useState(2);
 	const {
 		isWeb3Enabled,
 		Moralis,
@@ -117,8 +120,208 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 		}
 	};
 
+	if (winSize.width > 1400) {
+		return <DesktopView />;
+	} else if (winSize.width > 768 && winSize.width < 1400) {
+		return <TabView />;
+	} else {
+		return <MobileView />;
+	}
+};
+
+const DesktopView = () => {
 	return (
-		<div className="game">
+		<div className="game-mobile">
+			<main className="content">
+				{currentMobilePage === 1 && (
+					<section className="prize-chat">
+						<div className="prize-pool">
+							<span className="label">Prize Pool</span>
+							<div className="prize">
+								<span className="amount">15</span>
+								<span className="ghd">GHD</span>
+							</div>
+						</div>
+						<div className="chat">
+							<div className="chat-text"></div>
+							<div className="chat-input">
+								<input type="text" />
+								<button>
+									<Send />
+								</button>
+							</div>
+						</div>
+					</section>
+				)}
+
+				{currentMobilePage === 2 && (
+					<section className="chessboard">
+						<div className="players op">
+							<div className="player-info">
+								<div className="username">0x1234123412321432</div>
+								<div className="ilo">(1456)</div>
+							</div>
+							<div className="fallen-peice fallen-peice-op">
+								<WhiteRook size={15} />
+								<WhiteKnight size={15} />
+								<WhiteBishop size={15} />
+							</div>
+						</div>
+
+						<GameBoard
+							user={user}
+							boardWidth={Math.min(winSize.width * 0.45, winSize.height * 0.7)}
+						/>
+
+						<div className="players self">
+							<div className="player-info">
+								<div className="username">
+									{user?.attributes?.ethAddress.slice(0, 8)}...
+									{user?.attributes?.ethAddress.slice(-9, -1)}
+								</div>
+								<div className="ilo">(1456)</div>
+							</div>
+							<div className="fallen-peice fallen-peice-self">
+								<BlackPawn size={15} />
+								<BlackQueen size={15} />
+								<BlackKing size={15} />
+							</div>
+						</div>
+					</section>
+				)}
+
+				{currentMobilePage === 3 && (
+					<section className="game-info">
+						<div className="pgn"></div>
+						<div className="btns">
+							<button>Button1</button>
+							<button>Button2</button>
+							<button>Button3</button>
+							<button className="danger">Button4</button>
+						</div>
+					</section>
+				)}
+			</main>
+			<div className="tab-bar">
+				<div
+					id={currentTabletPage === 1 ? "active" : ""}
+					className="chat-room-tab tab"
+					onClick={() => setCurrentTabletPage(1)}>
+					Chat Room
+				</div>
+
+				<div
+					id={currentTabletPage === 2 ? "active" : ""}
+					className="game-tab tab"
+					onClick={() => setCurrentTabletPage(2)}>
+					Game
+				</div>
+
+				<div
+					id={currentTabletPage === 3 ? "active" : ""}
+					className="game-info-tab tab"
+					onClick={() => setCurrentTabletPage(3)}>
+					Game Info
+				</div>
+			</div>
+		</div>
+	);
+};
+
+const TabView = () => {
+	return (
+		<div className="game-tablet">
+			<section className="chessboard">
+				<div className="players op">
+					<div className="player-info">
+						<div className="username">0x1234123412321432</div>
+						<div className="ilo">(1456)</div>
+					</div>
+					<div className="fallen-peice fallen-peice-op">
+						<WhiteRook size={15} />
+						<WhiteKnight size={15} />
+						<WhiteBishop size={15} />
+					</div>
+				</div>
+
+				<GameBoard
+					user={user}
+					boardWidth={Math.min(winSize.width * 0.45, winSize.height * 0.7)}
+				/>
+
+				<div className="players self">
+					<div className="player-info">
+						<div className="username">
+							{user?.attributes?.ethAddress.slice(0, 8)}...
+							{user?.attributes?.ethAddress.slice(-9, -1)}
+						</div>
+						<div className="ilo">(1456)</div>
+					</div>
+					<div className="fallen-peice fallen-peice-self">
+						<BlackPawn size={15} />
+						<BlackQueen size={15} />
+						<BlackKing size={15} />
+					</div>
+				</div>
+			</section>
+
+			<section className="game-meta">
+				<div className="tab-bar">
+					<div
+						id={currentTabletPage === 1 ? "active" : ""}
+						className="chat-room-tab tab"
+						onClick={() => setCurrentTabletPage(1)}>
+						Chat Room
+					</div>
+					<div
+						id={currentTabletPage === 2 ? "active" : ""}
+						className="game-info-tab tab"
+						onClick={() => setCurrentTabletPage(2)}>
+						Game Info
+					</div>
+				</div>
+				<div className="tab-content">
+					{currentTabletPage === 1 && (
+						<>
+							<div className="prize-pool">
+								<span className="label">Prize Pool</span>
+								<div className="prize">
+									<span className="amount">15</span>
+									<span className="ghd">GHD</span>
+								</div>
+							</div>
+							<div className="chat">
+								<div className="chat-text"></div>
+								<div className="chat-input">
+									<input type="text" />
+									<button>
+										<Send />
+									</button>
+								</div>
+							</div>
+						</>
+					)}
+
+					{currentTabletPage === 2 && (
+						<>
+							<div className="pgn"></div>
+							<div className="btns">
+								<button>Button1</button>
+								<button>Button2</button>
+								<button>Button3</button>
+								<button className="danger">Button4</button>
+							</div>
+						</>
+					)}
+				</div>
+			</section>
+		</div>
+	);
+};
+
+const MobileView = () => {
+	return (
+		<div className="game-desktop">
 			<section className="game-btns">
 				<div className="prize-pool">
 					<span className="label">Prize Pool</span>
@@ -180,7 +383,6 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 					<button className="danger">Button4</button>
 				</div>
 			</section>
-			{/* <Game user={user} isGameLoading={isGameLoading} gameData={gameData} /> */}
 		</div>
 	);
 };
