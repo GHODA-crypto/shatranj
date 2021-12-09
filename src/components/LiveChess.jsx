@@ -1,4 +1,5 @@
-import React, { useMemo, useEffect, useCallback } from "react";
+import { idToHex } from "helpers/idToInt";
+import { useMemo, useEffect, useState } from "react";
 import {
 	useMoralisQuery,
 	useMoralisCloudFunction,
@@ -22,8 +23,11 @@ import { ReactComponent as BlackRook } from "../assets/chess_svgs/black_rook.svg
 import { ReactComponent as BlackPawn } from "../assets/chess_svgs/black_pawn.svg";
 
 import "../styles/game.scss";
-
 const LiveChess = ({ pairingParams, isPairing }) => {
+	// const { isWeb3Enabled, Moralis, isWeb3EnableLoading, web3, user } =
+	// 	useMoralis();
+	const [gameId, setGameId] = useState();
+
 	const {
 		isWeb3Enabled,
 		Moralis,
@@ -34,11 +38,9 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 	} = useMoralis();
 	const winSize = useWindowSize();
 	// Proxy address, Privatekey, Signature
-	const proxyAccount = useMemo(async () => {
-		// const web3 = await Moralis.enableWeb3();
-		// console.log(web3, isWeb3Enabled);
-
+	const proxyAccount = useMemo(() => {
 		if (isWeb3Enabled) {
+			window.web3 = web3;
 			let proxyAccount;
 			if (localStorage.getItem("proxyPrivKey")) {
 				const privKey = localStorage.getItem("proxyPrivKey");
@@ -55,45 +57,28 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 				sign: proxyAccount.sign,
 			};
 		}
-	}, [Moralis, isWeb3Enabled]);
+	}, [isWeb3Enabled, web3.eth.accounts]);
 
-	const signGameAndProxy = useCallback(async () => {
-		// const web3 = await Moralis.enableWeb3();
+	const signGameAndProxy = (challengeIdHex) => {
+		const data = web3.utils.soliditySha3(
+			web3.eth.abi.encodeParameters(
+				["uint256", "address"],
+				[challengeIdHex, proxyAccount.address]
+			)
+		);
 
-		console.log("Create Signature Now. Proxy Account - ", proxyAccount);
-		if (proxyAccount?.address)
-			return await web3.eth.sign(
-				web3.utils.soliditySha3(
-					web3.eth.abi.encodeParameters(
-						["uint256", "address"],
-						[50, proxyAccount.address]
-					)
-				),
-				user.ethAddress
-			);
-	}, [Moralis, proxyAccount]);
+		return web3.eth.personal.sign(data, user.get("ethAddress"));
+	};
 
 	const {
 		fetch: getChallenge,
 		data: challenge,
 		// error: challengeError,
-		isLoading: isGettingChallenge,
+		// isLoading: isGettingChallenge,
 	} = useMoralisCloudFunction(
 		"getChallenge",
 		{
 			gamePreferences: pairingParams,
-		},
-		{ autoFetch: false }
-	);
-	const {
-		fetch: acceptChallenge,
-		data: gameId,
-		// error: challengeError,
-		isLoading: isAcceptingChallenge,
-	} = useMoralisCloudFunction(
-		"acceptChallenge",
-		{
-			challengeId: challenge?.id,
 		},
 		{ autoFetch: false }
 	);
@@ -114,20 +99,23 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 	);
 
 	useEffect(() => {
-		(async () => {
-			const challenge = await getChallenge();
-			console.log(challenge);
-			const signature = await signGameAndProxy();
-			if (signature) {
-				await acceptChallenge({
-					challengeId: challenge?.id,
-					signature,
-					proxyAddress: proxyAccount?.address,
-				});
-				await fetchGame();
-			}
-		})();
-	}, [isPairing]);
+		getChallenge();
+	}, []);
+
+	const initLiveChess = async () => {
+		await getChallenge();
+		if (challenge) {
+			const challengeIdHex = idToHex(challenge.objectId);
+			const signature = await signGameAndProxy(challengeIdHex);
+
+			const gameId = await Moralis.Cloud.run("acceptChallenge", {
+				challengeIdHex: challengeIdHex,
+				proxyAddress: proxyAccount?.address,
+				signature,
+			});
+			console.log(gameId);
+		}
+	};
 
 	return (
 		<div className="game">
@@ -186,7 +174,7 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 			<section className="game-info">
 				<div className="pgn"></div>
 				<div className="btns">
-					<button>Button1</button>
+					<button onClick={() => initLiveChess()}>Play Again</button>
 					<button>Button2</button>
 					<button>Button3</button>
 					<button className="danger">Button4</button>
