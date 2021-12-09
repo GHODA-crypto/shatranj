@@ -9,18 +9,17 @@ Moralis.Cloud.define(
 		const user = request.user;
 		const params = request.params;
 
-		const logger = Moralis.Cloud.getLogger();
-		// Get existing challenges
-		logger.info("Get existing challenges of user");
+		// const logger = Moralis.Cloud.getLogger();
 
+		// Get existing challenges
 		const existingChallenges = await checkExistingChallenges(
 			user.get("ethAddress")
 		);
 		if (existingChallenges.length) {
+			// logger.info(existingChallenges);
 			return existingChallenges[0];
 		}
 
-		// logger.info("Checking for existing challenges to join");
 		// Get available challenge
 		let pipeline = [
 			{
@@ -30,17 +29,6 @@ Moralis.Cloud.define(
 			},
 			{
 				match: {
-					$expr: {
-						$or: [
-							{ $ne: ["$player1", user.get("ethAddress")] },
-							{ $ne: ["$player2", user.get("ethAddress")] },
-						],
-					},
-				},
-			},
-
-			{
-				match: {
 					challengerSide: {
 						$ne: params.gamePreferences?.preferredSide || "none",
 					},
@@ -48,11 +36,12 @@ Moralis.Cloud.define(
 			},
 			{
 				match: {
-					challengerELO: {
+					upperElo: {
 						$lte: params.gamePreferences?.upperElo
 							? params.gamePreferences?.upperElo
 							: user.get("ELO") + 50,
-
+					},
+					lowerElo: {
 						$gte: params.gamePreferences?.lowerElo
 							? params.gamePreferences?.lowerElo
 							: user.get("ELO") - 50,
@@ -62,6 +51,7 @@ Moralis.Cloud.define(
 			{ sort: { createdAt: -1 } },
 			{ limit: 2 },
 		];
+
 		const challenges = await challengesQuery.aggregate(pipeline);
 
 		// logger.info(challenges);
@@ -76,7 +66,7 @@ Moralis.Cloud.define(
 				return "Error Occured while joining challenge";
 			}
 
-			// set challengeStatus to matching
+			// set challengeStatus to confirming match
 			challenge.set("gameStatus", 1);
 			challenge.set("player2", user.get("ethAddress"));
 
@@ -101,40 +91,45 @@ Moralis.Cloud.define(
 		const Challenge = Moralis.Object.extend("Challenge");
 		const challengesQuery = new Moralis.Query(Challenge);
 
-		const challenge = await challengesQuery.get(params.challengeId);
+		const challenge = await challengesQuery.get(hexToId(params.challengeIdHex));
+
 		const Game = Moralis.Object.extend("Game");
 
 		const userPlayerNumber =
 			challenge.get("player1") === request.user.get("ethAddress") ? 1 : 2;
-
-		challenge.set(`p${userPlayerNumber}proxy`, [
-			{
-				proxySignature: params.proxySignature,
-				proxyAddress: params.proxyAddress,
-			},
-		]);
+		challenge.set(`p${userPlayerNumber}proxy`, {
+			proxySignature: params.signature,
+			proxyAddress: params.proxyAddress,
+		});
 
 		await challenge.save({ useMasterKey: true });
 
-		if (challenge.get("player1") || challenge.get("player2")) {
+		if (challenge.get("player1") && challenge.get("player2")) {
 			challenge.set("gameStatus", 2);
+			challenge.set("gameStatus", 3); //	---------------------remove this later
+
 			await challenge.save({ useMasterKey: true });
 
 			const gameQuery = new Moralis.Query(Game);
 			const game = await gameQuery.get(challenge.get("gameId"));
 
-			game.set(`player${userPlayerNumber}`, [request.user.get("ethAddress")]);
+			game.set(`p2proxyAddress`, params.proxyAddress);
+			game.set(`player2`, request.user.get("ethAddress"));
 
+			await game.save({ useMasterKey: true });
 			return game.id;
 		} else {
 			const newGame = new Game();
 
-			challenge.set("gameId", newGame.id);
-			await challenge.save({ useMasterKey: true });
+			newGame.set(`player1`, request.user.get("ethAddress"));
+			newGame.set(`p1proxyAddress`, params.proxyAddress);
 
-			newGame.set(`player${userPlayerNumber}`, [
-				request.user.get("ethAddress"),
-			]);
+			await newGame.save({ useMasterKey: true });
+
+			challenge.set("gameId", newGame.id);
+			challenge.set("gameStatus", 0); // challenge is now looking for a pair
+
+			await challenge.save({ useMasterKey: true });
 
 			return newGame.id;
 		}
@@ -142,57 +137,36 @@ Moralis.Cloud.define(
 	verifyAcceptChallenge
 );
 
-// const Game = Moralis.Object.extend("Game");
-// const gameQuery = new Moralis.Query(Game);
-// const game = await gameQuery.get(challenge.get("gameId"));
+Moralis.Cloud.afterSave("Game", async (request) => {
+	const challenge = request.object;
+	const newGame = await createNewGame(challenge);
 
-// // decide sides of players
-// const p1side =
-// 	challenge.get("challengerSide") || (Math.random() < 0.5 ? "w" : "b");
+	// send request to api
+	// const res = await Moralis.Cloud.httpRequest({
+	// 	method: "POST",
+	// 	url: "http://shatranj.herokuapp.com/createChallenge",
+	// 	headers: {
+	// 		"Content-Type": "application/json;charset=utf-8",
+	// 		Authorization: "Bearer " + config.get("oracleToken"),
+	// 	},
+	// 	body: {
+	// 		game: { gameId: newGame.id, ...newGame.attributes },
+	// 	},
+	// }).catch((err) => {
+	// 	logger.info(err);
+	// });
+	// if (res.statusCode === 200) {
 
-// // Set Addresses and Proxies
-// if (p1side === "w") {
-// 	game.set("whitePlayer", challenge.get("player1"));
-// 	game.set("whiteProxy", challenge.get("p1proxy"));
-// 	game.set("blackPlayer", challenge.get("player2"));
-// 	game.set("blackProxy", challenge.get("p2proxy"));
-// } else {
-// 	game.set("whitePlayer", challenge.get("player2"));
-// 	game.set("whiteProxy", challenge.get("p2proxy"));
-// 	game.set("blackPlayer", challenge.get("player1"));
-// 	game.set("blackProxy", challenge.get("p1proxy"));
-// }
+	challenge.set("gameStatus", 2);
+	challenge.set("gameId", newGame.id);
+	await challenge.save({ useMasterKey: true });
+	// }
 
-// Moralis.Cloud.afterSave("Challenge", async (request) => {
-// 	const challenge = request.object;
-// 	const newGame = await createNewGame(challenge);
+	challenge.set("gameStatus", 4);
+	await challenge.save({ useMasterKey: true });
 
-// send request to api
-// const res = await Moralis.Cloud.httpRequest({
-// 	method: "POST",
-// 	url: "http://shatranj.herokuapp.com/createChallenge",
-// 	headers: {
-// 		"Content-Type": "application/json;charset=utf-8",
-// 		Authorization: "Bearer " + config.get("oracleToken"),
-// 	},
-// 	body: {
-// 		game: { gameId: newGame.id, ...newGame.attributes },
-// 	},
-// }).catch((err) => {
-// 	logger.info(err);
-// });
-// if (res.statusCode === 200) {
-// challenge.set("gameStatus", 2);
-// challenge.set("gameId", newGame.id);
-// await challenge.save({ useMasterKey: true });
-// return challenge;
-// }
-
-// challenge.set("gameStatus", 4);
-// await challenge.save({ useMasterKey: true });
-
-// return "Challenge could not be created";
-// });
+	return "Challenge could not be created";
+});
 
 // Cancel Game Join
 // Moralis.Cloud.define(
