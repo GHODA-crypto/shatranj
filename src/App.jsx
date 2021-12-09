@@ -9,7 +9,7 @@ import {
 
 import Account from "./components/Account";
 import Chains from "./components/Chains";
-import ERC20Balance from "./components/ERC20Balance";
+import Stakes from "./components/Stakes";
 import ERC20Transfers from "./components/ERC20Transfers";
 import NFTBalance from "./components/NFTBalance";
 import { Layout } from "antd";
@@ -68,28 +68,21 @@ const App = ({ isServerInfo }) => {
 	useEffect(() => {
 		if (isAuthenticated && !isWeb3Enabled && !isWeb3EnableLoading) enableWeb3();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
+		console.log("user", user);
 	}, [isAuthenticated, isWeb3Enabled]);
 
 	return (
 		<Layout style={{ height: "100vh", overflow: "auto" }}>
 			<Router>
-				<Header style={styles.header}>
-					<Logo />
-					<MenuItems />
-					<div style={styles.headerRight}>
-						<Chains />
-						<NativeBalance />
-						<Account />
-					</div>
-				</Header>
+				<Nav />
 
 				<div style={styles.content}>
 					<Switch>
 						<Route exact path="/lobby">
-							<Lobby user={user} setIsPairing={setIsPairing} />
+							<Lobby setIsPairing={setIsPairing} />
 						</Route>
-						<Route path="/erc20balance">
-							<ERC20Balance />
+						<Route path="/stakes">
+							<Stakes />
 						</Route>
 						<Route path="/erc20transfers">
 							<ERC20Transfers />
@@ -98,7 +91,7 @@ const App = ({ isServerInfo }) => {
 							<NFTBalance />
 						</Route>
 						<Route user={user} path="/live-chess">
-							<LiveChess user={user} />
+							<LiveChess />
 						</Route>
 						<Route path="/testcloud">
 							<TestCloudFunctions />
@@ -114,6 +107,20 @@ const App = ({ isServerInfo }) => {
 				</div>
 			</Router>
 		</Layout>
+	);
+};
+
+const Nav = () => {
+	return (
+		<Header style={styles.header}>
+			<Logo />
+			<MenuItems />
+			<div style={styles.headerRight}>
+				<Chains />
+				<NativeBalance />
+				<Account />
+			</div>
+		</Header>
 	);
 };
 
