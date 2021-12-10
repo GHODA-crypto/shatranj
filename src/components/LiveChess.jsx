@@ -28,7 +28,6 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 	// 	useMoralis();
 	const [gameId, setGameId] = useState();
 	const winSize = useWindowSize();
-
 	const [currentTabletPage, setCurrentTabletPage] = useState(1);
 	const [currentMobilePage, setCurrentMobilePage] = useState(2);
 	const {
