@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useWeb3ExecuteFunction, useMoralis, useChain } from "react-moralis";
+import {
+	useWeb3ExecuteFunction,
+	useMoralis,
+	useMoralisQuery,
+} from "react-moralis";
 import { Modal } from "antd";
 import { gameAbi, ERC20Abi } from "../contracts/abi";
 
@@ -12,22 +16,56 @@ const Stakes = () => {
 	const [unstakeAmount, setUnstakeAmount] = useState(0);
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const { user, Moralis, isWeb3Enabled, isWeb3EnableLoading } = useMoralis();
-	const chessGameAddress = "0xa07879CB8E2A7c63a0D94e6969528539bf2E4433";
-	const chessERC20Address = "0x3bd4045D5eDC18dCdE77CAde9602C3756113A41B";
+	const SGHODA_TOKEN_ADDRESS = "0xD8e785D3423799D24260C3B3d9B5B3961CD3875A";
+	const GHODA_TOKEN_ADDRESS = "0xC86bb11da8566F2Cb4f9E53b6b9091D2ec17446b";
+	const chessERC20Address = "0xC86bb11da8566F2Cb4f9E53b6b9091D2ec17446b";
+	const chessGameAddress = "0xD8e785D3423799D24260C3B3d9B5B3961CD3875A";
 
 	const {
-		data: stakeBalData,
-		error: stakeBalError,
-		fetch: stakeBalFetch,
-		isFetching: isStakeBalFetching,
-	} = useWeb3ExecuteFunction({
-		abi: gameAbi,
-		contractAddress: chessGameAddress,
-		functionName: "getStakedBalance",
-		params: {
-			_player: user?.attributes?.ethAddress,
-		},
-	});
+		data: stakedBalance,
+		error: stakedBalanceError,
+		isLoading: isStakedBalanceLoading,
+	} = useMoralisQuery(
+		"PolygonTokenBalance",
+		(query) =>
+			query
+				.equalTo("address", user?.get("ethAddress"))
+				.equalTo("token_address", SGHODA_TOKEN_ADDRESS),
+		[],
+		{
+			live: true,
+		}
+	);
+
+	const {
+		data: tokenBalance,
+		error: tokenBalanceError,
+		isLoading: isTokenBalanceLoading,
+	} = useMoralisQuery(
+		"PolygonTokenBalance",
+		(query) =>
+			query
+				.equalTo("address", user?.get("ethAddress"))
+				.equalTo("token_address", GHODA_TOKEN_ADDRESS),
+		[],
+		{
+			live: true,
+		}
+	);
+
+	// const {
+	// 	data: stakeBalData,
+	// 	error: stakeBalError,
+	// 	fetch: stakeBalFetch,
+	// 	isFetching: isStakeBalFetching,
+	// } = useWeb3ExecuteFunction({
+	// 	abi: gameAbi,
+	// 	contractAddress: chessGameAddress,
+	// 	functionName: "balanceOf",
+	// 	params: {
+	// 		account: user?.attributes?.ethAddress,
+	// 	},
+	// });
 
 	const {
 		data: approveData,
@@ -59,19 +97,19 @@ const Stakes = () => {
 		},
 	});
 
-	const {
-		data: erc20Data,
-		error: erc20Error,
-		fetch: erc20Fetch,
-		isFetching: isErc20Fetching,
-	} = useWeb3ExecuteFunction({
-		abi: ERC20Abi,
-		contractAddress: chessERC20Address,
-		functionName: "balanceOf",
-		params: {
-			account: user?.attributes?.ethAddress,
-		},
-	});
+	// const {
+	// 	data: erc20Data,
+	// 	error: erc20Error,
+	// 	fetch: erc20Fetch,
+	// 	isFetching: isErc20Fetching,
+	// } = useWeb3ExecuteFunction({
+	// 	abi: ERC20Abi,
+	// 	contractAddress: chessERC20Address,
+	// 	functionName: "balanceOf",
+	// 	params: {
+	// 		account: user?.attributes?.ethAddress,
+	// 	},
+	// });
 
 	const {
 		data: stakeData,
@@ -102,21 +140,21 @@ const Stakes = () => {
 	});
 
 	const initaliser = () => {
-		stakeBalFetch();
-		erc20Fetch();
+		// stakeBalFetch();
+		// erc20Fetch();
 		// approveFetch();
 		allowFetch();
 		console.log("approve ->", approveData);
 		console.log("allow ->", allowData);
 		console.log("allow error:", allowError);
-		console.log("erc20 error:", erc20Data);
-		console.log("stakeBal error:", stakeBalData);
+		// console.log("erc20 error:", erc20Data);
+		// console.log("stakeBal error:", stakeBalData);
 	};
 
 	useEffect(() => {
 		initaliser();
 		if (!isWeb3Enabled) Moralis.enableWeb3();
-	}, [isWeb3Enabled, erc20Data, stakeBalData]);
+	}, [isWeb3Enabled, tokenBalance, stakedBalance]);
 
 	return (
 		<div className="Stakes" style={{ marginTop: "3rem" }}>
@@ -127,13 +165,13 @@ const Stakes = () => {
 				closable={false}>
 				<p>Staking in progress...</p>
 			</Modal>
-			<Modal
+			{/* <Modal
 				title="Loading"
 				visible={isAllowFetching}
 				footer={null}
 				closable={false}>
 				<p>Allowance Check in progress...</p>
-			</Modal>
+			</Modal> */}
 			<Modal
 				title="Loading"
 				visible={isApproveFetching}
@@ -143,14 +181,14 @@ const Stakes = () => {
 			</Modal>
 			<Modal
 				title="Loading"
-				visible={isStakeBalFetching}
+				visible={isStakedBalanceLoading}
 				footer={null}
 				closable={false}>
 				<p>Staked GHODA Check in progress...</p>
 			</Modal>
 			<Modal
 				title="Loading"
-				visible={isErc20Fetching}
+				visible={isTokenBalanceLoading}
 				footer={null}
 				closable={false}>
 				<p>GHODA Balance Check in progress...</p>
@@ -166,13 +204,13 @@ const Stakes = () => {
 				<div className="erc20-balance balance">
 					<span className="label">GHD Balance</span>
 					<span className="amount">
-						{Moralis.Units.FromWei(Number(erc20Data))}
+						{Moralis.Units.FromWei(Number(tokenBalance))}
 					</span>
 				</div>
 				<div className="staked-balance balance">
 					<span className="label">Staked GHD</span>
 					<span className="amount">
-						{Moralis.Units.FromWei(Number(stakeBalData))}
+						{Moralis.Units.FromWei(Number(stakedBalance))}
 					</span>
 				</div>
 			</section>
@@ -193,7 +231,7 @@ const Stakes = () => {
 						<button
 							className="max"
 							onClick={() =>
-								setStakeAmount(Moralis.Units.FromWei(Number(erc20Data)))
+								setStakeAmount(Moralis.Units.FromWei(Number(tokenBalance)))
 							}
 							disabled={!approveData?.status}>
 							max
@@ -205,11 +243,11 @@ const Stakes = () => {
 								className="stake-btn"
 								onClick={async () => {
 									await stakeFetch();
-									await erc20Fetch();
-									await stakeBalFetch();
+									// await erc20Fetch();
+									// await stakeBalFetch();
 									console.log("stake error: ", stakeError);
-									console.log("stakeBal error: ", stakeBalError);
-									console.log("erc20 error: ", erc20Error);
+									console.log("stakeBal error: ", stakedBalanceError);
+									console.log("erc20 error: ", tokenBalanceError);
 									setStakeAmount(0);
 								}}>
 								Stake
@@ -230,7 +268,7 @@ const Stakes = () => {
 				</div>
 				<div
 					className="unstake card"
-					style={Number(stakeBalData) === 0 ? { opacity: "30%" } : null}>
+					style={Number(stakedBalance) === 0 ? { opacity: "30%" } : null}>
 					<div className="title">Unstake GHD</div>
 					<div className="unstake-input input">
 						<span className="token">GHD</span>
@@ -242,7 +280,7 @@ const Stakes = () => {
 							disabled={
 								!approveData ||
 								!approveData?.status ||
-								Number(stakeBalData) === 0
+								Number(stakedBalance) === 0
 							}
 							onWheel={(e) => e.target.blur()}
 							onChange={(e) => setUnstakeAmount(e.target.value)}
@@ -250,10 +288,12 @@ const Stakes = () => {
 						<button
 							className="max"
 							onClick={() =>
-								setUnstakeAmount(Moralis.Units.FromWei(Number(stakeBalData)))
+								setUnstakeAmount(Moralis.Units.FromWei(Number(stakedBalance)))
 							}
-							disabled={Number(stakeBalData) === 0 || !approveData?.status}
-							style={Number(stakeBalData) === 0 ? { cursor: "default" } : null}>
+							disabled={Number(stakedBalance) === 0 || !approveData?.status}
+							style={
+								Number(stakedBalance) === 0 ? { cursor: "default" } : null
+							}>
 							max
 						</button>
 					</div>
@@ -263,17 +303,17 @@ const Stakes = () => {
 								className="unstake-btn"
 								onClick={async () => {
 									await unstakeFetch();
-									await erc20Fetch();
-									await stakeBalFetch();
+									// await erc20Fetch();
+									// await stakeBalFetch();
 									console.log("stake error: ", unstakeError);
-									console.log("stakeBal error: ", stakeBalError);
-									console.log("erc20 error: ", erc20Error);
+									console.log("stakeBal error: ", stakedBalanceError);
+									console.log("erc20 error: ", tokenBalanceError);
 									setUnstakeAmount(0);
 								}}
 								style={
-									Number(stakeBalData) === 0 ? { cursor: "default" } : null
+									Number(stakedBalance) === 0 ? { cursor: "default" } : null
 								}
-								disabled={Number(stakeBalData) === 0}>
+								disabled={Number(stakedBalance) === 0}>
 								Unstake
 							</button>
 						) : (
