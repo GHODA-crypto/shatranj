@@ -115,3 +115,101 @@ Moralis.Cloud.afterSave("Challenge", async (request) => {
 		await challenge.save(null, { useMasterKey: true });
 	}
 });
+
+Moralis.Cloud.define(
+	"sendMove",
+	async (request) => {
+		const { gameId } = request.params;
+
+		const gameQuery = new Moralis.Query("Game");
+		const game = await gameQuery.get(gameId);
+
+		const chess = new Chess();
+		chess.load_pgn(game.get("pgn"));
+
+		const newMove = chess.move(request.params.move);
+
+		if (!newMove) throw Error("Invalid move");
+
+		game.set("turn", chess.turn());
+		game.set("fen", chess.fen());
+		game.set("pgn", chess.pgn());
+
+		game.save(null, { useMasterKey: true });
+
+		return true;
+	},
+	validateMove
+);
+
+Moralis.Cloud.afterSave("Game", async (request) => {
+	const game = request.object;
+	const chess = new Chess();
+	chess.load_pgn(game.get("pgn"));
+
+	if (chess.game_over()) {
+		game.set("turn", "n");
+		game.set("fen", chess.fen());
+
+		const challengeQuery = new Moralis.Query("Challenge");
+		const challenge = await challengeQuery.get(game.get("challengeId"));
+
+		challenge.set("gameStatus", 3);
+
+		game.save(null, { useMasterKey: true });
+		challenge.save(null, { useMasterKey: true });
+	}
+});
+
+Moralis.Cloud.define(
+	"endGame",
+	async (request) => {
+		const { gameId, shouldGenerateNFT } = request.params;
+		// send http request for end game tx
+		// await Moralis.Cloud.httpRequest({
+		// 	method: "POST",
+		// 	url: "",
+		// 	headers: {
+		// 		"Content-Type": "application/json;charset=utf-8",
+		// 	},
+		// 	body: {
+		// 		gameId: newGame.id,
+		// 		player1: challenge.get("player1"),
+		// 		player2: challenge.get("player2"),
+		// 	},
+		// }).then(
+		// 	async function (httpResponse) {
+		// 		console.log(httpResponse.text);
+		// 		challenge.set("gameId", newGame.id);
+		// 		await challenge.save(null,{ useMasterKey: true });
+		// 	},
+		// 	async function (httpResponse) {
+		// 		challenge.set("gameStatus", 10);
+		// 		challenge.save(null,{ useMasterKey: true });
+		// 		console.error(
+		// 			"Request failed with response code " + httpResponse.status
+		// 		);
+		// 	}
+		// );
+	},
+	{ requireUser: true }
+);
+
+async function validateMove(request) {
+	if (!request.user || !request.user.id) {
+		throw Error("Unauthorized");
+	}
+
+	const { gameId } = request.params;
+
+	const gameQuery = new Moralis.Query("Game");
+	const game = await gameQuery.get(gameId);
+	const userSide = game.get("sides")[request.user.get("ethAddress")];
+
+	if (!userSide) throw Error("Unauthorized to move");
+	if (game.get("turn") !== userSide) throw Error("Not your turn");
+
+	if (game.status !== 2) throw Error("Game is not in progress");
+
+	return null;
+}
