@@ -1,5 +1,4 @@
-import { idToHex } from "../helpers/idToInt";
-import { useMemo, useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import {
 	useMoralisQuery,
 	useMoralisCloudFunction,
@@ -30,47 +29,47 @@ import { ReactComponent as BlackPawn } from "../assets/chess_svgs/black_pawn.svg
 
 import "../styles/game.scss";
 
-const LiveChess = ({ pairingParams, isPairing }) => {
+const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	const [gameId, setGameId] = useState();
+	const [playerSide, setPlayerSide] = useState("white");
 
 	const winSize = useWindowSize();
 	const [currentTabletPage, setCurrentTabletPage] = useState(1);
 	const [currentMobilePage, setCurrentMobilePage] = useState(2);
 	const [isMobileDrawerVisible, setIsMobileDrawerVisible] = useState(false);
 
-	const {
-		isWeb3Enabled,
-		Moralis,
-		isWeb3EnableLoading,
-		enableWeb3,
-		web3,
-		user,
-	} = useMoralis();
+	const { user, isInitialized } = useMoralis();
 
 	const {
-		fetch: getLiveChallengeId,
-		data: liveChallenge,
-		// error: challengeError,
-		isLoading: gettingLiveChallenge,
-	} = useMoralisCloudFunction("getLiveChallengeId");
-	const {
-		fetch: joinPool,
+		fetch: joinLiveChess,
 		data: challenge,
 		// error: challengeError,
-		// isLoading: isGettingChallenge,
-	} = useMoralisCloudFunction("getChallenge", {
+		isLoading: joiningLiveChess,
+	} = useMoralisCloudFunction("joinLiveChess", {
 		gamePreferences: pairingParams,
 	});
 
 	const {
-		fetch: fetchGame,
-		data: gameData,
+		data: [liveGameData],
 		// error: gameError,
 		isLoading: isGameLoading,
 	} = useMoralisQuery(
 		"Game",
-		(query) => query.find(gameId).limit(1),
-		[gameId],
+		(query) => query.equalTo("objectId", challenge?.get("gameId")),
+		[challenge],
+		{
+			autoFetch: true,
+			live: true,
+		}
+	);
+	const {
+		data: [liveChallengeData],
+		// error: gameError,
+		isLoading: isChallengeLoading,
+	} = useMoralisQuery(
+		"Challenge",
+		(query) => query.equalTo("objectId", challenge?.id),
+		[challenge],
 		{
 			autoFetch: true,
 			live: true,
@@ -78,20 +77,21 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 	);
 
 	useEffect(() => {
-		getLiveChallengeId();
+		if (isPairing) {
+			setIsPairing(false);
+			joinLiveChess();
+		}
+	}, [isPairing]);
+	useEffect(() => {
+		if (challenge) setGameId(challenge?.get("gameId"));
 	}, [challenge]);
 
 	useEffect(() => {
-		if (liveChallenge) setGameId(liveChallenge.get("gameId"));
-	}, [liveChallenge]);
-
-	// useEffect(() => {
-	// 	fetchGame();
-	// }, [fameId]);
-
+		console.log("liveGameData", liveGameData);
+	}, [liveGameData]);
 	useEffect(() => {
-		console.log("gameData", gameData);
-	}, [gameData]);
+		console.log("liveChallengeData", liveChallengeData?.attributes);
+	}, [liveChallengeData]);
 
 	if (winSize.width > 1400) {
 		return <DesktopView user={user} />;

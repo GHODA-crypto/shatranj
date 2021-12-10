@@ -92,7 +92,12 @@ const App = ({ isServerInfo }) => {
 							<NFTBalance />
 						</Route>
 						<Route user={user} path="/live-chess">
-							<LiveChess user={user} pairingParams={pairingParams} />
+							<LiveChess
+								user={user}
+								isPairing={isPairing}
+								setIsPairing={setIsPairing}
+								pairingParams={pairingParams}
+							/>
 						</Route>
 						<Route path="/testcloud">
 							<TestCloudFunctions />
