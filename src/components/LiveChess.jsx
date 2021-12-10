@@ -65,13 +65,14 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 			joinLiveChess();
 		}
 	}, [isPairing]);
+
 	useEffect(() => {
 		if (challenge) setGameId(challenge?.get("gameId"));
 	}, [challenge]);
 
 	const [isPlayerWhite, setIsPlayerWhite] = useMemo(() => {
 		return liveGameData
-			? liveGameData.get("sides")[user.get("ethAddress")] === "w"
+			? liveGameData.get("sides")?.[user.get("ethAddress")] === "w"
 			: "w";
 	}, [liveGameData, user]);
 
