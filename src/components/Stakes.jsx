@@ -6,6 +6,7 @@ import {
 } from "react-moralis";
 import { Modal } from "antd";
 import { gameAbi, ERC20Abi } from "../contracts/abi";
+import { notification } from "antd";
 
 import { ReactComponent as Loader } from "../assets/loader.svg";
 
@@ -20,6 +21,15 @@ const Stakes = () => {
 	const GHODA_TOKEN_ADDRESS = "0xC86bb11da8566F2Cb4f9E53b6b9091D2ec17446b";
 	const chessERC20Address = "0xC86bb11da8566F2Cb4f9E53b6b9091D2ec17446b";
 	const chessGameAddress = "0xD8e785D3423799D24260C3B3d9B5B3961CD3875A";
+
+	const openNoStakeErrorNotification = () => {
+		notification["error"]({
+			message: "No Tokens Staked",
+			description:
+				"You have not staked any tokens. Please stake some tokens to unstake tokens.",
+			placement: "bottomRight",
+		});
+	};
 
 	const {
 		data: stakedBalance,
@@ -202,13 +212,13 @@ const Stakes = () => {
 			</Modal>
 			<section className="amounts">
 				<div className="erc20-balance balance">
-					<span className="label">GHD Balance</span>
+					<span className="label">GHODA</span>
 					<span className="amount">
 						{Moralis.Units.FromWei(Number(tokenBalance))}
 					</span>
 				</div>
 				<div className="staked-balance balance">
-					<span className="label">Staked GHD</span>
+					<span className="label">sGHODA</span>
 					<span className="amount">
 						{Moralis.Units.FromWei(Number(stakedBalance))}
 					</span>
@@ -217,9 +227,9 @@ const Stakes = () => {
 
 			<section className="stake-unstake">
 				<div className="stake card">
-					<div className="title">Stake GHD</div>
+					<div className="title">Stake GHODA</div>
 					<div className="stake-input input">
-						<span className="token">GHD</span>
+						<span className="token">GHODA</span>
 						<input
 							type="number"
 							className="stake-amount amount"
@@ -266,12 +276,10 @@ const Stakes = () => {
 						)}
 					</div>
 				</div>
-				<div
-					className="unstake card"
-					style={Number(stakedBalance) === 0 ? { opacity: "30%" } : null}>
-					<div className="title">Unstake GHD</div>
+				<div className="unstake card">
+					<div className="title">Unstake sGHODA</div>
 					<div className="unstake-input input">
-						<span className="token">GHD</span>
+						<span className="token">sGHODA</span>
 
 						<input
 							type="number"
@@ -287,47 +295,34 @@ const Stakes = () => {
 						/>
 						<button
 							className="max"
-							onClick={() =>
-								setUnstakeAmount(Moralis.Units.FromWei(Number(stakedBalance)))
-							}
-							disabled={Number(stakedBalance) === 0 || !approveData?.status}
-							style={
-								Number(stakedBalance) === 0 ? { cursor: "default" } : null
-							}>
+							onClick={() => {
+								if (Number(stakedBalance) === 0) {
+									openNoStakeErrorNotification();
+									return;
+								}
+								setUnstakeAmount(Moralis.Units.FromWei(Number(stakedBalance)));
+							}}>
 							max
 						</button>
 					</div>
 					<div className="unstake-submit submit">
-						{approveData?.status ? (
-							<button
-								className="unstake-btn"
-								onClick={async () => {
-									await unstakeFetch();
-									// await erc20Fetch();
-									// await stakeBalFetch();
-									console.log("stake error: ", unstakeError);
-									console.log("stakeBal error: ", stakedBalanceError);
-									console.log("erc20 error: ", tokenBalanceError);
-									setUnstakeAmount(0);
-								}}
-								style={
-									Number(stakedBalance) === 0 ? { cursor: "default" } : null
+						<button
+							className="unstake-btn"
+							onClick={async () => {
+								if (Number(stakedBalance) === 0) {
+									openNoStakeErrorNotification();
+									return;
 								}
-								disabled={Number(stakedBalance) === 0}>
-								Unstake
-							</button>
-						) : (
-							<button
-								className="approve-btn"
-								onClick={async () => {
-									await approveFetch();
-									await allowFetch();
-									console.log("approve error:", approveError);
-									console.log("allow error:", allowError);
-								}}>
-								Approve
-							</button>
-						)}
+								await unstakeFetch();
+								// await erc20Fetch();
+								// await stakeBalFetch();
+								console.log("stake error: ", unstakeError);
+								console.log("stakeBal error: ", stakedBalanceError);
+								console.log("erc20 error: ", tokenBalanceError);
+								setUnstakeAmount(0);
+							}}>
+							Unstake
+						</button>
 					</div>
 				</div>
 			</section>
