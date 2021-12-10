@@ -93,17 +93,23 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 		isLoading: isGameLoading,
 	} = useMoralisQuery(
 		"Game",
-		(query) => gameId && query.get(gameId),
+		(query) => query.find(gameId || "hPUavu3nkjFf5QAcdJp10cEh").limit(1),
 		[gameId],
 		{
 			autoFetch: false,
-			// live: true,
+			live: true,
 		}
 	);
 
 	useEffect(() => {
-		getChallenge();
+		initLiveChess();
 	}, []);
+	useEffect(() => {
+		gameId && fetchGame();
+	}, [gameId]);
+	useEffect(() => {
+		console.log("gameData", gameData);
+	}, [gameData]);
 
 	const initLiveChess = async () => {
 		await getChallenge();
@@ -116,7 +122,7 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 				proxyAddress: proxyAccount?.address,
 				signature,
 			});
-			console.log(gameId);
+			setGameId(gameId);
 		}
 	};
 
