@@ -5,189 +5,66 @@
 	color: $dark;
 	width: 100vw;
 	height: 80vh;
+	user-select: none;
 
 	.play {
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
+		justify-content: space-evenly;
 		align-items: center;
 		width: 100%;
 		height: 40%;
+		min-height: 15rem;
 		button {
-			margin-top: 2rem;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			padding: 1rem 2rem;
+			padding: 1.5rem 2rem;
 			border-radius: 1.5rem;
 			border: none;
 			background-color: $accent;
 			color: $light;
+			text-shadow: 0px 0px 6px rgba($dark, 0.35);
 			box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.25);
 			cursor: pointer;
 			font-size: 2rem;
+			user-select: none; /* supported by Chrome and Opera */
+			-webkit-user-select: none; /* Safari */
+			-khtml-user-select: none; /* Konqueror HTML */
+			-moz-user-select: none; /* Firefox */
+			-ms-user-select: none;
 			.btn-text {
 				margin-left: 1rem;
 				font-weight: 700;
 			}
 		}
-		// .join-game {
-		// 	display: flex;
-		// 	flex-direction: column;
-		// 	justify-content: space-around;
-		// 	align-items: center;
-		// 	width: 30%;
-		// 	height: 100%;
-		// 	// border: 1px solid black;
-		// 	padding: 2rem;
-
-		// 	.stakes {
-		// 		display: flex;
-		// 		flex-direction: column;
-		// 		justify-content: space-around;
-		// 		align-items: center;
-		// 		.stakes-title {
-		// 			font-size: 1.5rem;
-		// 			font-weight: 600;
-		// 		}
-		// 		.amount {
-		// 			font-size: 2rem;
-		// 			font-weight: 600;
-		// 			color: $accent;
-		// 		}
-		// 		.stake-btns {
-		// 			display: flex;
-		// 			justify-content: center;
-		// 			align-items: center;
-		// 			button {
-		// 				padding: 0.5rem 1rem;
-		// 				border: 2px solid $accent;
-		// 				font-size: 1.2rem;
-		// 				border-radius: 0.5rem;
-		// 			}
-		// 			.stake-more {
-		// 				margin-right: 1rem;
-		// 			}
-		// 		}
-		// 	}
-		// 	.join-game-btn {
-		// 		margin-top: 2rem;
-		// 		display: flex;
-		// 		align-items: center;
-		// 		justify-content: center;
-		// 		padding: 1rem 2rem;
-		// 		border-radius: 1.5rem;
-		// 		border: none;
-		// 		background-color: $accent;
-		// 		color: $light;
-		// 		box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.25);
-		// 		cursor: pointer;
-		// 		.btn-text {
-		// 			margin-left: 1rem;
-		// 			font-size: 2rem;
-		// 			font-weight: 700;
-		// 		}
-		// 	}
-		// }
-		// .create-game {
-		// 	display: flex;
-		// 	flex-direction: column;
-		// 	justify-content: space-around;
-		// 	align-items: center;
-		// 	width: 30%;
-		// 	height: 100%;
-		// 	// border: 1px solid black;
-		// 	padding: 2rem;
-		// 	.wb-group {
-		// 		width: 35%;
-		// 		display: flex;
-		// 		justify-content: space-around;
-		// 		align-items: center;
-		// 		.wb {
-		// 			display: flex;
-		// 			justify-content: center;
-		// 			align-items: center;
-		// 			border-radius: 0.5rem;
-		// 			width: 4rem;
-		// 			height: 4rem;
-		// 			svg {
-		// 				margin-top: 0.5rem;
-		// 			}
-		// 		}
-		// 	}
-		// 	.rating {
-		// 		margin-top: 2rem;
-		// 		display: flex;
-		// 		flex-direction: column;
-		// 		justify-content: space-around;
-		// 		align-items: center;
-		// 		width: 40%;
-		// 		height: 40%;
-		// 		.title {
-		// 			font-size: 1.5rem;
-		// 			font-weight: 600;
-		// 		}
-		// 		.rating-input {
-		// 			display: flex;
-		// 			justify-content: center;
-		// 			align-items: center;
-		// 			.label {
-		// 				font-size: 2rem;
-		// 				font-weight: 600;
-		// 				margin-right: 0.25rem;
-		// 			}
-		// 			.dec {
-		// 				margin-left: 1rem;
-		// 			}
-		// 		}
-		// 	}
-
-		// 	.create-game-btn {
-		// 		margin-top: 2rem;
-		// 		display: flex;
-		// 		align-items: center;
-		// 		justify-content: center;
-		// 		padding: 1rem 2rem;
-		// 		border-radius: 1.5rem;
-		// 		border: none;
-		// 		background-color: $accent;
-		// 		color: $light;
-		// 		box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.25);
-		// 		cursor: pointer;
-		// 		.btn-text {
-		// 			margin-left: 1rem;
-		// 			font-size: 2rem;
-		// 			font-weight: 700;
-		// 		}
-		// 	}
-		// }
 	}
+
 	.spectate-wrapper {
-		margin-top: 2rem;
+		margin-top: 1.2rem;
 		.separator {
 			width: 90%;
-			text-align: center;
-			font-size: 2rem;
-			font-weight: 600;
 			background-color: rgba($accent, 0.4);
-			border-radius: 0.5rem;
+			border-radius: 50%;
 			height: 3px;
 			margin: 0 auto;
-			margin-bottom: 3rem;
+			margin-bottom: 2rem;
 		}
 		.spectate {
 			margin: 0 auto;
 			width: 85%;
+			min-width: 40rem;
+			height: 80%;
 			display: flex;
 			justify-content: space-evenly;
 			align-items: center;
-			height: 80%;
+			flex-wrap: wrap;
 			cursor: pointer;
 			border-radius: 1rem;
-			padding: 1rem 2rem;
+			padding: 2rem;
 			.game {
 				border-radius: 1rem;
-				padding: 1rem 4rem;
+				// padding: 1rem 4rem;
 				height: 100%;
 				display: flex;
 				flex-direction: column;
@@ -195,23 +72,35 @@
 				align-items: center;
 				cursor: pointer;
 				.board {
-					margin: 0.75rem 0;
+					margin: 0.5rem 0;
+					transition: all 0.2s ease-in-out;
+					border-radius: 8px;
 				}
 				.p {
 					width: 100%;
 					display: flex;
 					align-items: center;
-					justify-content: flex-start;
-					margin-left: 1.75rem;
+					margin-left: 2px;
 					.username {
-						color: $accent;
+						color: lighten($dark, 5%);
 						font-size: 1rem;
 						font-weight: 500;
 						margin-right: 0.75rem;
+						transition: all 0.2s ease-in-out;
+					}
+					.elo {
+						font-size: 0.8rem;
 					}
 				}
 				&:hover {
-					background-color: rgba($accent, 0.2);
+					.board {
+						box-shadow: 0px 0px 16px 0px lighten($color: $dark, $amount: 60%);
+					}
+					.p {
+						.username {
+							color: darken($accent, 20%);
+						}
+					}
 				}
 			}
 		}

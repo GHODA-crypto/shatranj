@@ -59,6 +59,7 @@ async function createNewGame(challenge, player1, player2) {
 	const Game = Moralis.Object.extend("Game");
 	const game = new Game();
 
+	game.set("challengeId", challenge.id);
 	// decide player sides
 	let player1Side = "";
 	if (challenge.get("challengerSide") === "any")
@@ -77,10 +78,20 @@ async function createNewGame(challenge, player1, player2) {
 			? challenge.get("player2ELO")
 			: challenge.get("player1ELO");
 
-	game.set("white", white);
-	game.set("whiteELO", whiteElo);
-	game.set("black", black);
-	game.set("blackELO", blackElo);
+	game.set("players", {
+		white: white,
+		black: black,
+	});
+	game.set("sides", {
+		[player1]: player1Side,
+		[player2]: player1Side === "w" ? "b" : "w",
+	});
+	game.set("ELO", {
+		white: whiteElo,
+		black: blackElo,
+	});
+	game.set("turn", 1);
+	game.set("fen", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
 	await game.save(null, { useMasterKey: true });
 	return game;
