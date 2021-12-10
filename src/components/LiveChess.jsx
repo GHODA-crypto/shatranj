@@ -34,8 +34,6 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	const [playerSide, setPlayerSide] = useState("white");
 
 	const winSize = useWindowSize();
-	const [currentTabletPage, setCurrentTabletPage] = useState(1);
-	const [currentMobilePage, setCurrentMobilePage] = useState(2);
 	const [isMobileDrawerVisible, setIsMobileDrawerVisible] = useState(false);
 
 	const { user, isInitialized } = useMoralis();
@@ -114,20 +112,24 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	}
 };
 
-const MobileView = ({ isMobileDrawerVisible, setIsMobileDrawerVisible }) => {
+const MobileView = ({
+	isMobileDrawerVisible,
+	setIsMobileDrawerVisible,
+	isPlayerWhite,
+}) => {
 	const { user } = useMoralis();
 	const winSize = useWindowSize();
 	const { Content } = Layout;
 	const { TabPane } = Tabs;
 
 	const styles = {
-		Sider: {
+		Drawer: {
 			margin: "0",
 			padding: "1.5rem",
-			borderRadius: "1rem",
 			width: "100%",
 			height: "100%",
-			zIndex: "1",
+			backgroundColor: "#041836",
+			boxShadow: "0px 0px 12px 2px rgb(88,197,99, 0.4)",
 		},
 		Button: {
 			position: "absolute",
@@ -140,6 +142,7 @@ const MobileView = ({ isMobileDrawerVisible, setIsMobileDrawerVisible }) => {
 			backgroundColor: "#041836",
 			color: "#58c563",
 			boxShadow: "0px 0px 12px 2px rgb(88,197,99, 0.4)",
+			cursor: "pointer",
 		},
 	};
 
@@ -147,7 +150,10 @@ const MobileView = ({ isMobileDrawerVisible, setIsMobileDrawerVisible }) => {
 		<Layout className="game-desktop" style={{ position: "relative" }}>
 			<button
 				className="drawer-btn"
-				onClick={() => setIsMobileDrawerVisible(true)}
+				onClick={() => {
+					setIsMobileDrawerVisible(!isMobileDrawerVisible);
+					console.log(isMobileDrawerVisible);
+				}}
 				style={styles.Button}>
 				<FireFilled style={{ margin: "auto", fontSize: "1.5rem" }} />
 			</button>
@@ -167,6 +173,7 @@ const MobileView = ({ isMobileDrawerVisible, setIsMobileDrawerVisible }) => {
 				<GameBoard
 					user={user}
 					boardWidth={Math.min(winSize.width * 0.6, winSize.height * 0.75)}
+					isPlayerWhite={isPlayerWhite}
 				/>
 
 				<div className="players self">
@@ -190,8 +197,9 @@ const MobileView = ({ isMobileDrawerVisible, setIsMobileDrawerVisible }) => {
 				placement="right"
 				visible={isMobileDrawerVisible}
 				onClose={() => setIsMobileDrawerVisible(false)}
-				style={styles.Sider}
-				width={winSize.width * 0.3}>
+				drawerStyle={styles.Drawer}
+				width={Math.max(winSize.width * 0.3, 400)}
+				zIndex={1000}>
 				<Tabs
 					style={{
 						width: "100%",
@@ -252,7 +260,7 @@ const MobileView = ({ isMobileDrawerVisible, setIsMobileDrawerVisible }) => {
 	);
 };
 
-const TabView = () => {
+const TabView = ({ isPlayerWhite }) => {
 	const { user } = useMoralis();
 	const winSize = useWindowSize();
 	const { TabPane } = Tabs;
@@ -287,6 +295,7 @@ const TabView = () => {
 				<GameBoard
 					user={user}
 					boardWidth={Math.min(winSize.width * 0.6, winSize.height * 0.75)}
+					isPlayerWhite={isPlayerWhite}
 				/>
 
 				<div className="players self">
@@ -369,7 +378,7 @@ const TabView = () => {
 	);
 };
 
-const DesktopView = ({ initLiveChess, getChallenge }) => {
+const DesktopView = ({ initLiveChess, getChallenge, isPlayerWhite }) => {
 	const winSize = useWindowSize();
 	const { user } = useMoralis();
 	const styles = {
@@ -438,6 +447,7 @@ const DesktopView = ({ initLiveChess, getChallenge }) => {
 				<GameBoard
 					user={user}
 					boardWidth={Math.min(winSize.width * 0.5, winSize.height * 0.7)}
+					isPlayerWhite={isPlayerWhite}
 				/>
 
 				<div className="players self">
