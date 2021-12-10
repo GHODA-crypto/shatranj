@@ -104,6 +104,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	else
 		return (
 			<DesktopView
+				joinLiveChess={joinLiveChess}
 				isPlayerWhite={isPlayerWhite}
 				setIsPlayerWhite={setIsPlayerWhite}
 			/>
@@ -376,7 +377,7 @@ const TabView = ({ isPlayerWhite }) => {
 	);
 };
 
-const DesktopView = ({ isPlayerWhite }) => {
+const DesktopView = ({ isPlayerWhite, joinLiveChess }) => {
 	const winSize = useWindowSize();
 	const { user } = useMoralis();
 	const styles = {
@@ -470,8 +471,8 @@ const DesktopView = ({ isPlayerWhite }) => {
 				width={winSize.width * 0.25}>
 				<div className="pgn"></div>
 				<div className="btns">
-					<button onClick={() => initLiveChess()}>Get Challenge</button>
-					<button onClick={getChallenge}>New Game</button>
+					<button onClick={() => joinLiveChess()}>New Game</button>
+					<button>Something</button>
 					<button>Button3</button>
 					<button className="danger">Button4</button>
 				</div>
