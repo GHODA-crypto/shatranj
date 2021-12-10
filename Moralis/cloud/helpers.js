@@ -58,10 +58,16 @@ async function verifyAcceptChallenge(request) {
 	if (!request.user || !request.user.id) {
 		throw Error("Unauthorized");
 	}
-
-	const web3 = Moralis.web3ByChain("0x1");
 	const { signature, proxyAddress, challengeIdHex } = request.params;
 
+	const Challenge = Moralis.Object.extend("Challenge");
+	const challengesQuery = new Moralis.Query(Challenge);
+	const challenge = await challengesQuery.get(hexToId(challengeIdHex));
+
+	if (challenge.get("gameStatus") !== -1 && challenge.get("gameStatus") !== 1)
+		throw Error("Challenge is already accepted");
+
+	const web3 = Moralis.web3ByChain("0x1");
 	if (!signature && !proxyAddress && !challengeIdHex)
 		throw Error("Invalid Parameters");
 
@@ -75,21 +81,9 @@ async function verifyAcceptChallenge(request) {
 		.recover(signedData, signature)
 		.toLowerCase();
 
-	if (recoveredAddress === request.user.get("ethAddress")) {
-		const Challenge = Moralis.Object.extend("Challenge");
-		const challengesQuery = new Moralis.Query(Challenge);
-		console.log("here");
-
-		const challenge = await challengesQuery.get(hexToId(challengeIdHex));
-		console.log(challenge);
-		if (
-			challenge.get("player1") !== request.user.get("ethAddress") &&
-			challenge.get("player2") !== request.user.get("ethAddress")
-		)
-			throw Error("Unauthorized to accept the game");
-
-		return true;
-	} else throw Error(`Invalid Signature`);
+	if (recoveredAddress !== request.user.get("ethAddress"))
+		throw Error(`Invalid Signature`);
+	return true;
 }
 function idToHex(string) {
 	var number = "0x";
