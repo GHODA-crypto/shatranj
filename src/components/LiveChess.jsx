@@ -35,6 +35,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 
 	const winSize = useWindowSize();
 	const [isMobileDrawerVisible, setIsMobileDrawerVisible] = useState(false);
+	const [isPlayerWhite, setIsPlayerWhite] = useState(false);
 
 	const { user, isInitialized } = useMoralis();
 
@@ -84,32 +85,29 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 		if (challenge) setGameId(challenge?.get("gameId"));
 	}, [challenge]);
 
-	useEffect(() => {
-		console.log("liveGameData", liveGameData);
-	}, [liveGameData]);
-	useEffect(() => {
-		console.log("liveChallengeData", liveChallengeData?.attributes);
-	}, [liveChallengeData]);
-
-	if (winSize.width > 1400) {
-		return <DesktopView user={user} />;
-	} else if (winSize.width > 768 && winSize.width < 1400) {
-		return (
-			<TabView
-				user={user}
-				currentTabletPage={currentTabletPage}
-				setCurrentTabletPage={setCurrentTabletPage}
-			/>
-		);
-	} else {
+	if (winSize.width < 1200)
 		return (
 			<MobileView
-				user={user}
-				currentMobilePage={currentMobilePage}
-				setCurrentMobilePage={setCurrentMobilePage}
+				isMobileDrawerVisible={isMobileDrawerVisible}
+				setIsMobileDrawerVisible={setIsMobileDrawerVisible}
+				isPlayerWhite={isPlayerWhite}
+				setIsPlayerWhite={setIsPlayerWhite}
 			/>
 		);
-	}
+	else if (winSize.width >= 1200 && winSize.width < 1600)
+		return (
+			<TabView
+				isPlayerWhite={isPlayerWhite}
+				setIsPlayerWhite={setIsPlayerWhite}
+			/>
+		);
+	else
+		return (
+			<DesktopView
+				isPlayerWhite={isPlayerWhite}
+				setIsPlayerWhite={setIsPlayerWhite}
+			/>
+		);
 };
 
 const MobileView = ({
@@ -378,7 +376,7 @@ const TabView = ({ isPlayerWhite }) => {
 	);
 };
 
-const DesktopView = ({ initLiveChess, getChallenge, isPlayerWhite }) => {
+const DesktopView = ({ isPlayerWhite }) => {
 	const winSize = useWindowSize();
 	const { user } = useMoralis();
 	const styles = {
