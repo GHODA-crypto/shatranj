@@ -21,21 +21,21 @@ const styles = {
 };
 
 const menuItems = [
-	{
-		key: "0x539",
-		value: "Local Chain",
-		icon: <ETHLogo />,
-	},
-	{
-		key: "0x3",
-		value: "Ropsten Testnet",
-		icon: <ETHLogo />,
-	},
-	{
-		key: "0x89",
-		value: "Polygon",
-		icon: <PolygonLogo />,
-	},
+	// {
+	// 	key: "0x539",
+	// 	value: "Local Chain",
+	// 	icon: <ETHLogo />,
+	// },
+	// {
+	// 	key: "0x3",
+	// 	value: "Ropsten Testnet",
+	// 	icon: <ETHLogo />,
+	// },
+	// {
+	// 	key: "0x89",
+	// 	value: "Polygon",
+	// 	icon: <PolygonLogo />,
+	// },
 	{
 		key: "0x13881",
 		value: "Mumbai",
@@ -47,7 +47,7 @@ function Chains() {
 	const { switchNetwork, chainId, chain } = useChain();
 	const [selected, setSelected] = useState({});
 
-	console.log("chain", chain);
+	// console.log("chain", chain);
 
 	useEffect(() => {
 		if (!chainId) return null;
@@ -78,8 +78,16 @@ function Chains() {
 					key={selected?.key}
 					icon={selected?.icon}
 					style={{ ...styles.button, ...styles.item }}>
-					<span style={{ marginLeft: "5px" }}>{selected?.value}</span>
-					<DownOutlined />
+					{chain?.chainId === "0x13881" ? (
+						<>
+							<span style={{ marginLeft: "5px" }}>{selected?.value}</span>
+							<DownOutlined />
+						</>
+					) : (
+						<span style={{ marginLeft: "5px", color: "red" }}>
+							Wrong Network
+						</span>
+					)}
 				</Button>
 			</Dropdown>
 		</div>

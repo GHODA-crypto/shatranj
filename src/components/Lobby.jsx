@@ -3,11 +3,11 @@ import { ReactComponent as WKing } from "../assets/chess_svgs/white_king.svg";
 import { ReactComponent as BKing } from "../assets/chess_svgs/black_king.svg";
 import { ShowBoard } from "./Chessboard.jsx";
 import { useWindowSize } from "../hooks/useWindowSize";
-import { Radio, InputNumber, Modal, message } from "antd";
+import { Radio, InputNumber, Modal, notification } from "antd";
 import "../styles/lobby.scss";
 import { useMoralis, useMoralisQuery } from "react-moralis";
 
-const Lobby = ({ user, setIsPairing }) => {
+const Lobby = ({ setIsPairing }) => {
 	const [gameOptions, setGameOptions] = useState({
 		color: "w",
 		rangeUpper: 100,
@@ -17,29 +17,35 @@ const Lobby = ({ user, setIsPairing }) => {
 	const winSize = useWindowSize();
 
 	const handleCreateGame = () => {
-		!user ? error() : showModal();
+		!user ? openErrorNotification() : showModal();
 	};
 
 	const showModal = () => {
 		setIsModalVisible(true);
 	};
 
-	const error = () => {
-		message.error("Wallet not Connected! Connect Wallet!");
+	// const error = () => {
+	// 	message.error("Wallet not Connected! Connect Wallet!");
+	// };
+
+	const openErrorNotification = () => {
+		notification["error"]({
+			message: "User not Authenticated",
+			description:
+				"Please connect your wallet to create a game. You can connect your wallet by clicking on the authenticate button in the top right corner.",
+			placement: "bottomRight",
+		});
 	};
 
-	const { Moralis, isAuthenticated } = useMoralis();
+	const { Moralis, isAuthenticated, user } = useMoralis();
 	const SamplePgn =
 		"1.e4 Nf6 2.e5 Nd5 3.d4 d6 4.Nf3 g6 5.Bc4 Nb6 6.Bb3 Bg7 7.Qe2 Nc6 8.O-O O-O 9.h3 a5 10.a4 dxe5 11.dxe5 Nd4 12.Nxd4 Qxd4 13.Re1 e6 14.Nd2 Nd5 15.Nf3 Qc5 16.Qe4 Qb4 17.Bc4 Nb6 18.b3 Nxc4 19.bxc4 Re8 20.Rd1 Qc5 21.Qh4 b6 22.Be3 Qc6 23.Bh6 Bh8 24.Rd8 Bb7 25.Rad1 Bg7 26.R8d7 Rf8 27.Bxg7 Kxg7 28.R1d4 Rae8 29.Qf6+ Kg8 30.h4 h5 31.Kh2 Rc8 32.Kg3 Rce8 33.Kf4 Bc8 34.Kg5 1-0";
 
 	const quickMatch = (e) => {
+		setIsPairing(true);
 		if (!user) {
-			error();
+			openErrorNotification();
 			return;
-		}
-		console.log(isAuthenticated);
-		if (isAuthenticated) {
-			setIsPairing(true);
 		}
 	};
 

@@ -19,17 +19,6 @@ export function ShowBoard({ boardWidth, pgn }) {
 		safeGameMutate((g) => g.load_pgn(pgn));
 	}, []);
 
-	function onDrop(sourceSquare, targetSquare) {
-		const gameCopy = { ...game };
-		const move = gameCopy.move({
-			from: sourceSquare,
-			to: targetSquare,
-			promotion: "q", // always promote to a queen for example simplicity
-		});
-		setGame(gameCopy);
-		return move;
-	}
-
 	return (
 		<div>
 			<Chessboard
@@ -51,7 +40,7 @@ export function ShowBoard({ boardWidth, pgn }) {
 	);
 }
 
-export const GameBoard = ({ user, boardWidth }) => {
+export const GameBoard = ({ user, boardWidth, isPlayerWhite }) => {
 	const chessboardRef = useRef();
 	const [game, setGame] = useState(new Chess());
 
@@ -85,7 +74,11 @@ export const GameBoard = ({ user, boardWidth }) => {
 	}
 
 	function onMouseOverSquare(square) {
-		getMoveOptions(square);
+		// console.log("mouse over square", square);
+		// console.log(game.get(square).color);
+		if (game.get(square)?.color === "w") {
+			getMoveOptions(square);
+		}
 	}
 
 	// Only set squares to {} if not already set to {}
@@ -140,6 +133,8 @@ export const GameBoard = ({ user, boardWidth }) => {
 		<div className="board">
 			<Chessboard
 				arePiecesDraggable={!!user}
+				isDraggablePiece={(piece) => piece.piece[0] === "w"}
+				boardOrientation={isPlayerWhite ? "white" : "black"}
 				boardWidth={boardWidth}
 				arePremovesAllowed={true}
 				animationDuration={200}

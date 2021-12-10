@@ -9,7 +9,7 @@ import {
 
 import Account from "./components/Account";
 import Chains from "./components/Chains";
-import ERC20Balance from "./components/ERC20Balance";
+import Stakes from "./components/Stakes";
 import ERC20Transfers from "./components/ERC20Transfers";
 import NFTBalance from "./components/NFTBalance";
 import { Layout } from "antd";
@@ -19,7 +19,7 @@ import "./style.css";
 import MenuItems from "./components/MenuItems";
 import Lobby from "./components/Lobby";
 import LiveChess from "./components/LiveChess";
-import TestCloudFunctions from "components/TestCloudFunctions";
+import TestCloudFunctions from "./components/TestCloudFunctions";
 
 const { Header } = Layout;
 
@@ -64,6 +64,7 @@ const App = ({ isServerInfo }) => {
 	} = useMoralis();
 
 	const [isPairing, setIsPairing] = useState(false);
+	const [pairingParams, setPairingParams] = useState({});
 
 	useEffect(() => {
 		if (isAuthenticated && !isWeb3Enabled && !isWeb3EnableLoading) enableWeb3();
@@ -73,23 +74,16 @@ const App = ({ isServerInfo }) => {
 	return (
 		<Layout style={{ height: "100vh", overflow: "auto" }}>
 			<Router>
-				<Header style={styles.header}>
-					<Logo />
-					<MenuItems />
-					<div style={styles.headerRight}>
-						<Chains />
-						<NativeBalance />
-						<Account />
-					</div>
-				</Header>
+				{isPairing && <Redirect to="/live-chess" />}
 
+				<Nav />
 				<div style={styles.content}>
 					<Switch>
 						<Route exact path="/lobby">
-							<Lobby user={user} setIsPairing={setIsPairing} />
+							<Lobby setIsPairing={setIsPairing} />
 						</Route>
-						<Route path="/erc20balance">
-							<ERC20Balance />
+						<Route path="/stakes">
+							<Stakes />
 						</Route>
 						<Route path="/erc20transfers">
 							<ERC20Transfers />
@@ -98,7 +92,12 @@ const App = ({ isServerInfo }) => {
 							<NFTBalance />
 						</Route>
 						<Route user={user} path="/live-chess">
-							<LiveChess user={user} />
+							<LiveChess
+								user={user}
+								isPairing={isPairing}
+								setIsPairing={setIsPairing}
+								pairingParams={pairingParams}
+							/>
 						</Route>
 						<Route path="/testcloud">
 							<TestCloudFunctions />
@@ -110,10 +109,23 @@ const App = ({ isServerInfo }) => {
 							<>Please login using the "Authenticate" button</>
 						</Route> */}
 					</Switch>
-					{isPairing && <Redirect to="/live-chess" />}
 				</div>
 			</Router>
 		</Layout>
+	);
+};
+
+const Nav = () => {
+	return (
+		<Header style={styles.header}>
+			<Logo />
+			<MenuItems />
+			<div style={styles.headerRight}>
+				<Chains />
+				<NativeBalance />
+				<Account />
+			</div>
+		</Header>
 	);
 };
 
