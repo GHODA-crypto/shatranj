@@ -15,6 +15,7 @@ function MenuItems() {
 				fontWeight: "500",
 				width: "100%",
 				justifyContent: "center",
+				userSelect: "none",
 			}}
 			defaultSelectedKeys={[pathname]}>
 			<Menu.Item key="/lobby">
