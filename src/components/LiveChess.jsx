@@ -1,5 +1,5 @@
 import { idToHex } from "helpers/idToInt";
-import React, { useMemo, useEffect, useState } from "react";
+import { useMemo, useEffect, useState } from "react";
 import {
 	useMoralisQuery,
 	useMoralisCloudFunction,
@@ -24,20 +24,11 @@ import { ReactComponent as BlackPawn } from "../assets/chess_svgs/black_pawn.svg
 
 import "../styles/game.scss";
 const LiveChess = ({ pairingParams, isPairing }) => {
-	// const { isWeb3Enabled, Moralis, isWeb3EnableLoading, web3, user } =
-	// 	useMoralis();
 	const [gameId, setGameId] = useState();
 	const winSize = useWindowSize();
 	const [currentTabletPage, setCurrentTabletPage] = useState(1);
 	const [currentMobilePage, setCurrentMobilePage] = useState(2);
-	const {
-		isWeb3Enabled,
-		Moralis,
-		isWeb3EnableLoading,
-		enableWeb3,
-		web3,
-		user,
-	} = useMoralis();
+	const { isWeb3Enabled, Moralis, web3, user } = useMoralis();
 	// Proxy address, Privatekey, Signature
 	const proxyAccount = useMemo(() => {
 		if (isWeb3Enabled) {
@@ -85,13 +76,12 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 	);
 
 	const {
-		fetch: fetchGame,
-		data: gameData,
+		data: [gameData],
 		// error: gameError,
 		isLoading: isGameLoading,
 	} = useMoralisQuery(
 		"Game",
-		(query) => query.find(gameId || "hPUavu3nkjFf5QAcdJp10cEh").limit(1),
+		(query) => query.equalTo("objectId", gameId).limit(1),
 		[gameId],
 		{
 			autoFetch: false,
@@ -100,27 +90,34 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 	);
 
 	useEffect(() => {
-		initLiveChess();
+		getChallenge();
 	}, []);
-	useEffect(() => {
-		gameId && fetchGame();
-	}, [gameId]);
+
 	useEffect(() => {
 		console.log("gameData", gameData);
 	}, [gameData]);
+	useEffect(() => {
+		challenge && initLiveChess();
+		console.log("challenge", challenge);
+	}, [challenge]);
 
 	const initLiveChess = async () => {
-		await getChallenge();
-		if (challenge) {
-			const challengeIdHex = idToHex(challenge.objectId);
-			const signature = await signGameAndProxy(challengeIdHex);
+		const userPlayerNumber =
+			challenge.player1 === user.get("ethAddress") ? 1 : 2;
+		const challengeIdHex = idToHex(challenge.objectId);
 
+		// Accept the challenge and sign if proxy is not set
+		if (!challenge[`p${userPlayerNumber}proxy`]) {
+			const signature = await signGameAndProxy(challengeIdHex);
 			const gameId = await Moralis.Cloud.run("acceptChallenge", {
 				challengeIdHex: challengeIdHex,
 				proxyAddress: proxyAccount?.address,
 				signature,
 			});
 			setGameId(gameId);
+		} else {
+			// Set Game Id to Challenge Id
+			setGameId(challenge.gameId);
 		}
 	};
 
