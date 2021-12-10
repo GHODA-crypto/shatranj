@@ -176,3 +176,27 @@
 }
 
 //mediaquery 1200
+
+// if (winSize.width < 1200)
+// 		return (
+// 			<MobileView
+// 				isMobileDrawerVisible={isMobileDrawerVisible}
+// 				setIsMobileDrawerVisible={setIsMobileDrawerVisible}
+// 				isPlayerWhite={isPlayerWhite}
+// 				setIsPlayerWhite={setIsPlayerWhite}
+// 			/>
+// 		);
+// 	else if (winSize.width >= 1200 && winSize.width < 1600)
+// 		return (
+// 			<TabView
+// 				isPlayerWhite={isPlayerWhite}
+// 				setIsPlayerWhite={setIsPlayerWhite}
+// 			/>
+// 		);
+// 	else
+// 		return (
+// 			<DesktopView
+// 				isPlayerWhite={isPlayerWhite}
+// 				setIsPlayerWhite={setIsPlayerWhite}
+// 			/>
+// 		);
