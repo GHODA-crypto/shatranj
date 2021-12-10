@@ -14,7 +14,6 @@ import ERC20Transfers from "./components/ERC20Transfers";
 import NFTBalance from "./components/NFTBalance";
 import { Layout } from "antd";
 import "antd/dist/antd.css";
-import NativeBalance from "./components/NativeBalance";
 import "./style.css";
 import MenuItems from "./components/MenuItems";
 import Lobby from "./components/Lobby";
@@ -40,10 +39,11 @@ const styles = {
 		display: "flex",
 		justifyContent: "space-between",
 		alignItems: "center",
-		fontFamily: "Roboto, sans-serif",
+		fontFamily: "Poppins, sans-serif",
 		borderBottom: "2px solid rgba(0, 0, 0, 0.06)",
 		padding: "0 10px",
 		boxShadow: "0 1px 10px rgb(151 164 175 / 10%)",
+		userSelect: "none",
 	},
 	headerRight: {
 		display: "flex",
@@ -122,7 +122,7 @@ const Nav = () => {
 			<MenuItems />
 			<div style={styles.headerRight}>
 				<Chains />
-				<NativeBalance />
+				{/* <NativeBalance /> */}
 				<Account />
 			</div>
 		</Header>
@@ -183,6 +183,7 @@ export const Logo = () => (
 				// textTransform: "uppercase",
 				marginTop: "0.35rem",
 				color: "#00150B",
+				userSelect: "none",
 			}}>
 			Shatranj
 		</div>

@@ -85,7 +85,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 		if (challenge) setGameId(challenge?.get("gameId"));
 	}, [challenge]);
 
-	if (winSize.width < 768)
+	if (winSize.width < 480)
 		return (
 			<MobileView
 				isMobileDrawerVisible={isMobileDrawerVisible}
@@ -94,7 +94,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 				setIsPlayerWhite={setIsPlayerWhite}
 			/>
 		);
-	else if (winSize.width >= 768 && winSize.width < 1024)
+	else if (winSize.width >= 480 && winSize.width < 768)
 		return (
 			<TabView
 				isPlayerWhite={isPlayerWhite}
