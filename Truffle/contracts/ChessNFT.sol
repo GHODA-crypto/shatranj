@@ -16,7 +16,7 @@ contract ChessNFT is ERC1155, Ownable {
 		_masterContract = newMaster;
 	}
 
-	constructor() ERC1155("https://ghoda.cypto") {}
+	constructor() ERC1155("https://ghoda.cypto/{id}.json") {}
 
 	function setURI(string memory newuri) public onlyOwner {
 		_setURI(newuri);

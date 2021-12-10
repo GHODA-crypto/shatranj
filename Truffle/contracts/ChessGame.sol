@@ -108,24 +108,26 @@ contract ChessGame is Ownable {
 	}
 
 	function stake(uint256 _amount) external {
+		uint256 balance = stakedBalance[msg.sender];
 		require(
 			chessToken.transferFrom(msg.sender, address(this), _amount),
 			"Not enough tokens"
 		);
-		stakedBalance[msg.sender] = _amount;
-		emit StakedBalance(msg.sender, _amount);
+		stakedBalance[msg.sender] = balance + _amount;
+		emit StakedBalance(msg.sender, balance + _amount);
 	}
 
 	function unstake(uint256 _amount) external {
 		uint256 balance = stakedBalance[msg.sender];
 		require(balance >= _amount, "Not enough tokens to unstake");
+		require(chessToken.transfer(msg.sender, _amount), "Not enough tokens");
 		stakedBalance[msg.sender] = balance - _amount;
-		emit StakedBalance(msg.sender, _amount);
+		emit StakedBalance(msg.sender, balance - _amount);
 	}
 
 	// function createGame
 
-	function StartGame(
+	function startGame(
 		uint256 _gameId,
 		address _white,
 		address _whiteProxy,
