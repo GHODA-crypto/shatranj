@@ -36,8 +36,10 @@ async function createNewChallenge(user, gamePreferences) {
 	const challengerSide = gamePreferences?.preferredSide || "any";
 
 	newChallenge.set("player1", user.get("ethAddress"));
+	newChallenge.set("gameStatus", 0);
 
 	newChallenge.set("challengerSide", challengerSide);
+	newChallenge.set("player1ELO", user.get("ELO"));
 	newChallenge.set(
 		"lowerElo",
 		gamePreferences?.lowerElo || user.get("ELO") - 50
@@ -47,57 +49,39 @@ async function createNewChallenge(user, gamePreferences) {
 		gamePreferences?.upperElo || user.get("ELO") + 50
 	);
 
-	await newChallenge.save({ useMasterKey: true });
+	const logger = Moralis.Cloud.getLogger();
+	logger.info("Saving new challenge");
+	await newChallenge.save(null, { useMasterKey: true });
 	return newChallenge;
 }
 
-async function verifyAcceptChallenge(request) {
-	if (request.master) {
-		return;
-	}
-	if (!request.user || !request.user.id) {
-		throw Error("Unauthorized");
-	}
-	const { signature, proxyAddress, challengeIdHex } = request.params;
+async function createNewGame(challenge, player1, player2) {
+	const Game = Moralis.Object.extend("Game");
+	const game = new Game();
 
-	const Challenge = Moralis.Object.extend("Challenge");
-	const challengesQuery = new Moralis.Query(Challenge);
-	const challenge = await challengesQuery.get(hexToId(challengeIdHex));
+	// decide player sides
+	let player1Side = "";
+	if (challenge.get("challengerSide") === "any")
+		player1Side = Math.random() > 0.5 ? "w" : "b";
+	else player1Side = challenge.get("challengerSide");
 
-	if (challenge.get("gameStatus") !== -1 && challenge.get("gameStatus") !== 1)
-		throw Error("Challenge is already accepted");
+	const white = player1Side === "w" ? player1 : player2;
+	const whiteElo =
+		player1Side === "w"
+			? challenge.get("player1ELO")
+			: challenge.get("player2ELO");
 
-	const web3 = Moralis.web3ByChain("0x1");
-	if (!signature && !proxyAddress && !challengeIdHex)
-		throw Error("Invalid Parameters");
+	const black = player1Side === "w" ? player2 : player1;
+	const blackElo =
+		player1Side === "w"
+			? challenge.get("player2ELO")
+			: challenge.get("player1ELO");
 
-	const signedData = web3.utils.soliditySha3(
-		web3.eth.abi.encodeParameters(
-			["uint256", "address"],
-			[challengeIdHex, proxyAddress]
-		)
-	);
-	const recoveredAddress = web3.eth.accounts
-		.recover(signedData, signature)
-		.toLowerCase();
+	game.set("white", white);
+	game.set("whiteELO", whiteElo);
+	game.set("black", black);
+	game.set("blackELO", blackElo);
 
-	if (recoveredAddress !== request.user.get("ethAddress"))
-		throw Error(`Invalid Signature`);
-	return true;
-}
-function idToHex(string) {
-	var number = "0x";
-	var length = string.length;
-	for (var i = 0; i < length; i++) number += string.charCodeAt(i).toString(16);
-	return number;
-}
-function hexToId(number) {
-	var string = "";
-	number = number.slice(2);
-	var length = number.length;
-	for (var i = 0; i < length; ) {
-		var code = number.slice(i, (i += 2));
-		string += String.fromCharCode(parseInt(code, 16));
-	}
-	return string;
+	await game.save(null, { useMasterKey: true });
+	return game;
 }
