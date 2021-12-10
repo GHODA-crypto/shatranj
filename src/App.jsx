@@ -69,7 +69,6 @@ const App = ({ isServerInfo }) => {
 	useEffect(() => {
 		if (isAuthenticated && !isWeb3Enabled && !isWeb3EnableLoading) enableWeb3();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		console.log("user", user);
 	}, [isAuthenticated, isWeb3Enabled]);
 
 	return (

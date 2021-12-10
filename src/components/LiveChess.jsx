@@ -1,5 +1,5 @@
 import { idToHex } from "helpers/idToInt";
-import { useMemo, useEffect, useState } from "react";
+import { useMemo, useEffect, useState, useCallback } from "react";
 import {
 	useMoralisQuery,
 	useMoralisCloudFunction,
@@ -47,7 +47,6 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 	// Proxy address, Privatekey, Signature
 	const proxyAccount = useMemo(() => {
 		if (isWeb3Enabled) {
-			window.web3 = web3;
 			let proxyAccount;
 			if (localStorage.getItem("proxyPrivKey")) {
 				const privKey = localStorage.getItem("proxyPrivKey");
@@ -79,29 +78,30 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 		}
 	}, [isWeb3Enabled, web3.eth.accounts]);
 
-	const signGameAndProxy = (challengeIdHex) => {
-		const data = web3.utils.soliditySha3(
-			web3.eth.abi.encodeParameters(
-				["uint256", "address"],
-				[challengeIdHex, proxyAccount.address]
-			)
-		);
+	const signGameAndProxy = useCallback(
+		(challengeIdHex) => {
+			if (proxyAccount) {
+				const data = web3.utils.soliditySha3(
+					web3.eth.abi.encodeParameters(
+						["uint256", "address"],
+						[challengeIdHex, proxyAccount.address]
+					)
+				);
 
-		return web3.eth.personal.sign(data, user.get("ethAddress"));
-	};
+				return web3.eth.personal.sign(data, user.get("ethAddress"));
+			}
+		},
+		[proxyAccount, user, web3]
+	);
 
 	const {
 		fetch: getChallenge,
 		data: challenge,
 		// error: challengeError,
 		// isLoading: isGettingChallenge,
-	} = useMoralisCloudFunction(
-		"getChallenge",
-		{
-			gamePreferences: pairingParams,
-		},
-		{ autoFetch: false }
-	);
+	} = useMoralisCloudFunction("getChallenge", {
+		gamePreferences: pairingParams,
+	});
 
 	const {
 		fetch: fetchGame,
@@ -119,7 +119,9 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 	);
 
 	useEffect(() => {
-		initLiveChess();
+		// getExistingChallenge
+		// if no existing challenge, create new challenge
+		getChallenge();
 	}, []);
 	useEffect(() => {
 		gameId && fetchGame();
@@ -129,33 +131,61 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 	}, [gameData]);
 
 	const initLiveChess = async () => {
-		await getChallenge();
-		if (challenge) {
-			const challengeIdHex = idToHex(challenge.objectId);
-			const signature = await signGameAndProxy(challengeIdHex);
+		if (user) {
+			const userPlayerNumber =
+				challenge.get("player1") === user.get("ethAddress") ? 1 : 2;
+			const challengeIdHex = idToHex(challenge.id);
 
-			const gameId = await Moralis.Cloud.run("acceptChallenge", {
-				challengeIdHex: challengeIdHex,
-				proxyAddress: proxyAccount?.address,
-				signature,
-			});
-			setGameId(gameId);
+			// Accept the challenge and sign if proxy is not set
+			if (challenge && !challenge.get(`p${userPlayerNumber}proxy`)) {
+				const signature = await signGameAndProxy(challengeIdHex);
+				if (signature) {
+					const gameId = await Moralis.Cloud.run("acceptChallenge", {
+						challengeIdHex: challengeIdHex,
+						proxyAddress: proxyAccount?.address,
+						signature,
+					});
+					setGameId(gameId);
+				}
+			} else {
+				// Set Game Id to Challenge Id
+				setGameId(challenge.get("gameId"));
+			}
 		}
 	};
 
-	return (
-		<MobileView
-			isMobileDrawerVisible={isMobileDrawerVisible}
-			setIsMobileDrawerVisible={setIsMobileDrawerVisible}
-		/>
-	);
-	// 1200 - 1600
+	useEffect(() => {
+		console.log("challenge", challenge);
+		challenge && initLiveChess();
+	}, [challenge]);
 
-	// 	<TabView
-	// 	user={user}
-	// 	currentTabletPage={currentTabletPage}
-	// 	setCurrentTabletPage={setCurrentTabletPage}
-	// />
+	if (winSize.width > 1400) {
+		return (
+			<DesktopView
+				user={user}
+				initLiveChess={initLiveChess}
+				getChallenge={getChallenge}
+			/>
+		);
+	} else if (winSize.width > 768 && winSize.width < 1400) {
+		return (
+			<TabView
+				user={user}
+				currentTabletPage={currentTabletPage}
+				setCurrentTabletPage={setCurrentTabletPage}
+				initLiveChess={initLiveChess}
+			/>
+		);
+	} else {
+		return (
+			<MobileView
+				user={user}
+				currentMobilePage={currentMobilePage}
+				setCurrentMobilePage={setCurrentMobilePage}
+				initLiveChess={initLiveChess}
+			/>
+		);
+	}
 };
 
 const MobileView = ({ isMobileDrawerVisible, setIsMobileDrawerVisible }) => {
@@ -413,7 +443,7 @@ const TabView = () => {
 	);
 };
 
-const DesktopView = ({}) => {
+const DesktopView = ({ user, initLiveChess, getChallenge }) => {
 	const winSize = useWindowSize();
 	const { user } = useMoralis();
 	const styles = {
@@ -506,8 +536,8 @@ const DesktopView = ({}) => {
 				width={winSize.width * 0.25}>
 				<div className="pgn"></div>
 				<div className="btns">
-					<button>Play Again</button>
-					<button>Button2</button>
+					<button onClick={() => initLiveChess()}>Get Challenge</button>
+					<button onClick={getChallenge}>New Game</button>
 					<button>Button3</button>
 					<button className="danger">Button4</button>
 				</div>
