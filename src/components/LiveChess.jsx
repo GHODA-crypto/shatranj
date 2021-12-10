@@ -1,6 +1,5 @@
 import { idToHex } from "helpers/idToInt";
-import { useMemo, useEffect, useState } from "react";
-import React, { useMemo, useEffect, useCallback, useState } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import {
 	useMoralisQuery,
 	useMoralisCloudFunction,
@@ -28,6 +27,7 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 	// const { isWeb3Enabled, Moralis, isWeb3EnableLoading, web3, user } =
 	// 	useMoralis();
 	const [gameId, setGameId] = useState();
+	const winSize = useWindowSize();
 
 	const [currentTabletPage, setCurrentTabletPage] = useState(1);
 	const [currentMobilePage, setCurrentMobilePage] = useState(2);
@@ -39,7 +39,6 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 		web3,
 		user,
 	} = useMoralis();
-	const winSize = useWindowSize();
 	// Proxy address, Privatekey, Signature
 	const proxyAccount = useMemo(() => {
 		if (isWeb3Enabled) {
@@ -127,15 +126,35 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 	};
 
 	if (winSize.width > 1400) {
-		return <DesktopView />;
+		return <DesktopView user={user} initLiveChess={initLiveChess} />;
 	} else if (winSize.width > 768 && winSize.width < 1400) {
-		return <TabView />;
+		return (
+			<TabView
+				user={user}
+				currentTabletPage={currentTabletPage}
+				setCurrentTabletPage={setCurrentTabletPage}
+				initLiveChess={initLiveChess}
+			/>
+		);
 	} else {
-		return <MobileView />;
+		return (
+			<MobileView
+				user={user}
+				currentMobilePage={currentMobilePage}
+				setCurrentMobilePage={setCurrentMobilePage}
+				initLiveChess={initLiveChess}
+			/>
+		);
 	}
 };
 
-const DesktopView = () => {
+const MobileView = ({
+	user,
+	currentMobilePage,
+	setCurrentMobilePage,
+	initLiveChess,
+}) => {
+	const winSize = useWindowSize();
 	return (
 		<div className="game-mobile">
 			<main className="content">
@@ -210,23 +229,23 @@ const DesktopView = () => {
 			</main>
 			<div className="tab-bar">
 				<div
-					id={currentTabletPage === 1 ? "active" : ""}
+					id={currentMobilePage === 1 ? "active" : ""}
 					className="chat-room-tab tab"
-					onClick={() => setCurrentTabletPage(1)}>
+					onClick={() => setCurrentMobilePage(1)}>
 					Chat Room
 				</div>
 
 				<div
-					id={currentTabletPage === 2 ? "active" : ""}
+					id={currentMobilePage === 2 ? "active" : ""}
 					className="game-tab tab"
-					onClick={() => setCurrentTabletPage(2)}>
+					onClick={() => setCurrentMobilePage(2)}>
 					Game
 				</div>
 
 				<div
-					id={currentTabletPage === 3 ? "active" : ""}
+					id={currentMobilePage === 3 ? "active" : ""}
 					className="game-info-tab tab"
-					onClick={() => setCurrentTabletPage(3)}>
+					onClick={() => setCurrentMobilePage(3)}>
 					Game Info
 				</div>
 			</div>
@@ -234,7 +253,14 @@ const DesktopView = () => {
 	);
 };
 
-const TabView = () => {
+const TabView = ({
+	user,
+	currentTabletPage,
+	setCurrentTabletPage,
+	initLiveChess,
+}) => {
+	const winSize = useWindowSize();
+
 	return (
 		<div className="game-tablet">
 			<section className="chessboard">
@@ -325,7 +351,9 @@ const TabView = () => {
 	);
 };
 
-const MobileView = () => {
+const DesktopView = ({ user, initLiveChess }) => {
+	const winSize = useWindowSize();
+
 	return (
 		<div className="game-desktop">
 			<section className="game-btns">
