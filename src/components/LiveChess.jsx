@@ -76,9 +76,9 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	}, [liveGameData, user]);
 
 	const winSize = useWindowSize();
-	const boardWidth = useBoardWidth(winSize);
+	const boardWidth = useBoardWidth();
 
-	if (winSize.width < 480)
+	if (winSize.width < 700)
 		return (
 			<MobileView
 				isMobileDrawerVisible={isMobileDrawerVisible}
@@ -93,7 +93,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 				/>
 			</MobileView>
 		);
-	else if (winSize.width >= 480 && winSize.width < 768)
+	else if (winSize.width >= 700 && winSize.width < 1024)
 		return (
 			<TabView
 				isPlayerWhite={isPlayerWhite}
