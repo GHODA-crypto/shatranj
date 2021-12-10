@@ -6,7 +6,7 @@ import {
 } from "react-moralis";
 import { Modal } from "antd";
 import { gameAbi, ERC20Abi } from "../contracts/abi";
-import { notification } from "antd";
+import { notification, Tooltip } from "antd";
 
 import { ReactComponent as Loader } from "../assets/loader.svg";
 
@@ -146,13 +146,6 @@ const Stakes = () => {
 				closable={false}>
 				<p>Staking in progress...</p>
 			</Modal>
-			{/* <Modal
-				title="Loading"
-				visible={isAllowanceFetching}
-				footer={null}
-				closable={false}>
-				<p>Allowance Check in progress...</p>
-			</Modal> */}
 			<Modal
 				title="Loading"
 				visible={isApproveFetching}
@@ -183,12 +176,34 @@ const Stakes = () => {
 			</Modal>
 			<section className="amounts">
 				<div className="erc20-balance balance">
-					<span className="label">GHODA</span>
-					<span className="amount">{tokenBalance}</span>
+					<Tooltip
+						title="$GHODA in your wallet"
+						placement="left"
+						overlayClass="tooltip">
+						<span
+							className="label"
+							style={{ cursor: "help" }}
+							arrowPointAtCenter={true}>
+							GHODA
+						</span>
+					</Tooltip>
+					<span className="amount">
+						{Moralis.Units.FromWei(Number(tokenBalance))}
+					</span>
 				</div>
 				<div className="staked-balance balance">
-					<span className="label">sGHODA</span>
-					<span className="amount">{stakedBalance}</span>
+					<Tooltip
+						title="$GHODA staked and used for betting in game"
+						placement="right"
+						overlayClass="tooltip"
+						arrowPointAtCenter={true}>
+						<span className="label" style={{ cursor: "help" }}>
+							sGHODA
+						</span>
+					</Tooltip>
+					<span className="amount">
+						{Moralis.Units.FromWei(Number(stakedBalance))}
+					</span>
 				</div>
 			</section>
 
@@ -236,9 +251,9 @@ const Stakes = () => {
 					</div>
 				</div>
 				<div className="unstake card">
-					<div className="title">Unstake sGHODA</div>
+					<div className="title">Unstake GHODA</div>
 					<div className="unstake-input input">
-						<span className="token">sGHODA</span>
+						<span className="token">GHODA</span>
 
 						<input
 							type="number"
