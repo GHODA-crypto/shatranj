@@ -25,8 +25,10 @@ contract Elo is Ownable {
 	}
 
 	function setElo(address _player, uint256 _elo) public onlyMaster {
-		if (_elo > 100) elo[_player] = _elo;
-		emit EloChanged(_player, _elo);
+		if (_elo > 100) {
+			elo[_player] = _elo;
+			emit EloChanged(_player, _elo);
+		}
 	}
 
 	function recordResult(
@@ -38,30 +40,19 @@ contract Elo is Ownable {
 		uint256 scoreA = getElo(player1);
 		uint256 scoreB = getElo(player2);
 
-		// Calculate result for player A
-		int256 resultA = 1; // 0 = lose, 1 = draw, 2 = win
-		if (outcome == 2) {
-			resultA = 2;
-		} else if (outcome == 3) {
-			resultA = 0;
-		}
-
 		// Calculate new score
-		(int256 changeA, int256 changeB) = getScoreChange(
-			int256(scoreA) - int256(scoreB),
-			resultA
-		);
-		uint256 eloA = uint256(int256(scoreA) + changeA);
-		uint256 eloB = uint256(int256(scoreB) + changeB);
+		int256 change = getScoreChange(int256(scoreA) - int256(scoreB), outcome);
+		uint256 eloA = uint256(int256(scoreA) + change);
+		uint256 eloB = uint256(int256(scoreB) - change);
 		setElo(player1, eloA);
 		setElo(player2, eloB);
 		return ((eloA > 100 ? eloA : 100), (eloB > 100 ? eloB : 100));
 	}
 
-	function getScoreChange(int256 difference, int256 resultA)
+	function getScoreChange(int256 difference, uint256 outcome)
 		public
 		pure
-		returns (int256, int256)
+		returns (int256)
 	{
 		bool reverse = (difference > 0); // note if difference was positive
 		uint256 diff = abs(difference); // take absolute to lookup in positive table
@@ -78,21 +69,12 @@ contract Elo is Ownable {
 		else if (diff > 52) scoreChange = 12;
 		else if (diff > 17) scoreChange = 11;
 		// Depending on result (win/draw/lose), calculate score changes
-		if (resultA == 2) {
-			return (
-				(reverse ? 20 - scoreChange : scoreChange),
-				(reverse ? -(20 - scoreChange) : -scoreChange)
-			);
-		} else if (resultA == 1) {
-			return (
-				(reverse ? 10 - scoreChange : scoreChange - 10),
-				(reverse ? -(10 - scoreChange) : -(scoreChange - 10))
-			);
+		if (outcome == 3) {
+			return (reverse ? 20 - scoreChange : scoreChange);
+		} else if (outcome == 4) {
+			return (reverse ? scoreChange - 20 : -scoreChange);
 		} else {
-			return (
-				(reverse ? scoreChange - 20 : -scoreChange),
-				(reverse ? -(scoreChange - 20) : scoreChange)
-			);
+			return (reverse ? 10 - scoreChange : scoreChange - 10);
 		}
 	}
 

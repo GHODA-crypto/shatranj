@@ -11,15 +11,15 @@ module.exports = async function (deployer) {
 	const chessERC20 = await ChessERC20.deployed();
 	await deployer.deploy(ChessNFT);
 	const chessNFT = await ChessNFT.deployed();
-	await deployer.deploy(ChessLogic);
-	const chessLogic = await ChessLogic.deployed();
+	// await deployer.deploy(ChessLogic);
+	// const chessLogic = await ChessLogic.deployed();
 	await deployer.deploy(Elo);
 	const elo = await Elo.deployed();
 	await deployer.deploy(
 		ChessGame,
 		chessERC20.address,
 		chessNFT.address,
-		chessLogic.address,
+		// chessLogic.address,
 		elo.address,
 		serverAddress
 	);
@@ -33,6 +33,6 @@ module.exports = async function (deployer) {
 	console.log("ChessGame address:    " + chessGame.address);
 	console.log("ChessERC20 address:   " + chessERC20.address);
 	console.log("ChessNFT address:     " + chessNFT.address);
-	console.log("ChessLogic address:   " + chessLogic.address);
+	// console.log("ChessLogic address:   " + chessLogic.address);
 	console.log("Elo address:          " + elo.address);
 };
