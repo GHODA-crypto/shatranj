@@ -40,7 +40,7 @@ export function ShowBoard({ boardWidth, pgn }) {
 	);
 }
 
-export const GameBoard = ({ user, boardWidth }) => {
+export const GameBoard = ({ user, boardWidth, isPlayerWhite }) => {
 	const chessboardRef = useRef();
 	const [game, setGame] = useState(new Chess());
 
@@ -134,6 +134,7 @@ export const GameBoard = ({ user, boardWidth }) => {
 			<Chessboard
 				arePiecesDraggable={!!user}
 				isDraggablePiece={(piece) => piece.piece[0] === "w"}
+				boardOrientation={isPlayerWhite ? "white" : "black"}
 				boardWidth={boardWidth}
 				arePremovesAllowed={true}
 				animationDuration={200}

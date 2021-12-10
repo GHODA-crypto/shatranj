@@ -83,7 +83,7 @@ const Stakes = () => {
 		contractAddress: chessGameAddress,
 		functionName: "stake",
 		params: {
-			_amount: Number(stakeAmount),
+			_amount: Moralis.Units.Token(Number(stakeAmount), "18"),
 		},
 	});
 
@@ -97,7 +97,7 @@ const Stakes = () => {
 		contractAddress: chessGameAddress,
 		functionName: "unstake",
 		params: {
-			_amount: Number(unstakeAmount),
+			_amount: Moralis.Units.Token(Number(unstakeAmount), "18"),
 		},
 	});
 
@@ -125,42 +125,42 @@ const Stakes = () => {
 				visible={isStakeFetching}
 				footer={null}
 				closable={false}>
-				<p>Staking in progrss...</p>
+				<p>Staking in progress...</p>
 			</Modal>
 			<Modal
 				title="Loading"
 				visible={isAllowFetching}
 				footer={null}
 				closable={false}>
-				<p>Allowance Check in progrss...</p>
+				<p>Allowance Check in progress...</p>
 			</Modal>
 			<Modal
 				title="Loading"
 				visible={isApproveFetching}
 				footer={null}
 				closable={false}>
-				<p>Approving in progrss...</p>
+				<p>Approving in progress...</p>
 			</Modal>
 			<Modal
 				title="Loading"
 				visible={isStakeBalFetching}
 				footer={null}
 				closable={false}>
-				<p>Staked GHODA Check in progrss...</p>
+				<p>Staked GHODA Check in progress...</p>
 			</Modal>
 			<Modal
 				title="Loading"
 				visible={isErc20Fetching}
 				footer={null}
 				closable={false}>
-				<p>GHODA Balance Check in progrss...</p>
+				<p>GHODA Balance Check in progress...</p>
 			</Modal>
 			<Modal
 				title="Loading"
 				visible={isUnstakeFetching}
 				footer={null}
 				closable={false}>
-				<p>Unstaking in progrss...</p>
+				<p>Unstaking in progress...</p>
 			</Modal>
 			<section className="amounts">
 				<div className="erc20-balance balance">
@@ -171,7 +171,9 @@ const Stakes = () => {
 				</div>
 				<div className="staked-balance balance">
 					<span className="label">Staked GHD</span>
-					<span className="amount">{Number(stakeBalData)}</span>
+					<span className="amount">
+						{Moralis.Units.FromWei(Number(stakeBalData))}
+					</span>
 				</div>
 			</section>
 
@@ -247,7 +249,9 @@ const Stakes = () => {
 						/>
 						<button
 							className="max"
-							onClick={() => setUnstakeAmount(Number(stakeBalData))}
+							onClick={() =>
+								setUnstakeAmount(Moralis.Units.FromWei(Number(stakeBalData)))
+							}
 							disabled={Number(stakeBalData) === 0 || !approveData?.status}
 							style={Number(stakeBalData) === 0 ? { cursor: "default" } : null}>
 							max
