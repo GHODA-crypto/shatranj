@@ -12,15 +12,14 @@ import { ReactComponent as Loader } from "../assets/loader.svg";
 
 import "../styles/stakes.scss";
 
+const SGHODA_TOKEN_ADDRESS = "0xd8e785d3423799d24260c3b3d9b5b3961cd3875a";
+const GHODA_TOKEN_ADDRESS = "0xc86bb11da8566f2cb4f9e53b6b9091d2ec17446b";
+
 const Stakes = () => {
 	const [stakeAmount, setStakeAmount] = useState(0);
 	const [unstakeAmount, setUnstakeAmount] = useState(0);
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const { user, Moralis, isWeb3Enabled, isWeb3EnableLoading } = useMoralis();
-	const SGHODA_TOKEN_ADDRESS = "0xD8e785D3423799D24260C3B3d9B5B3961CD3875A";
-	const GHODA_TOKEN_ADDRESS = "0xC86bb11da8566F2Cb4f9E53b6b9091D2ec17446b";
-	const chessERC20Address = "0xC86bb11da8566F2Cb4f9E53b6b9091D2ec17446b";
-	const chessGameAddress = "0xD8e785D3423799D24260C3B3d9B5B3961CD3875A";
 
 	const openNoStakeErrorNotification = () => {
 		notification["error"]({
@@ -32,8 +31,8 @@ const Stakes = () => {
 	};
 
 	const {
-		data: stakedBalance,
-		error: stakedBalanceError,
+		data: [stakedBalanceObj],
+		error: stakedBalanceObjError,
 		isLoading: isStakedBalanceLoading,
 	} = useMoralisQuery(
 		"PolygonTokenBalance",
@@ -41,15 +40,15 @@ const Stakes = () => {
 			query
 				.equalTo("address", user?.get("ethAddress"))
 				.equalTo("token_address", SGHODA_TOKEN_ADDRESS),
-		[],
+		[user],
 		{
 			live: true,
 		}
 	);
 
 	const {
-		data: tokenBalance,
-		error: tokenBalanceError,
+		data: [tokenBalanceObj],
+		error: tokenBalanceObjError,
 		isLoading: isTokenBalanceLoading,
 	} = useMoralisQuery(
 		"PolygonTokenBalance",
@@ -57,78 +56,61 @@ const Stakes = () => {
 			query
 				.equalTo("address", user?.get("ethAddress"))
 				.equalTo("token_address", GHODA_TOKEN_ADDRESS),
-		[],
+		[user],
 		{
 			live: true,
 		}
 	);
 
-	// const {
-	// 	data: stakeBalData,
-	// 	error: stakeBalError,
-	// 	fetch: stakeBalFetch,
-	// 	isFetching: isStakeBalFetching,
-	// } = useWeb3ExecuteFunction({
-	// 	abi: gameAbi,
-	// 	contractAddress: chessGameAddress,
-	// 	functionName: "balanceOf",
-	// 	params: {
-	// 		account: user?.attributes?.ethAddress,
-	// 	},
-	// });
+	const [tokenBalance, setTokenBalance] = useState(0);
+	const [stakedBalance, setStakedBalance] = useState(0);
+
+	useEffect(() => {
+		setTokenBalance(
+			Moralis.Units.FromWei(tokenBalanceObj?.get("balance") || 0)
+		);
+		setStakedBalance(
+			Moralis.Units.FromWei(stakedBalanceObj?.get("balance") || 0)
+		);
+	}, [stakedBalanceObj, tokenBalanceObj]);
 
 	const {
-		data: approveData,
-		error: approveError,
-		fetch: approveFetch,
+		data: approvalData,
+		error: getApprovalError,
+		fetch: getApproval,
 		isFetching: isApproveFetching,
 	} = useWeb3ExecuteFunction({
 		abi: ERC20Abi,
-		contractAddress: chessERC20Address,
+		contractAddress: GHODA_TOKEN_ADDRESS,
 		functionName: "approve",
 		params: {
-			spender: chessGameAddress,
+			spender: SGHODA_TOKEN_ADDRESS,
 			amount: Moralis.Units.Token("1000000000", "18"),
 		},
 	});
 
 	const {
-		data: allowData,
-		error: allowError,
-		fetch: allowFetch,
-		isFetching: isAllowFetching,
+		data: allowanceData,
+		error: allowanceError,
+		fetch: getAllowance,
+		isFetching: isAllowanceFetching,
 	} = useWeb3ExecuteFunction({
 		abi: ERC20Abi,
-		contractAddress: chessERC20Address,
+		contractAddress: GHODA_TOKEN_ADDRESS,
 		functionName: "allowance",
 		params: {
 			owner: user?.attributes?.ethAddress,
-			spender: chessGameAddress,
+			spender: SGHODA_TOKEN_ADDRESS,
 		},
 	});
 
-	// const {
-	// 	data: erc20Data,
-	// 	error: erc20Error,
-	// 	fetch: erc20Fetch,
-	// 	isFetching: isErc20Fetching,
-	// } = useWeb3ExecuteFunction({
-	// 	abi: ERC20Abi,
-	// 	contractAddress: chessERC20Address,
-	// 	functionName: "balanceOf",
-	// 	params: {
-	// 		account: user?.attributes?.ethAddress,
-	// 	},
-	// });
-
 	const {
-		data: stakeData,
 		error: stakeError,
-		fetch: stakeFetch,
-		isFetching: isStakeFetching,
+		fetch: stakeTokens,
+		isFetching: isStakingTokens,
 	} = useWeb3ExecuteFunction({
 		abi: gameAbi,
-		contractAddress: chessGameAddress,
+		contractAddress: SGHODA_TOKEN_ADDRESS,
 		functionName: "stake",
 		params: {
 			_amount: Moralis.Units.Token(Number(stakeAmount), "18"),
@@ -136,48 +118,37 @@ const Stakes = () => {
 	});
 
 	const {
-		data: unstakeData,
-		error: unstakeError,
-		fetch: unstakeFetch,
-		isFetching: isUnstakeFetching,
+		error: unstakeTokenError,
+		fetch: unstakeTokens,
+		isFetching: isUnstakingTokens,
 	} = useWeb3ExecuteFunction({
 		abi: gameAbi,
-		contractAddress: chessGameAddress,
+		contractAddress: SGHODA_TOKEN_ADDRESS,
 		functionName: "unstake",
 		params: {
 			_amount: Moralis.Units.Token(Number(unstakeAmount), "18"),
 		},
 	});
 
-	const initaliser = () => {
-		// stakeBalFetch();
-		// erc20Fetch();
-		// approveFetch();
-		allowFetch();
-		console.log("approve ->", approveData);
-		console.log("allow ->", allowData);
-		console.log("allow error:", allowError);
-		// console.log("erc20 error:", erc20Data);
-		// console.log("stakeBal error:", stakeBalData);
-	};
-
 	useEffect(() => {
-		initaliser();
-		if (!isWeb3Enabled) Moralis.enableWeb3();
-	}, [isWeb3Enabled, tokenBalance, stakedBalance]);
+		if (isWeb3Enabled) getAllowance();
+	}, [isWeb3Enabled]);
+	useEffect(() => {
+		console.log(approvalData);
+	}, [approvalData]);
 
 	return (
 		<div className="Stakes" style={{ marginTop: "3rem" }}>
 			<Modal
 				title="Loading"
-				visible={isStakeFetching}
+				visible={isStakingTokens}
 				footer={null}
 				closable={false}>
 				<p>Staking in progress...</p>
 			</Modal>
 			{/* <Modal
 				title="Loading"
-				visible={isAllowFetching}
+				visible={isAllowanceFetching}
 				footer={null}
 				closable={false}>
 				<p>Allowance Check in progress...</p>
@@ -205,7 +176,7 @@ const Stakes = () => {
 			</Modal>
 			<Modal
 				title="Loading"
-				visible={isUnstakeFetching}
+				visible={isUnstakingTokens}
 				footer={null}
 				closable={false}>
 				<p>Unstaking in progress...</p>
@@ -213,15 +184,11 @@ const Stakes = () => {
 			<section className="amounts">
 				<div className="erc20-balance balance">
 					<span className="label">GHODA</span>
-					<span className="amount">
-						{Moralis.Units.FromWei(Number(tokenBalance))}
-					</span>
+					<span className="amount">{tokenBalance}</span>
 				</div>
 				<div className="staked-balance balance">
 					<span className="label">sGHODA</span>
-					<span className="amount">
-						{Moralis.Units.FromWei(Number(stakedBalance))}
-					</span>
+					<span className="amount">{stakedBalance}</span>
 				</div>
 			</section>
 
@@ -234,30 +201,22 @@ const Stakes = () => {
 							type="number"
 							className="stake-amount amount"
 							value={stakeAmount}
-							disabled={!approveData || !approveData?.status}
 							onWheel={(e) => e.target.blur()}
 							onChange={(e) => setStakeAmount(e.target.value)}
 						/>
 						<button
 							className="max"
-							onClick={() =>
-								setStakeAmount(Moralis.Units.FromWei(Number(tokenBalance)))
-							}
-							disabled={!approveData?.status}>
+							onClick={() => setStakeAmount(tokenBalance)}>
 							max
 						</button>
 					</div>
 					<div className="stake-submit submit">
-						{approveData?.status && stakeAmount < Number(allowData) ? (
+						{approvalData?.status && stakeAmount < Number(allowanceData) ? (
 							<button
 								className="stake-btn"
 								onClick={async () => {
-									await stakeFetch();
-									// await erc20Fetch();
-									// await stakeBalFetch();
-									console.log("stake error: ", stakeError);
-									console.log("stakeBal error: ", stakedBalanceError);
-									console.log("erc20 error: ", tokenBalanceError);
+									!approvalData?.status && (await getApproval());
+									await stakeTokens();
 									setStakeAmount(0);
 								}}>
 								Stake
@@ -266,10 +225,10 @@ const Stakes = () => {
 							<button
 								className="approve-btn"
 								onClick={async () => {
-									await approveFetch();
-									await allowFetch();
-									console.log("approve error:", approveError);
-									console.log("allow error:", allowError);
+									await getApproval();
+									await getAllowance();
+									console.log("approve error:", getApproval);
+									console.log("allow error:", allowanceError);
 								}}>
 								Approve
 							</button>
@@ -286,9 +245,9 @@ const Stakes = () => {
 							className="unstake-amount amount"
 							value={unstakeAmount}
 							disabled={
-								!approveData ||
-								!approveData?.status ||
-								Number(stakedBalance) === 0
+								!approvalData ||
+								!approvalData?.status ||
+								Number(stakedBalanceObj) === 0
 							}
 							onWheel={(e) => e.target.blur()}
 							onChange={(e) => setUnstakeAmount(e.target.value)}
@@ -296,11 +255,7 @@ const Stakes = () => {
 						<button
 							className="max"
 							onClick={() => {
-								if (Number(stakedBalance) === 0) {
-									openNoStakeErrorNotification();
-									return;
-								}
-								setUnstakeAmount(Moralis.Units.FromWei(Number(stakedBalance)));
+								setUnstakeAmount(stakedBalance);
 							}}>
 							max
 						</button>
@@ -313,12 +268,7 @@ const Stakes = () => {
 									openNoStakeErrorNotification();
 									return;
 								}
-								await unstakeFetch();
-								// await erc20Fetch();
-								// await stakeBalFetch();
-								console.log("stake error: ", unstakeError);
-								console.log("stakeBal error: ", stakedBalanceError);
-								console.log("erc20 error: ", tokenBalanceError);
+								await unstakeTokens();
 								setUnstakeAmount(0);
 							}}>
 							Unstake
