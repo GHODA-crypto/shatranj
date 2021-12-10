@@ -1,4 +1,4 @@
-import { idToHex } from "helpers/idToInt";
+import { idToHex } from "../helpers/idToInt";
 import { useMemo, useEffect, useState, useCallback } from "react";
 import {
 	useMoralisQuery,
@@ -29,8 +29,10 @@ import { ReactComponent as BlackRook } from "../assets/chess_svgs/black_rook.svg
 import { ReactComponent as BlackPawn } from "../assets/chess_svgs/black_pawn.svg";
 
 import "../styles/game.scss";
+
 const LiveChess = ({ pairingParams, isPairing }) => {
 	const [gameId, setGameId] = useState();
+
 	const winSize = useWindowSize();
 	const [currentTabletPage, setCurrentTabletPage] = useState(1);
 	const [currentMobilePage, setCurrentMobilePage] = useState(2);
@@ -44,58 +46,15 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 		web3,
 		user,
 	} = useMoralis();
-	// Proxy address, Privatekey, Signature
-	const proxyAccount = useMemo(() => {
-		if (isWeb3Enabled) {
-			let proxyAccount;
-			if (localStorage.getItem("proxyPrivKey")) {
-				const privKey = localStorage.getItem("proxyPrivKey");
-				proxyAccount = web3.eth.accounts.privateKeyToAccount(privKey);
-			} else {
-				proxyAccount = web3.eth.accounts.create();
-
-				localStorage.setItem("proxyPrivKey", proxyAccount.privateKey);
-			}
-
-			const {
-				data: [gameData],
-				// error: gameError,
-				isLoading: isGameLoading,
-			} = useMoralisQuery(
-				"Game",
-				(query) => query.equalTo("objectId", gameId).limit(1),
-				[gameId],
-				{
-					autoFetch: false,
-					live: true,
-				}
-			);
-			return {
-				address: proxyAccount.address,
-				privateKey: proxyAccount.privateKey,
-				sign: proxyAccount.sign,
-			};
-		}
-	}, [isWeb3Enabled, web3.eth.accounts]);
-
-	const signGameAndProxy = useCallback(
-		(challengeIdHex) => {
-			if (proxyAccount) {
-				const data = web3.utils.soliditySha3(
-					web3.eth.abi.encodeParameters(
-						["uint256", "address"],
-						[challengeIdHex, proxyAccount.address]
-					)
-				);
-
-				return web3.eth.personal.sign(data, user.get("ethAddress"));
-			}
-		},
-		[proxyAccount, user, web3]
-	);
 
 	const {
-		fetch: getChallenge,
+		fetch: getLiveChallengeId,
+		data: liveChallenge,
+		// error: challengeError,
+		isLoading: gettingLiveChallenge,
+	} = useMoralisCloudFunction("getLiveChallengeId");
+	const {
+		fetch: joinPool,
 		data: challenge,
 		// error: challengeError,
 		// isLoading: isGettingChallenge,
@@ -110,70 +69,38 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 		isLoading: isGameLoading,
 	} = useMoralisQuery(
 		"Game",
-		(query) => query.find(gameId || "hPUavu3nkjFf5QAcdJp10cEh").limit(1),
+		(query) => query.find(gameId).limit(1),
 		[gameId],
 		{
-			autoFetch: false,
+			autoFetch: true,
 			live: true,
 		}
 	);
 
 	useEffect(() => {
-		// getExistingChallenge
-		// if no existing challenge, create new challenge
-		getChallenge();
-	}, []);
+		getLiveChallengeId();
+	}, [challenge]);
+
 	useEffect(() => {
-		gameId && fetchGame();
-	}, [gameId]);
+		if (liveChallenge) setGameId(liveChallenge.get("gameId"));
+	}, [liveChallenge]);
+
+	// useEffect(() => {
+	// 	fetchGame();
+	// }, [fameId]);
+
 	useEffect(() => {
 		console.log("gameData", gameData);
 	}, [gameData]);
 
-	const initLiveChess = async () => {
-		if (user) {
-			const userPlayerNumber =
-				challenge.get("player1") === user.get("ethAddress") ? 1 : 2;
-			const challengeIdHex = idToHex(challenge.id);
-
-			// Accept the challenge and sign if proxy is not set
-			if (challenge && !challenge.get(`p${userPlayerNumber}proxy`)) {
-				const signature = await signGameAndProxy(challengeIdHex);
-				if (signature) {
-					const gameId = await Moralis.Cloud.run("acceptChallenge", {
-						challengeIdHex: challengeIdHex,
-						proxyAddress: proxyAccount?.address,
-						signature,
-					});
-					setGameId(gameId);
-				}
-			} else {
-				// Set Game Id to Challenge Id
-				setGameId(challenge.get("gameId"));
-			}
-		}
-	};
-
-	useEffect(() => {
-		console.log("challenge", challenge);
-		challenge && initLiveChess();
-	}, [challenge]);
-
 	if (winSize.width > 1400) {
-		return (
-			<DesktopView
-				user={user}
-				initLiveChess={initLiveChess}
-				getChallenge={getChallenge}
-			/>
-		);
+		return <DesktopView user={user} />;
 	} else if (winSize.width > 768 && winSize.width < 1400) {
 		return (
 			<TabView
 				user={user}
 				currentTabletPage={currentTabletPage}
 				setCurrentTabletPage={setCurrentTabletPage}
-				initLiveChess={initLiveChess}
 			/>
 		);
 	} else {
@@ -182,7 +109,6 @@ const LiveChess = ({ pairingParams, isPairing }) => {
 				user={user}
 				currentMobilePage={currentMobilePage}
 				setCurrentMobilePage={setCurrentMobilePage}
-				initLiveChess={initLiveChess}
 			/>
 		);
 	}
@@ -443,7 +369,7 @@ const TabView = () => {
 	);
 };
 
-const DesktopView = ({ user, initLiveChess, getChallenge }) => {
+const DesktopView = ({ initLiveChess, getChallenge }) => {
 	const winSize = useWindowSize();
 	const { user } = useMoralis();
 	const styles = {

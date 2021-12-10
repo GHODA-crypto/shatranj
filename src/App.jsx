@@ -19,7 +19,7 @@ import "./style.css";
 import MenuItems from "./components/MenuItems";
 import Lobby from "./components/Lobby";
 import LiveChess from "./components/LiveChess";
-import TestCloudFunctions from "components/TestCloudFunctions";
+import TestCloudFunctions from "./components/TestCloudFunctions";
 
 const { Header } = Layout;
 
