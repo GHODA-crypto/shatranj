@@ -194,7 +194,7 @@ const Stakes = () => {
 						</button>
 					</div>
 					<div className="stake-submit submit">
-						{allowedAmountToSpend && stakeAmount < allowedAmountToSpend ? (
+						{allowedAmountToSpend >= stakeAmount ? (
 							<button
 								className="stake-btn"
 								disabled={!stakeAmount}
