@@ -1,6 +1,6 @@
 const ChessERC20 = artifacts.require("ChessERC20");
 const ChessNFT = artifacts.require("ChessNFT");
-const ChessLogic = artifacts.require("ChessLogic");
+// const ChessLogic = artifacts.require("ChessLogic");
 const Elo = artifacts.require("Elo");
 const ChessGame = artifacts.require("ChessGame");
 
@@ -9,7 +9,11 @@ module.exports = async function (deployer) {
 
 	await deployer.deploy(ChessERC20);
 	const chessERC20 = await ChessERC20.deployed();
-	await deployer.deploy(ChessNFT);
+	await deployer.deploy(
+		ChessNFT,
+		"https://gateway.ipfs.io/ipfs/",
+		"/metadata.json"
+	);
 	const chessNFT = await ChessNFT.deployed();
 	// await deployer.deploy(ChessLogic);
 	// const chessLogic = await ChessLogic.deployed();

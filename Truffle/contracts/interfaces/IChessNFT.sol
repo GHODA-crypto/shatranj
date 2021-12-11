@@ -2,10 +2,7 @@
 pragma solidity ^0.8.2;
 
 interface IChessNFT {
-	function mint(
-		address account,
-		uint256 id,
-		uint256 amount,
-		bytes memory data
-	) external;
+	function mint(address _account, string calldata _ipfsHash)
+		external
+		returns (uint256);
 }

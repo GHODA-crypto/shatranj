@@ -3,7 +3,6 @@ pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "./interfaces/IChessNFT.sol";
 import "./interfaces/IElo.sol";
 
@@ -30,21 +29,22 @@ contract ChessGame is ERC20, Ownable {
 		uint256 nft;
 	}
 
-	mapping(uint256 => Game) games;
+	mapping(string => Game) games;
 	uint256 bet;
 	uint256 fee;
 	uint256 NFTfee;
+	uint256 collectedFees;
 
 	event StakedBalance(address indexed player, uint256 amount);
 
 	event GameStarted(
-		uint256 indexed gameId,
+		string indexed gameId,
 		address indexed white,
 		address indexed black
 	);
 
 	event GameEnded(
-		uint256 indexed gameId,
+		string indexed gameId,
 		address indexed white,
 		address indexed black,
 		uint8 outcome,
@@ -65,10 +65,23 @@ contract ChessGame is ERC20, Ownable {
 		bet = 10**19;
 		fee = 10**18;
 		NFTfee = 5 * 10**18;
+		collectedFees = 0;
 	}
 
 	function getBetAmount() public view returns (uint256) {
 		return bet;
+	}
+
+	function getFeeAmount() public view returns (uint256) {
+		return fee;
+	}
+
+	function getNFTfeeAmount() public view returns (uint256) {
+		return NFTfee;
+	}
+
+	function getCollectedFees() public view returns (uint256) {
+		return collectedFees;
 	}
 
 	function changeBet(uint256 _bet) public onlyOwner {
@@ -83,9 +96,9 @@ contract ChessGame is ERC20, Ownable {
 		NFTfee = _fee;
 	}
 
-	// function getStakedBalance(address _player) public view returns (uint256) {
-	// 	return stakedBalance[_player];
-	// }
+	function collectFee() public onlyOwner {
+		chessToken.transfer(msg.sender, collectedFees);
+	}
 
 	function stake(uint256 _amount) external {
 		require(
@@ -103,7 +116,7 @@ contract ChessGame is ERC20, Ownable {
 	// function createGame
 
 	function startGame(
-		uint256 _gameId,
+		string calldata _gameId,
 		address _white,
 		address _black
 	) public onlyServer {
@@ -117,10 +130,18 @@ contract ChessGame is ERC20, Ownable {
 		emit GameStarted(_gameId, _white, _black);
 	}
 
+	function getGame(string calldata _gameId)
+		public
+		view
+		returns (Game memory game)
+	{
+		return games[_gameId];
+	}
+
 	function endGame(
-		uint256 _gameId,
+		string calldata _gameId,
 		uint8 _outcome,
-		uint256 _nftId
+		string calldata _ipfsHash
 	) public onlyServer {
 		Game memory game = games[_gameId];
 		require(
@@ -137,6 +158,7 @@ contract ChessGame is ERC20, Ownable {
 		emit GameEnded(_gameId, game.white, game.black, _outcome, eloW, eloB);
 
 		address winner;
+		collectedFees += fee;
 		if (_outcome == 2) {
 			uint256 amount = bet - (fee / 2);
 			_mint(game.white, amount);
@@ -148,11 +170,13 @@ contract ChessGame is ERC20, Ownable {
 		} else if (_outcome == 4) {
 			winner = game.black;
 		}
-		if (_nftId != 0 && _outcome > 2) {
+		if (bytes(_ipfsHash).length > 0 && _outcome > 2) {
 			// if black or white wins and claims NFT
-			games[_gameId].nft = _nftId;
-			chessNFT.mint(winner, uint256(_nftId), 1, "");
+			games[_gameId].nft = chessNFT.mint(winner, _ipfsHash);
 			_mint(winner, bet + bet - fee - NFTfee);
-		} else _mint(winner, bet + bet - fee);
+			collectedFees += NFTfee;
+		} else {
+			_mint(winner, bet + bet - fee);
+		}
 	}
 }
