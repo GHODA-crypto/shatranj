@@ -1,48 +1,26 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import Chess from "chess.js";
 
 import { Chessboard } from "react-chessboard";
 
-export function ShowBoard({ boardWidth, pgn }) {
+const LiveBoard = ({
+	user,
+	boardWidth,
+	isPlayerWhite,
+	liveGameAttributes,
+	playerSide,
+}) => {
 	const chessboardRef = useRef();
-	const [game, setGame] = useState(new Chess());
+	const [game, setGame] = useState(() => new Chess(liveGameAttributes?.pgn));
 
-	function safeGameMutate(modify) {
-		setGame((g) => {
-			const update = { ...g };
-			modify(update);
-			return update;
-		});
-	}
-
-	useEffect(() => {
-		safeGameMutate((g) => g.load_pgn(pgn));
-	}, []);
-
-	return (
-		<div>
-			<Chessboard
-				className="show-board"
-				arePiecesDraggable={false}
-				animationDuration={200}
-				boardWidth={boardWidth}
-				position={game.fen()}
-				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
-				customLightSquareStyle={{ backgroundColor: "#D3FFD8" }}
-				customBoardStyle={{
-					borderRadius: "8px",
-					boxShadow: "0 0 10px 0px rgba(0, 0, 0, 0.15)",
-					cursor: "pointer",
-				}}
-				ref={chessboardRef}
-			/>
-		</div>
+	const liveGameObj = useMemo(
+		() => new Chess(liveGameAttributes?.pgn),
+		[liveGameAttributes]
 	);
-}
-
-export const GameBoard = ({ user, boardWidth, isPlayerWhite }) => {
-	const chessboardRef = useRef();
-	const [game, setGame] = useState(new Chess());
+	useEffect(() => {
+		setGame(liveGameObj);
+		console.log(liveGameObj.fen(), liveGameAttributes);
+	}, [liveGameObj]);
 
 	const [rightClickedSquares, setRightClickedSquares] = useState({});
 	const [moveSquares, setMoveSquares] = useState({});
@@ -133,10 +111,9 @@ export const GameBoard = ({ user, boardWidth, isPlayerWhite }) => {
 		<div className="board">
 			<Chessboard
 				arePiecesDraggable={!!user}
-				isDraggablePiece={(piece) => piece.piece[0] === "w"}
-				boardOrientation={isPlayerWhite ? "white" : "black"}
+				isDraggablePiece={(piece) => piece.piece[0] === playerSide}
+				boardOrientation={playerSide === "w" ? "white" : "black"}
 				boardWidth={boardWidth}
-				arePremovesAllowed={true}
 				animationDuration={200}
 				position={game.fen()}
 				onMouseOverSquare={onMouseOverSquare}
@@ -160,34 +137,4 @@ export const GameBoard = ({ user, boardWidth, isPlayerWhite }) => {
 		</div>
 	);
 };
-
-export const DipslayBoard = ({ boardWidth }) => {
-	const chessboardRef = useRef();
-	const [game, setGame] = useState(new Chess());
-
-	function safeGameMutate(modify) {
-		setGame((g) => {
-			const update = { ...g };
-			modify(update);
-			return update;
-		});
-	}
-
-	return (
-		<div className="board">
-			<Chessboard
-				arePiecesDraggable={false}
-				boardWidth={boardWidth}
-				animationDuration={200}
-				position={game.fen()}
-				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
-				customLightSquareStyle={{ backgroundColor: "#D3FFD8" }}
-				customBoardStyle={{
-					borderRadius: "4px",
-					boxShadow: "0 0px 15px rgba(0, 0, 0, 0.25)",
-				}}
-				ref={chessboardRef}
-			/>
-		</div>
-	);
-};
+export default LiveBoard;

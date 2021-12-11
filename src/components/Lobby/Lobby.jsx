@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { ShowBoard } from "../Chessboard";
+import ShowBoard from "../ChessBoards/Show";
 import { notification } from "antd";
 import "../../styles/lobby.scss";
 import {
