@@ -12,8 +12,7 @@ import MobileView from "./views/MobileView";
 import DesktopView from "./views/DesktopView";
 
 import "../styles/game.scss";
-
-import { GameBoard } from "./Chessboard";
+import LiveBoard from "./ChessBoards/Live";
 
 const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	const [gameId, setGameId] = useState();
@@ -28,17 +27,25 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 		data: challenge,
 		// error: challengeError,
 		isLoading: joiningLiveChess,
-	} = useMoralisCloudFunction("joinLiveChess", {
-		gamePreferences: pairingParams,
-	});
+	} = useMoralisCloudFunction(
+		"joinLiveChess",
+		{
+			gamePreferences: pairingParams,
+		},
+		{
+			autoFetch: false,
+		}
+	);
+	const { fetch: doesActiveChallengeExist, data: isLiveChallenge } =
+		useMoralisCloudFunction("doesActiveChallengeExist", {});
 
 	const {
 		data: [liveGameData],
-		// error: gameError,
+		error: gameError,
 		isLoading: isGameLoading,
 	} = useMoralisQuery(
 		"Game",
-		(query) => query.equalTo("objectId", challenge?.get("gameId")),
+		(query) => query.equalTo("challengeId", challenge?.id),
 		[challenge],
 		{
 			autoFetch: true,
@@ -60,19 +67,28 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	);
 
 	useEffect(() => {
-		if (isPairing) {
+		doesActiveChallengeExist();
+	}, []);
+
+	useEffect(() => {
+		if (isPairing || isLiveChallenge) {
 			setIsPairing(false);
 			joinLiveChess();
 		}
-	}, [isPairing]);
+	}, [isPairing, isLiveChallenge]);
 
 	useEffect(() => {
 		if (challenge) setGameId(challenge?.get("gameId"));
 	}, [challenge]);
 
-	const [isPlayerWhite, setIsPlayerWhite] = useMemo(() => {
+	const liveGameAttributes = useMemo(
+		() => liveGameData?.attributes,
+		[liveGameData]
+	);
+
+	const isPlayerWhite = useMemo(() => {
 		return liveGameData
-			? liveGameData.get("sides")?.[user.get("ethAddress")] === "w"
+			? liveGameData.get("sides")[user?.get("ethAddress")] === "w"
 			: "w";
 	}, [liveGameData, user]);
 
@@ -85,24 +101,26 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 				isMobileDrawerVisible={isMobileDrawerVisible}
 				setIsMobileDrawerVisible={setIsMobileDrawerVisible}
 				isPlayerWhite={isPlayerWhite}
-				setIsPlayerWhite={setIsPlayerWhite}
 				winSize={winSize}>
-				<GameBoard
+				<LiveBoard
+					liveGameAttributes={liveGameAttributes}
+					liveGameId={gameId}
 					user={user}
 					isPlayerWhite={isPlayerWhite}
+					playerSide={isPlayerWhite ? "w" : "b"}
 					boardWidth={boardWidth}
 				/>
 			</MobileView>
 		);
 	else if (winSize.width >= 700 && winSize.width < 1024)
 		return (
-			<TabView
-				isPlayerWhite={isPlayerWhite}
-				setIsPlayerWhite={setIsPlayerWhite}
-				winSize={winSize}>
-				<GameBoard
+			<TabView isPlayerWhite={isPlayerWhite} winSize={winSize}>
+				<LiveBoard
+					liveGameAttributes={liveGameAttributes}
+					liveGameId={gameId}
 					user={user}
 					isPlayerWhite={isPlayerWhite}
+					playerSide={isPlayerWhite ? "w" : "b"}
 					boardWidth={boardWidth}
 				/>
 			</TabView>
@@ -112,11 +130,13 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 			<DesktopView
 				joinLiveChess={joinLiveChess}
 				isPlayerWhite={isPlayerWhite}
-				setIsPlayerWhite={setIsPlayerWhite}
 				winSize={winSize}>
-				<GameBoard
+				<LiveBoard
+					liveGameAttributes={liveGameAttributes}
+					liveGameId={gameId}
 					user={user}
 					isPlayerWhite={isPlayerWhite}
+					playerSide={isPlayerWhite ? "w" : "b"}
 					boardWidth={boardWidth}
 				/>
 			</DesktopView>

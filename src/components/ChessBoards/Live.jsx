@@ -1,52 +1,34 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo, useCallback } from "react";
 import Chess from "chess.js";
-
 import { Chessboard } from "react-chessboard";
+import { useMoralisCloudFunction, useMoralis } from "react-moralis";
 
-export function ShowBoard({ boardWidth, pgn }) {
+const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+const LiveBoard = ({
+	user,
+	boardWidth,
+	liveGameAttributes,
+	liveGameId,
+	playerSide,
+}) => {
 	const chessboardRef = useRef();
-	const [game, setGame] = useState(new Chess());
-
-	function safeGameMutate(modify) {
-		setGame((g) => {
-			const update = { ...g };
-			modify(update);
-			return update;
-		});
-	}
-
-	useEffect(() => {
-		safeGameMutate((g) => g.load_pgn(pgn));
-	}, []);
-
-	return (
-		<div>
-			<Chessboard
-				className="show-board"
-				arePiecesDraggable={false}
-				animationDuration={200}
-				boardWidth={boardWidth}
-				position={game.fen()}
-				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
-				customLightSquareStyle={{ backgroundColor: "#D3FFD8" }}
-				customBoardStyle={{
-					borderRadius: "8px",
-					boxShadow: "0 0 10px 0px rgba(0, 0, 0, 0.15)",
-					cursor: "pointer",
-				}}
-				ref={chessboardRef}
-			/>
-		</div>
+	const [game, setGame] = useState(
+		() => new Chess(liveGameAttributes?.fen || DEFAULT_FEN)
 	);
-}
+	const { Moralis } = useMoralis();
 
-export const GameBoard = ({ user, boardWidth, isPlayerWhite }) => {
-	const chessboardRef = useRef();
-	const [game, setGame] = useState(new Chess());
+	const liveGameObj = useMemo(
+		() => new Chess(liveGameAttributes?.fen || DEFAULT_FEN),
+		[liveGameAttributes]
+	);
+	useEffect(() => {
+		setGame(liveGameObj);
+	}, [liveGameObj]);
 
 	const [rightClickedSquares, setRightClickedSquares] = useState({});
 	const [moveSquares, setMoveSquares] = useState({});
 	const [optionSquares, setOptionSquares] = useState({});
+	const [moveFrom, setMoveFrom] = useState("");
 
 	function safeGameMutate(modify) {
 		setGame((g) => {
@@ -71,19 +53,6 @@ export const GameBoard = ({ user, boardWidth, isPlayerWhite }) => {
 			[targetSquare]: { backgroundColor: "rgba(255, 255, 0, 0.4)" },
 		});
 		return true;
-	}
-
-	function onMouseOverSquare(square) {
-		// console.log("mouse over square", square);
-		// console.log(game.get(square).color);
-		if (game.get(square)?.color === "w") {
-			getMoveOptions(square);
-		}
-	}
-
-	// Only set squares to {} if not already set to {}
-	function onMouseOutSquare() {
-		if (Object.keys(optionSquares).length !== 0) setOptionSquares({});
 	}
 
 	function getMoveOptions(square) {
@@ -113,9 +82,54 @@ export const GameBoard = ({ user, boardWidth, isPlayerWhite }) => {
 		setOptionSquares(newSquares);
 	}
 
-	function onSquareClick() {
+	function onSquareClick(square) {
 		setRightClickedSquares({});
+		setOptionSquares({});
+
+		function resetFirstMove(square) {
+			setMoveFrom(square);
+			getMoveOptions(square);
+		}
+		// from square
+		if (!moveFrom) {
+			resetFirstMove(square);
+			return;
+		}
+		// attempt to make move
+		const gameCopy = { ...game };
+		const move = gameCopy.move({
+			from: moveFrom,
+			to: square,
+			promotion: "q", // always promote to a queen for example simplicity
+		});
+
+		setGame(gameCopy);
+
+		// if invalid, setMoveFrom and getMoveOptions
+		if (move === null) {
+			resetFirstMove(square);
+			return;
+		}
+		sendMove(move);
+
+		setOptionSquares({});
 	}
+
+	const sendMove = useCallback(async (move) => {
+		try {
+			const res = await Moralis.Cloud.run("sendMove", {
+				move: move.san,
+				gameId: liveGameId,
+			});
+			console.log(res);
+		} catch (e) {
+			safeGameMutate((game) => {
+				game.undo();
+			});
+			chessboardRef.current.clearPremoves();
+			setMoveSquares({});
+		}
+	}, []);
 
 	function onSquareRightClick(square) {
 		const colour = "rgba(0, 0, 255, 0.4)";
@@ -133,19 +147,17 @@ export const GameBoard = ({ user, boardWidth, isPlayerWhite }) => {
 		<div className="board">
 			<Chessboard
 				arePiecesDraggable={!!user}
-				isDraggablePiece={(piece) => piece.piece[0] === "w"}
-				boardOrientation={isPlayerWhite ? "white" : "black"}
+				isDraggablePiece={(piece) => piece.piece[0] === playerSide}
+				boardOrientation={playerSide === "w" ? "white" : "black"}
 				boardWidth={boardWidth}
-				arePremovesAllowed={true}
-				animationDuration={200}
+				animationDuration={300}
 				position={game.fen()}
-				onMouseOverSquare={onMouseOverSquare}
-				onMouseOutSquare={onMouseOutSquare}
+				// onMouseOverSquare={onMouseOverSquare}
 				onSquareClick={onSquareClick}
 				onSquareRightClick={onSquareRightClick}
 				onPieceDrop={onDrop}
 				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
-				customLightSquareStyle={{ backgroundColor: "#D3FFD8" }}
+				customLightSquareStyle={{ backgroundColor: "#f9ffe4" }}
 				customBoardStyle={{
 					borderRadius: "4px",
 					boxShadow: "0 0px 15px rgba(0, 0, 0, 0.25)",
@@ -160,34 +172,4 @@ export const GameBoard = ({ user, boardWidth, isPlayerWhite }) => {
 		</div>
 	);
 };
-
-export const DipslayBoard = ({ boardWidth }) => {
-	const chessboardRef = useRef();
-	const [game, setGame] = useState(new Chess());
-
-	function safeGameMutate(modify) {
-		setGame((g) => {
-			const update = { ...g };
-			modify(update);
-			return update;
-		});
-	}
-
-	return (
-		<div className="board">
-			<Chessboard
-				arePiecesDraggable={false}
-				boardWidth={boardWidth}
-				animationDuration={200}
-				position={game.fen()}
-				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
-				customLightSquareStyle={{ backgroundColor: "#D3FFD8" }}
-				customBoardStyle={{
-					borderRadius: "4px",
-					boxShadow: "0 0px 15px rgba(0, 0, 0, 0.25)",
-				}}
-				ref={chessboardRef}
-			/>
-		</div>
-	);
-};
+export default LiveBoard;

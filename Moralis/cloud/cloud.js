@@ -1,5 +1,20 @@
 // Pool and Pairing Functions
 
+// Check if user has a live challenge
+Moralis.Cloud.define(
+	"doesActiveChallengeExist",
+	async (request) => {
+		const existingChallenges = await checkExistingChallenges(
+			request.user.get("ethAddress")
+		);
+		if (existingChallenges.length) return true;
+		return false;
+	},
+	{
+		requireUser: true,
+	}
+);
+
 // Join Pairing Pool
 Moralis.Cloud.define(
 	"joinLiveChess",
@@ -19,7 +34,17 @@ Moralis.Cloud.define(
 		let pipeline = [
 			{
 				match: {
-					gameStatus: 0,
+					challengeStatus: 0,
+				},
+			},
+			{
+				match: {
+					$expr: {
+						$or: [
+							{ $ne: ["$player1", user.get("ethAddress")] },
+							{ $ne: ["$player2", user.get("ethAddress")] },
+						],
+					},
 				},
 			},
 			{
@@ -60,7 +85,7 @@ Moralis.Cloud.define(
 			// set challengeStatus to starting match
 			challenge.set("player2", user.get("ethAddress"));
 			challenge.set("player2ELO", user.get("ELO"));
-			challenge.set("gameStatus", 1);
+			challenge.set("challengeStatus", 1);
 
 			await challenge.save(null, { useMasterKey: true });
 
@@ -75,7 +100,7 @@ Moralis.Cloud.define(
 
 Moralis.Cloud.afterSave("Challenge", async (request) => {
 	const challenge = request.object;
-	if (challenge.get("gameStatus") === 1) {
+	if (challenge.get("challengeStatus") === 1 && !challenge.get("gameId")) {
 		const newGame = await createNewGame(
 			challenge,
 			challenge.get("player1"),
@@ -101,7 +126,7 @@ Moralis.Cloud.afterSave("Challenge", async (request) => {
 		// 		await challenge.save(null,{ useMasterKey: true });
 		// 	},
 		// 	async function (httpResponse) {
-		// 		challenge.set("gameStatus", 10);
+		// 		challenge.set("challengeStatus", 10);
 		// 		challenge.save(null,{ useMasterKey: true });
 		// 		console.error(
 		// 			"Request failed with response code " + httpResponse.status
@@ -110,7 +135,7 @@ Moralis.Cloud.afterSave("Challenge", async (request) => {
 		// );
 
 		challenge.set("gameId", newGame.id);
-		challenge.set("gameStatus", 2);
+		challenge.set("challengeStatus", 2);
 
 		await challenge.save(null, { useMasterKey: true });
 	}
@@ -134,6 +159,7 @@ Moralis.Cloud.define(
 		game.set("turn", chess.turn());
 		game.set("fen", chess.fen());
 		game.set("pgn", chess.pgn());
+		game.set("lastMove", request.params.move);
 
 		game.save(null, { useMasterKey: true });
 
@@ -144,20 +170,22 @@ Moralis.Cloud.define(
 
 Moralis.Cloud.afterSave("Game", async (request) => {
 	const game = request.object;
-	const chess = new Chess();
-	chess.load_pgn(game.get("pgn"));
+	if (game.get("pgn")) {
+		const chess = new Chess();
+		chess.load_pgn(game.get("pgn") || "");
+		if (chess.game_over()) {
+			game.set("turn", "n");
+			game.set("fen", chess.fen());
 
-	if (chess.game_over()) {
-		game.set("turn", "n");
-		game.set("fen", chess.fen());
+			const challengeQuery = new Moralis.Query("Challenge");
+			const challenge = await challengeQuery.get(game.get("challengeId"));
 
-		const challengeQuery = new Moralis.Query("Challenge");
-		const challenge = await challengeQuery.get(game.get("challengeId"));
+			challenge.set("challengeStatus", 3);
+			game.set("outcome", 3);
 
-		challenge.set("gameStatus", 3);
-
-		game.save(null, { useMasterKey: true });
-		challenge.save(null, { useMasterKey: true });
+			game.save(null, { useMasterKey: true });
+			challenge.save(null, { useMasterKey: true });
+		}
 	}
 });
 
@@ -184,7 +212,7 @@ Moralis.Cloud.define(
 		// 		await challenge.save(null,{ useMasterKey: true });
 		// 	},
 		// 	async function (httpResponse) {
-		// 		challenge.set("gameStatus", 10);
+		// 		challenge.set("challengeStatus", 10);
 		// 		challenge.save(null,{ useMasterKey: true });
 		// 		console.error(
 		// 			"Request failed with response code " + httpResponse.status
@@ -203,13 +231,17 @@ async function validateMove(request) {
 	const { gameId } = request.params;
 
 	const gameQuery = new Moralis.Query("Game");
+	const challengeQuery = new Moralis.Query("Challenge");
 	const game = await gameQuery.get(gameId);
+
+	const challenge = await challengeQuery.get(game.get("challengeId"));
 	const userSide = game.get("sides")[request.user.get("ethAddress")];
 
 	if (!userSide) throw Error("Unauthorized to move");
 	if (game.get("turn") !== userSide) throw Error("Not your turn");
 
-	if (game.status !== 2) throw Error("Game is not in progress");
+	if (challenge.get("challengeStatus") !== 2)
+		throw Error("Game is not in progress");
 
-	return null;
+	return true;
 }

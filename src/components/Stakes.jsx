@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
 	useWeb3ExecuteFunction,
 	useMoralis,
@@ -7,19 +7,21 @@ import {
 import { Modal } from "antd";
 import { gameAbi, ERC20Abi } from "../contracts/abi";
 import { notification, Tooltip } from "antd";
-
-import { ReactComponent as Loader } from "../assets/loader.svg";
+import { useWindowSize } from "../hooks/useWindowSize";
+import { numDisplayFormatter } from "../helpers/numDisplayFormatter";
 
 import "../styles/stakes.scss";
 
-const SGHODA_TOKEN_ADDRESS = "0xd8e785d3423799d24260c3b3d9b5b3961cd3875a";
-const GHODA_TOKEN_ADDRESS = "0xc86bb11da8566f2cb4f9e53b6b9091d2ec17446b";
+const SGHODA_TOKEN_ADDRESS =
+	"0xAb8b8813AD811Fe2f94002647C6A47dDD4b8F477".toLowerCase();
+const GHODA_TOKEN_ADDRESS =
+	"0x48a6c3feF5Bc5394f7FF32c4AE3c461A5bD58100".toLowerCase();
 
 const Stakes = () => {
 	const [stakeAmount, setStakeAmount] = useState(0);
-	const [unstakeAmount, setUnstakeAmount] = useState(0);
-	const [isModalVisible, setIsModalVisible] = useState(false);
-	const { user, Moralis, isWeb3Enabled, isWeb3EnableLoading } = useMoralis();
+	const [unstakeAmountInput, setUnstakeAmountInput] = useState(0);
+	const { user, Moralis, isWeb3Enabled } = useMoralis();
+	const winSize = useWindowSize();
 
 	const openNoStakeErrorNotification = () => {
 		notification["error"]({
@@ -76,9 +78,9 @@ const Stakes = () => {
 
 	const {
 		data: approvalData,
-		error: getApprovalError,
-		fetch: getApproval,
-		isFetching: isApproveFetching,
+		error: getApprovalFromUserError,
+		fetch: getApprovalFromUser,
+		isFetching: isApproving,
 	} = useWeb3ExecuteFunction({
 		abi: ERC20Abi,
 		contractAddress: GHODA_TOKEN_ADDRESS,
@@ -92,18 +94,21 @@ const Stakes = () => {
 	const {
 		data: allowanceData,
 		error: allowanceError,
-		fetch: getAllowance,
+		fetch: getAllowanceForUser,
 		isFetching: isAllowanceFetching,
 	} = useWeb3ExecuteFunction({
 		abi: ERC20Abi,
 		contractAddress: GHODA_TOKEN_ADDRESS,
 		functionName: "allowance",
 		params: {
-			owner: user?.attributes?.ethAddress,
+			owner: user?.get("ethAddress"),
 			spender: SGHODA_TOKEN_ADDRESS,
 		},
 	});
-
+	const allowedAmountToSpend = useMemo(
+		() => Moralis.Units.FromWei(allowanceData || 0),
+		[allowanceData]
+	);
 	const {
 		error: stakeError,
 		fetch: stakeTokens,
@@ -113,7 +118,7 @@ const Stakes = () => {
 		contractAddress: SGHODA_TOKEN_ADDRESS,
 		functionName: "stake",
 		params: {
-			_amount: Moralis.Units.Token(Number(stakeAmount), "18"),
+			_amount: Moralis.Units.Token(stakeAmount, "18"),
 		},
 	});
 
@@ -126,19 +131,144 @@ const Stakes = () => {
 		contractAddress: SGHODA_TOKEN_ADDRESS,
 		functionName: "unstake",
 		params: {
-			_amount: Moralis.Units.Token(Number(unstakeAmount), "18"),
+			_amount: Moralis.Units.Token(unstakeAmountInput, "18"),
 		},
 	});
 
 	useEffect(() => {
-		if (isWeb3Enabled) getAllowance();
-	}, [isWeb3Enabled]);
-	useEffect(() => {
-		console.log(approvalData);
-	}, [approvalData]);
+		isWeb3Enabled && user && getAllowanceForUser();
+	}, [isWeb3Enabled, user]);
 
 	return (
 		<div className="Stakes" style={{ marginTop: "3rem" }}>
+			<Modals
+				isStakingTokens={isStakingTokens}
+				isApproving={isApproving}
+				isStakedBalanceLoading={isStakedBalanceLoading}
+				isTokenBalanceLoading={isTokenBalanceLoading}
+				isUnstakingTokens={isUnstakingTokens}
+			/>
+
+			<section className="amounts">
+				<div className="erc20-balance balance">
+					<Tooltip
+						title="$GHODA in your wallet"
+						placement={winSize.width > 1024 ? "left" : "bottom"}
+						overlayClass="tooltip"
+						arrowPointAtCenter={true}>
+						<span className="label" style={{ cursor: "help" }}>
+							GHODA
+						</span>
+					</Tooltip>
+					<span className="amount">{numDisplayFormatter(tokenBalance)}</span>
+				</div>
+				<div className="staked-balance balance">
+					<Tooltip
+						title="Staked $GHODA. Required to play the game"
+						placement={winSize.width > 1024 ? "right" : "bottom"}
+						overlayClass="tooltip"
+						arrowPointAtCenter={true}>
+						<span className="label" style={{ cursor: "help" }}>
+							sGHODA
+						</span>
+					</Tooltip>
+					<span className="amount">{numDisplayFormatter(stakedBalance)}</span>
+				</div>
+			</section>
+			<section className="stake-unstake">
+				<div className="stake card">
+					<div className="title">Stake</div>
+					<div className="stake-input input">
+						<span className="token">GHODA</span>
+						<input
+							type="number"
+							className="stake-amount amount"
+							value={stakeAmount}
+							onWheel={(e) => e.target.blur()}
+							onChange={(e) => setStakeAmount(e.target.value)}
+						/>
+						<button
+							className="max"
+							onClick={() => setStakeAmount(tokenBalance)}>
+							max
+						</button>
+					</div>
+					<div className="stake-submit submit">
+						{allowedAmountToSpend && stakeAmount < allowedAmountToSpend ? (
+							<button
+								className="stake-btn"
+								disabled={!stakeAmount}
+								onClick={async () => {
+									!approvalData?.status && (await getApprovalFromUser());
+									await stakeTokens();
+									setStakeAmount(0);
+								}}>
+								Stake
+							</button>
+						) : (
+							<button
+								className="approve-btn"
+								onClick={async () => {
+									await getApprovalFromUser();
+								}}>
+								Approve
+							</button>
+						)}
+					</div>
+				</div>
+				<div className="unstake card">
+					<div className="title">Unstake</div>
+					<div className="unstake-input input">
+						<span className="token">GHODA</span>
+
+						<input
+							type="number"
+							className="unstake-amount amount"
+							value={unstakeAmountInput}
+							onWheel={(e) => e.target.blur()}
+							onChange={(e) => setUnstakeAmountInput(e.target.value)}
+						/>
+						<button
+							className="max"
+							onClick={() => {
+								setUnstakeAmountInput(stakedBalance);
+							}}>
+							max
+						</button>
+					</div>
+					<div className="unstake-submit submit">
+						<button
+							className="unstake-btn"
+							disabled={
+								unstakeAmountInput < 0 || !unstakeAmountInput || !isWeb3Enabled
+							}
+							onClick={async () => {
+								if (stakedBalance === 0) {
+									openNoStakeErrorNotification();
+									setUnstakeAmountInput(0);
+									return;
+								}
+								await unstakeTokens();
+								setUnstakeAmountInput(0);
+							}}>
+							Unstake
+						</button>
+					</div>
+				</div>
+			</section>
+		</div>
+	);
+};
+
+const Modals = ({
+	isStakingTokens,
+	isApproving,
+	isStakedBalanceLoading,
+	isTokenBalanceLoading,
+	isUnstakingTokens,
+}) => {
+	return (
+		<>
 			<Modal
 				title="Loading"
 				visible={isStakingTokens}
@@ -148,7 +278,7 @@ const Stakes = () => {
 			</Modal>
 			<Modal
 				title="Loading"
-				visible={isApproveFetching}
+				visible={isApproving}
 				footer={null}
 				closable={false}>
 				<p>Approving in progress...</p>
@@ -174,125 +304,15 @@ const Stakes = () => {
 				closable={false}>
 				<p>Unstaking in progress...</p>
 			</Modal>
-			<section className="amounts">
-				<div className="erc20-balance balance">
-					<Tooltip
-						title="$GHODA in your wallet"
-						placement="left"
-						overlayClass="tooltip">
-						<span
-							className="label"
-							style={{ cursor: "help" }}
-							arrowPointAtCenter={true}>
-							GHODA
-						</span>
-					</Tooltip>
-					<span className="amount">
-						{Moralis.Units.FromWei(Number(tokenBalance))}
-					</span>
-				</div>
-				<div className="staked-balance balance">
-					<Tooltip
-						title="$GHODA staked and used for betting in game"
-						placement="right"
-						overlayClass="tooltip"
-						arrowPointAtCenter={true}>
-						<span className="label" style={{ cursor: "help" }}>
-							sGHODA
-						</span>
-					</Tooltip>
-					<span className="amount">
-						{Moralis.Units.FromWei(Number(stakedBalance))}
-					</span>
-				</div>
-			</section>
-
-			<section className="stake-unstake">
-				<div className="stake card">
-					<div className="title">Stake GHODA</div>
-					<div className="stake-input input">
-						<span className="token">GHODA</span>
-						<input
-							type="number"
-							className="stake-amount amount"
-							value={stakeAmount}
-							onWheel={(e) => e.target.blur()}
-							onChange={(e) => setStakeAmount(e.target.value)}
-						/>
-						<button
-							className="max"
-							onClick={() => setStakeAmount(tokenBalance)}>
-							max
-						</button>
-					</div>
-					<div className="stake-submit submit">
-						{approvalData?.status && stakeAmount < Number(allowanceData) ? (
-							<button
-								className="stake-btn"
-								onClick={async () => {
-									!approvalData?.status && (await getApproval());
-									await stakeTokens();
-									setStakeAmount(0);
-								}}>
-								Stake
-							</button>
-						) : (
-							<button
-								className="approve-btn"
-								onClick={async () => {
-									await getApproval();
-									await getAllowance();
-									console.log("approve error:", getApproval);
-									console.log("allow error:", allowanceError);
-								}}>
-								Approve
-							</button>
-						)}
-					</div>
-				</div>
-				<div className="unstake card">
-					<div className="title">Unstake GHODA</div>
-					<div className="unstake-input input">
-						<span className="token">GHODA</span>
-
-						<input
-							type="number"
-							className="unstake-amount amount"
-							value={unstakeAmount}
-							disabled={
-								!approvalData ||
-								!approvalData?.status ||
-								Number(stakedBalanceObj) === 0
-							}
-							onWheel={(e) => e.target.blur()}
-							onChange={(e) => setUnstakeAmount(e.target.value)}
-						/>
-						<button
-							className="max"
-							onClick={() => {
-								setUnstakeAmount(stakedBalance);
-							}}>
-							max
-						</button>
-					</div>
-					<div className="unstake-submit submit">
-						<button
-							className="unstake-btn"
-							onClick={async () => {
-								if (Number(stakedBalance) === 0) {
-									openNoStakeErrorNotification();
-									return;
-								}
-								await unstakeTokens();
-								setUnstakeAmount(0);
-							}}>
-							Unstake
-						</button>
-					</div>
-				</div>
-			</section>
-		</div>
+		</>
 	);
 };
-
+const openNoStakeErrorNotification = () => {
+	notification["error"]({
+		message: "No Tokens Staked",
+		description:
+			"You have not staked any tokens. Please stake some tokens to unstake tokens.",
+		placement: "bottomRight",
+	});
+};
 export default Stakes;
