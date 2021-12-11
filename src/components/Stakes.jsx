@@ -32,49 +32,77 @@ const Stakes = () => {
 		});
 	};
 
-	const {
-		data: [stakedBalanceObj],
-		error: stakedBalanceObjError,
-		isLoading: isStakedBalanceLoading,
-	} = useMoralisQuery(
-		"PolygonTokenBalance",
-		(query) =>
-			query
-				.equalTo("address", user?.get("ethAddress"))
-				.equalTo("token_address", SGHODA_TOKEN_ADDRESS),
-		[user],
-		{
-			live: true,
-		}
-	);
+	// const {
+	// 	data: [stakedBalanceObj],
+	// 	error: stakedBalanceObjError,
+	// 	isLoading: isStakedBalanceLoading,
+	// } = useMoralisQuery(
+	// 	"PolygonTokenBalance",
+	// 	(query) =>
+	// 		query
+	// 			.equalTo("address", user?.get("ethAddress"))
+	// 			.equalTo("token_address", SGHODA_TOKEN_ADDRESS),
+	// 	[user],
+	// 	{
+	// 		live: true,
+	// 	}
+	// );
+
+	// const {
+	// 	data: [tokenBalanceObj],
+	// 	error: tokenBalanceObjError,
+	// 	isLoading: isTokenBalanceLoading,
+	// } = useMoralisQuery(
+	// 	"PolygonTokenBalance",
+	// 	(query) =>
+	// 		query
+	// 			.equalTo("address", user?.get("ethAddress"))
+	// 			.equalTo("token_address", GHODA_TOKEN_ADDRESS),
+	// 	[user],
+	// 	{
+	// 		live: true,
+	// 	}
+	// );
+
+	// const [tokenBalance, setTokenBalance] = useState(0);
+	// const [stakedBalance, setStakedBalance] = useState(0);
+
+	// useEffect(() => {
+	// 	setTokenBalance(
+	// 		Moralis.Units.FromWei(tokenBalanceObj?.get("balance") || 0)
+	// 	);
+	// 	setStakedBalance(
+	// 		Moralis.Units.FromWei(stakedBalanceObj?.get("balance") || 0)
+	// 	);
+	// }, [stakedBalanceObj, tokenBalanceObj]);
 
 	const {
-		data: [tokenBalanceObj],
-		error: tokenBalanceObjError,
-		isLoading: isTokenBalanceLoading,
-	} = useMoralisQuery(
-		"PolygonTokenBalance",
-		(query) =>
-			query
-				.equalTo("address", user?.get("ethAddress"))
-				.equalTo("token_address", GHODA_TOKEN_ADDRESS),
-		[user],
-		{
-			live: true,
-		}
-	);
+		data: tokenBalance,
+		error: tokenBalanceError,
+		fetch: fetchTokenBalance,
+		isFetching: isTokenBalanceLoading,
+	} = useWeb3ExecuteFunction({
+		abi: ERC20Abi,
+		contractAddress: GHODA_TOKEN_ADDRESS,
+		functionName: "balanceOf",
+		params: {
+			account: user?.get("ethAddress"),
+		},
+	});
 
-	const [tokenBalance, setTokenBalance] = useState(0);
-	const [stakedBalance, setStakedBalance] = useState(0);
-
-	useEffect(() => {
-		setTokenBalance(
-			Moralis.Units.FromWei(tokenBalanceObj?.get("balance") || 0)
-		);
-		setStakedBalance(
-			Moralis.Units.FromWei(stakedBalanceObj?.get("balance") || 0)
-		);
-	}, [stakedBalanceObj, tokenBalanceObj]);
+	const {
+		data: stakedBalance,
+		error: stakedBalanceError,
+		fetch: fetchStakedBalance,
+		isFetching: isStakedBalanceLoading,
+	} = useWeb3ExecuteFunction({
+		abi: ERC20Abi,
+		contractAddress: SGHODA_TOKEN_ADDRESS,
+		functionName: "balanceOf",
+		params: {
+			account: user?.get("ethAddress"),
+		},
+	});
 
 	const {
 		data: approvalData,
@@ -139,6 +167,11 @@ const Stakes = () => {
 		isWeb3Enabled && user && getAllowanceForUser();
 	}, [isWeb3Enabled, user]);
 
+	useEffect(() => {
+		fetchTokenBalance();
+		fetchStakedBalance();
+	}, []);
+
 	return (
 		<div className="Stakes" style={{ marginTop: "3rem" }}>
 			<Modals
@@ -160,7 +193,9 @@ const Stakes = () => {
 							GHODA
 						</span>
 					</Tooltip>
-					<span className="amount">{numDisplayFormatter(tokenBalance)}</span>
+					<span className="amount">
+						{numDisplayFormatter(Moralis.Units.FromWei(tokenBalance))}
+					</span>
 				</div>
 				<div className="staked-balance balance">
 					<Tooltip
@@ -172,7 +207,9 @@ const Stakes = () => {
 							sGHODA
 						</span>
 					</Tooltip>
-					<span className="amount">{numDisplayFormatter(stakedBalance)}</span>
+					<span className="amount">
+						{numDisplayFormatter(Moralis.Units.FromWei(stakedBalance))}
+					</span>
 				</div>
 			</section>
 			<section className="stake-unstake">
@@ -189,7 +226,9 @@ const Stakes = () => {
 						/>
 						<button
 							className="max"
-							onClick={() => setStakeAmount(tokenBalance)}>
+							onClick={() =>
+								setStakeAmount(Moralis.Units.FromWei(tokenBalance))
+							}>
 							max
 						</button>
 					</div>
@@ -200,7 +239,10 @@ const Stakes = () => {
 								disabled={!stakeAmount}
 								onClick={async () => {
 									!approvalData?.status && (await getApprovalFromUser());
+
 									await stakeTokens();
+									await fetchStakedBalance();
+									await fetchTokenBalance();
 									setStakeAmount(0);
 								}}>
 								Stake
@@ -231,7 +273,7 @@ const Stakes = () => {
 						<button
 							className="max"
 							onClick={() => {
-								setUnstakeAmountInput(stakedBalance);
+								setUnstakeAmountInput(Moralis.Units.FromWei(stakedBalance));
 							}}>
 							max
 						</button>
@@ -249,6 +291,8 @@ const Stakes = () => {
 									return;
 								}
 								await unstakeTokens();
+								await fetchStakedBalance();
+								await fetchTokenBalance();
 								setUnstakeAmountInput(0);
 							}}>
 							Unstake
@@ -281,7 +325,7 @@ const Modals = ({
 				visible={isApproving}
 				footer={null}
 				closable={false}>
-				<p>Approving in progress...</p>
+				<p>Approval in progress...</p>
 			</Modal>
 			<Modal
 				title="Loading"
