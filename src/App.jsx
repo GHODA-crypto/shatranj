@@ -29,7 +29,10 @@ const App = ({ isServerInfo }) => {
 		isAuthenticated,
 		isWeb3EnableLoading,
 		user,
+		Moralis,
 	} = useMoralis();
+
+	window.Moralis = Moralis;
 
 	const [isPairing, setIsPairing] = useState(false);
 	const [pairingParams, setPairingParams] = useState({});

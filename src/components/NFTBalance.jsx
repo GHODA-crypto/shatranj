@@ -28,21 +28,19 @@ function NFTBalance() {
 	const { Moralis, chainId } = useMoralis();
 	const [visible, setVisibility] = useState(false);
 	const [receiverToSend, setReceiver] = useState(null);
-	const [amountToSend, setAmount] = useState(null);
+	// const [amountToSend, setAmount] = useState(null);
 	const [nftToSend, setNftToSend] = useState(null);
 	const [isPending, setIsPending] = useState(false);
 
-	async function transfer(nft, amount, receiver) {
+	async function transfer(nft, receiver) {
 		const options = {
-			type: nft.contract_type,
+			type: nft.contract_type.toLowerCase(),
 			tokenId: nft.token_id,
 			receiver: receiver,
 			contractAddress: nft.token_address,
+			amount: 1,
 		};
-
-		if (options.type === "erc1155") {
-			options.amount = amount;
-		}
+		console.log(options);
 
 		setIsPending(true);
 		await Moralis.transfer(options)
@@ -61,11 +59,11 @@ function NFTBalance() {
 		setVisibility(true);
 	};
 
-	const handleChange = (e) => {
-		setAmount(e.target.value);
-	};
+	// const handleChange = (e) => {
+	// 	setAmount(e.target.value);
+	// };
 
-	console.log("NFTBalances", NFTBalances);
+	// console.log("NFTBalances", NFTBalances?.result);
 	return (
 		<>
 			<div style={styles.NFTs}>
@@ -90,7 +88,14 @@ function NFTBalance() {
 									</Tooltip>,
 									<Tooltip title="Sell On OpenSea">
 										<ShoppingCartOutlined
-											onClick={() => alert("OPENSEA INTEGRATION COMING!")}
+											onClick={() =>
+												window
+													.open(
+														`https://testnets.opensea.io/assets/mumbai/${nft.token_address}/${nft.token_id}/sell`,
+														"_blank"
+													)
+													.focus()
+											}
 										/>
 									</Tooltip>,
 								]}
@@ -114,16 +119,10 @@ function NFTBalance() {
 				title={`Transfer ${nftToSend?.name || "NFT"}`}
 				visible={visible}
 				onCancel={() => setVisibility(false)}
-				onOk={() => transfer(nftToSend, amountToSend, receiverToSend)}
+				onOk={() => transfer(nftToSend, receiverToSend)}
 				confirmLoading={isPending}
 				okText="Send">
 				<AddressInput autoFocus placeholder="Receiver" onChange={setReceiver} />
-				{nftToSend && nftToSend.contract_type === "erc1155" && (
-					<Input
-						placeholder="amount to send"
-						onChange={(e) => handleChange(e)}
-					/>
-				)}
 			</Modal>
 		</>
 	);
