@@ -238,8 +238,6 @@ const Stakes = () => {
 								className="stake-btn"
 								disabled={!stakeAmount}
 								onClick={async () => {
-									!approvalData?.status && (await getApprovalFromUser());
-
 									await stakeTokens();
 									await fetchStakedBalance();
 									await fetchTokenBalance();
