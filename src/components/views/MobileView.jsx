@@ -51,7 +51,7 @@ const MobileView = ({
 		},
 		Button: {
 			position: "absolute",
-			top: "1rem",
+			top: "-1rem",
 			right: "1rem",
 			width: "3rem",
 			height: "3rem",

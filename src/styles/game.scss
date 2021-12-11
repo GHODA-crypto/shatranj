@@ -397,7 +397,7 @@
 }
 
 .game-mobile {
-	margin-top: 2rem;
+	margin-top: 4rem;
 	width: 100vw;
 	display: flex;
 	justify-content: center;
@@ -447,7 +447,22 @@
 .game-meta {
 	.ant-drawer-content-wrapper {
 		.ant-drawer-content {
+			margin-top: 40px;
+			height: calc(100vh - 40px);
 			.ant-drawer-wrapper-body {
+				.ant-drawer-header {
+					background-color: $dark;
+					.ant-drawer-header-title {
+						button {
+							margin-top: 1rem;
+							span {
+								svg {
+									fill: $light;
+								}
+							}
+						}
+					}
+				}
 				.ant-drawer-body {
 					.tabs-container {
 						width: 100%;
