@@ -88,7 +88,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 
 	const isPlayerWhite = useMemo(() => {
 		return liveGameData
-			? liveGameData.get("sides")[user?.get("ethAddress")] === "w"
+			? liveGameData.get("sides")?.[user?.get("ethAddress")] === "w"
 			: "w";
 	}, [liveGameData, user]);
 
