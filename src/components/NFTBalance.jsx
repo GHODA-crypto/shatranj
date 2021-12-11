@@ -16,7 +16,7 @@ const styles = {
 		flexWrap: "wrap",
 		WebkitBoxPack: "start",
 		justifyContent: "flex-start",
-		margin: "0 auto",
+		margin: "2rem auto 0",
 		maxWidth: "1000px",
 		width: "100%",
 		gap: "10px",
@@ -99,7 +99,7 @@ function NFTBalance() {
 										/>
 									</Tooltip>,
 								]}
-								style={{ width: 240, border: "2px solid #e7eaf3" }}
+								style={{ width: 300, border: "2px solid #e7eaf3" }}
 								cover={
 									<Image
 										preview={false}
