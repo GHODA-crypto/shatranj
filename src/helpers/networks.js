@@ -65,8 +65,7 @@ export const networkConfigs = {
 		chainName: "Mumbai",
 		currencyName: "MATIC",
 		currencySymbol: "MATIC",
-		rpcUrl:
-			"https://speedy-nodes-nyc.moralis.io/cdd2c782833f3dba40a1603b/polygon/mumbai",
+		rpcUrl: "https://rpc-mumbai.maticvigil.com",
 		blockExplorerUrl: "https://mumbai.polygonscan.com/",
 	},
 };

@@ -19,7 +19,7 @@ import MenuItems from "./components/MenuItems";
 import Lobby from "./components/Lobby";
 import LiveChess from "./components/LiveChess";
 import TestCloudFunctions from "./components/TestCloudFunctions";
-
+import "./styles/main.scss";
 const { Header } = Layout;
 
 const App = ({ isServerInfo }) => {

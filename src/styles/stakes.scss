@@ -59,8 +59,6 @@
 	}
 	.stake-unstake {
 		width: 80%;
-		height: 65%;
-		min-height: 16rem;
 		display: flex;
 		justify-content: space-around;
 		align-items: center;
@@ -69,8 +67,7 @@
 			position: relative;
 			background-color: $dark;
 			width: 40%;
-			height: 80%;
-			min-height: 16rem;
+			min-height: 20rem;
 			// border: 1px solid black;
 			border-radius: 1rem;
 			display: flex;
@@ -82,6 +79,7 @@
 				font-size: 1.6rem;
 				font-weight: 600;
 				color: $light;
+				margin-bottom: 1rem;
 				&::after {
 					content: "";
 					display: block;
@@ -95,7 +93,6 @@
 				}
 			}
 			.input {
-				margin-bottom: -2rem;
 				width: 80%;
 				height: 5rem;
 				background-color: $light;
@@ -169,10 +166,6 @@
 					transition: all 0.2s ease-in-out;
 					&:hover {
 						background-color: rgba($accent, 0.9);
-					}
-					&:disabled {
-						background-color: rgba($accent, 0.5);
-						cursor: not-allowed;
 					}
 				}
 			}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
 	useWeb3ExecuteFunction,
 	useMoralis,
@@ -12,8 +12,10 @@ import { ReactComponent as Loader } from "../assets/loader.svg";
 
 import "../styles/stakes.scss";
 
-const SGHODA_TOKEN_ADDRESS = "0xd8e785d3423799d24260c3b3d9b5b3961cd3875a";
-const GHODA_TOKEN_ADDRESS = "0xc86bb11da8566f2cb4f9e53b6b9091d2ec17446b";
+const SGHODA_TOKEN_ADDRESS =
+	"0xAb8b8813AD811Fe2f94002647C6A47dDD4b8F477".toLowerCase();
+const GHODA_TOKEN_ADDRESS =
+	"0x48a6c3feF5Bc5394f7FF32c4AE3c461A5bD58100".toLowerCase();
 
 const Stakes = () => {
 	const [stakeAmount, setStakeAmount] = useState(0);
@@ -67,8 +69,7 @@ const Stakes = () => {
 		error: getApprovalFromUserError,
 		fetch: getApprovalFromUser,
 		isFetching: isApproving,
-	} = useWeb3ExecuteFunction();
-	const getApprovalOptions = {
+	} = useWeb3ExecuteFunction({
 		abi: ERC20Abi,
 		contractAddress: GHODA_TOKEN_ADDRESS,
 		functionName: "approve",
@@ -76,15 +77,14 @@ const Stakes = () => {
 			spender: SGHODA_TOKEN_ADDRESS,
 			amount: Moralis.Units.Token("1000000000", "18"),
 		},
-	};
+	});
 
 	const {
 		data: allowanceData,
 		error: allowanceError,
 		fetch: getAllowanceForUser,
 		isFetching: isAllowanceFetching,
-	} = useWeb3ExecuteFunction({});
-	const getAllowanceOptions = {
+	} = useWeb3ExecuteFunction({
 		abi: ERC20Abi,
 		contractAddress: GHODA_TOKEN_ADDRESS,
 		functionName: "allowance",
@@ -92,7 +92,11 @@ const Stakes = () => {
 			owner: user?.get("ethAddress"),
 			spender: SGHODA_TOKEN_ADDRESS,
 		},
-	};
+	});
+	const allowedAmountToSpend = useMemo(
+		() => Moralis.Units.FromWei(allowanceData || 0),
+		[allowanceData]
+	);
 
 	const {
 		error: stakeError,
@@ -121,12 +125,8 @@ const Stakes = () => {
 	});
 
 	useEffect(() => {
-		getAllowanceForUser(getAllowanceOptions);
+		isWeb3Enabled && user && getAllowanceForUser();
 	}, [isWeb3Enabled, user]);
-
-	useEffect(() => {
-		console.log({ allowanceData, approvalData });
-	}, [allowanceData, approvalData]);
 
 	return (
 		<div className="Stakes" style={{ marginTop: "3rem" }}>
@@ -162,9 +162,8 @@ const Stakes = () => {
 
 			<section className="stake-unstake">
 				<div className="stake card">
-					<div className="title">Stake GHODA</div>
+					<div className="title">Stake</div>
 					<div className="stake-input input">
-						<span className="token">GHODA</span>
 						<input
 							type="number"
 							className="stake-amount amount"
@@ -179,11 +178,10 @@ const Stakes = () => {
 						</button>
 					</div>
 					<div className="stake-submit submit">
-						{approvalData?.status && stakeAmount < Number(allowanceData) ? (
+						{allowedAmountToSpend && stakeAmount < allowedAmountToSpend ? (
 							<button
 								className="stake-btn"
 								onClick={async () => {
-									await getApprovalFromUser(getApprovalOptions);
 									await stakeTokens();
 									setStakeAmount(0);
 								}}>
@@ -193,7 +191,7 @@ const Stakes = () => {
 							<button
 								className="approve-btn"
 								onClick={async () => {
-									await getAllowanceForUser();
+									await getApprovalFromUser();
 								}}>
 								Approve
 							</button>
@@ -201,10 +199,8 @@ const Stakes = () => {
 					</div>
 				</div>
 				<div className="unstake card">
-					<div className="title">Unstake GHODA</div>
+					<div className="title">Unstake</div>
 					<div className="unstake-input input">
-						<span className="token">GHODA</span>
-
 						<input
 							type="number"
 							className="unstake-amount amount"
@@ -226,7 +222,7 @@ const Stakes = () => {
 							disabled={
 								unstakeAmountInput > stakedBalance ||
 								unstakeAmountInput < 0 ||
-								unstakeAmountInput !== 0 ||
+								unstakeAmountInput === 0 ||
 								!isWeb3Enabled
 							}
 							onClick={async () => {

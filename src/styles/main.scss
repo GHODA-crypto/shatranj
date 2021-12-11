@@ -1,0 +1,6 @@
+button {
+	&:disabled {
+		filter: grayscale(60%);
+		cursor: not-allowed !important;
+	}
+}
