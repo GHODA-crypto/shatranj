@@ -113,7 +113,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 				/>
 			</MobileView>
 		);
-	else if (winSize.width >= 700 && winSize.width < 1024)
+	else if (winSize.width >= 700 && winSize.width < 1200)
 		return (
 			<TabView isPlayerWhite={isPlayerWhite} winSize={winSize}>
 				<LiveBoard

@@ -121,7 +121,7 @@ const styles = {
 	},
 	header: {
 		position: "fixed",
-		zIndex: 1,
+		zIndex: 9999,
 		width: "100%",
 		background: "#fff",
 		display: "flex",

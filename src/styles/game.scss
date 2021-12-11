@@ -7,7 +7,6 @@
 	justify-content: space-between;
 	align-items: center;
 	.chat-room {
-		// background-color: red;
 		box-shadow: 0px 0px 12px 2px rgba($accent, 0.25);
 		background-color: $light;
 		height: 100%;
@@ -185,44 +184,19 @@
 }
 
 .game-tablet {
-	margin-top: 1rem;
+	margin-top: 2rem;
 	width: 100vw;
-	height: 100vh;
 	display: flex;
 	justify-content: space-around;
 	align-items: center;
 	.chessboard {
-		padding: 2rem;
 		// background-color: green;
-		width: 65%;
 		height: 100%;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
-		.players {
-			// background-color: red;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			width: 100%;
-			height: 15%;
-			.player-info {
-				display: flex;
-				align-items: flex-end;
-				.username {
-					color: $accent;
-					font-size: 1.5rem;
-					font-weight: 500;
-				}
-				.ilo {
-					font-size: 0.8rem;
-					font-weight: 500;
-					margin-left: 0.5rem;
-					margin-bottom: 0.35rem;
-				}
-			}
-		}
+
 		.board {
 			width: 100%;
 			height: 100%;
@@ -234,110 +208,187 @@
 		}
 	}
 	.game-meta {
-		box-shadow: 0px 0px 12px 2px rgba($accent, 0.4);
-		background-color: $dark;
-		width: 35%;
-		padding: 1rem;
+		box-shadow: 0px 0px 12px 2px rgba($accent, 0.25);
+		background-color: $light;
 		height: 100%;
-		.ant-tabs {
-			height: 100%;
-		}
-		.pgn {
-			width: 100%;
-			height: 70%;
-			border: 1px solid pink;
-			border-radius: 1rem;
-		}
-		.btns {
-			display: grid;
-			width: 100%;
-			height: 25%;
-			margin-top: 2rem;
-			margin-bottom: 1rem;
-			grid-template-columns: 1fr 1fr;
-			grid-template-rows: 1fr 1fr;
-			gap: 2rem;
-			button {
-				cursor: pointer;
-				border: none;
-				border-radius: 0.5rem;
-				background-color: $accent;
-				color: $dark;
-				font-size: 1.5rem;
-			}
-			.danger {
-				background-color: rgb(255, 64, 64);
-				color: $light;
-			}
-		}
-		.prize-pool {
-			margin-top: 6%;
-			width: 100%;
-			height: 20%;
-			.label {
-				font-size: 2rem;
-				color: $light;
-			}
-			.prize {
-				margin-top: -1rem;
-				font-size: 5rem;
-				font-weight: 700;
-				color: $accent;
-				.ghd {
-					margin-left: 0.75rem;
-					font-size: 3.75rem;
-				}
-			}
-		}
+		display: flex;
+		flex-direction: column;
+		align-items: left;
+		justify-content: space-between;
 
-		.chat {
-			height: 70%;
+		.tabs-container {
 			width: 100%;
-			padding: 0.5rem;
-			background-color: rgba(lighten($dark, 60%), 0.4);
-			border-radius: 0.5rem;
-			margin-top: 1rem;
-			.chat-text {
-				height: 85%;
-				width: 100%;
-				overflow-y: scroll;
-				overflow-x: hidden;
-				padding: 1rem;
-			}
-			.chat-input {
-				bottom: 0.5rem;
-				height: 15%;
-				width: 100%;
-				display: flex;
-				align-items: center;
-				input {
-					font-size: 1.2rem;
-					width: 80%;
-					height: 70%;
-					border: none;
-					border-radius: 0.5rem;
-					padding: 0.75rem 1rem;
-					color: $light;
-					background-color: rgba($light, 0.3);
-					&:focus {
-						outline: none;
+			height: 100%;
+			display: flex;
+			justify-content: space-around;
+			color: $dark;
+			.ant-tabs-content-holder {
+				.ant-tabs-content {
+					height: 100% !important;
+					.game-info {
+						background-color: $light;
+						display: flex;
+						flex-direction: column;
+						justify-content: space-between;
+						height: 100%;
+						.pgn {
+							width: 100%;
+							height: 50%;
+							border: 1px solid grey;
+							border-radius: 1rem;
+						}
+						.players {
+							display: flex;
+							flex-direction: column;
+							justify-content: center;
+							align-items: flex-start;
+							width: 100%;
+							height: 25%;
+							padding: 0 0.5rem;
+							.player-info {
+								width: 100%;
+								display: flex;
+								align-items: flex-end;
+								.username {
+									color: darken($accent, 15%);
+									font-size: 1.5rem;
+									font-weight: 500;
+								}
+								.elo {
+									color: $dark;
+									font-size: 0.8rem;
+									font-weight: 500;
+									margin-left: 1.5rem;
+									margin-bottom: 0.35rem;
+								}
+							}
+						}
 					}
-				}
-				button {
-					margin-left: 0.75rem;
-					width: 20%;
-					height: 65%;
-					background-color: $accent;
-					border: none;
-					border-radius: 0.5rem;
-					display: flex;
-					justify-content: center;
-					cursor: pointer;
-					align-items: center;
-					svg {
-						margin-left: -0.25rem;
-						margin-bottom: -0.25rem;
-						fill: $light;
+
+					.chat-room {
+						height: 100%;
+						//min-height -> calc
+						display: flex;
+						flex-direction: column;
+						align-items: left;
+						justify-content: space-between;
+						.prize-pool {
+							height: 20%;
+							//min-height
+							.label {
+								font-size: 1.2rem;
+								color: $dark;
+							}
+							.prize {
+								display: flex;
+								align-items: center;
+								margin-top: -1rem;
+								font-size: 3rem;
+								font-weight: 700;
+								color: darken($accent, 15%);
+								.amount {
+									margin-left: 0.5rem;
+								}
+								.ghd {
+									font-size: 1.5rem;
+									padding: 0 0.5rem;
+									border-radius: 0.6rem;
+									background-color: darken($accent, 15%);
+									color: $light;
+								}
+							}
+						}
+
+						.chat {
+							height: 60%;
+							width: 100%;
+							background-color: rgba(darken($light, 40%), 0.3);
+							border-radius: 0.5rem;
+							.chat-text {
+								height: 85%;
+								width: 100%;
+								overflow-y: scroll;
+								overflow-x: hidden;
+							}
+							.chat-input {
+								height: 15%;
+								width: 100%;
+								display: flex;
+								align-items: center;
+								input {
+									font-size: 1rem;
+									width: 85%;
+									height: 100%;
+									border: none;
+									border-radius: 0 0 0 0.5rem;
+									padding: 0.75rem 1rem;
+									color: $light;
+									background-color: lighten($dark, 10%);
+									box-shadow: 0px -4px 8px 0 rgba($accent, 0.25);
+									&:focus {
+										outline: none;
+									}
+								}
+								button {
+									width: 15%;
+									height: 100%;
+									background-color: $accent;
+									border: none;
+									border-radius: 0 0 0.5rem 0;
+									box-shadow: 0px -4px 8px 0 rgba($accent, 0.25);
+									display: flex;
+									justify-content: center;
+									cursor: pointer;
+									align-items: center;
+									svg {
+										margin-left: -0.25rem;
+										margin-bottom: -0.25rem;
+										fill: $light;
+									}
+								}
+							}
+						}
+						.btns {
+							display: flex;
+							justify-content: space-between;
+							align-items: center;
+							width: 100%;
+							height: 25%;
+							button {
+								height: 4rem;
+								width: 30%;
+								display: flex;
+								flex-direction: column;
+								justify-content: center;
+								align-items: center;
+								padding: 0.3rem;
+								cursor: pointer;
+								border: none;
+								border-radius: 0.5rem;
+								background-color: darken($accent, 15%);
+								color: $light;
+								svg {
+									fill: $light;
+								}
+
+								.text {
+									display: none;
+									margin-top: 0.1rem;
+									font-size: 0.8rem;
+									font-weight: 700;
+									transition: display 0.2s ease-in-out;
+								}
+								&:hover {
+									.text {
+										display: block;
+									}
+								}
+							}
+							.danger {
+								background-color: rgb(255, 64, 64);
+								color: $light;
+							}
+						}
 					}
 				}
 			}

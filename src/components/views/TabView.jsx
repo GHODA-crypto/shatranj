@@ -16,6 +16,12 @@ import { ReactComponent as BlackBishop } from "../../assets/chess_svgs/black_bis
 import { ReactComponent as BlackRook } from "../../assets/chess_svgs/black_rook.svg";
 import { ReactComponent as BlackPawn } from "../../assets/chess_svgs/black_pawn.svg";
 
+import { ReactComponent as Abort } from "../../assets/abort.svg";
+import { ReactComponent as Draw } from "../../assets/draw.svg";
+import { ReactComponent as Win } from "../../assets/win.svg";
+
+import "../../styles/game.scss";
+
 const TabView = ({ isPlayerWhite, children, winSize }) => {
 	const { user } = useMoralis();
 	const { TabPane } = Tabs;
@@ -33,52 +39,20 @@ const TabView = ({ isPlayerWhite, children, winSize }) => {
 	};
 
 	return (
-		<Layout className="game-desktop">
+		<Layout className="game-tablet">
 			<Content className="chessboard">
-				<div className="players op">
-					<div className="player-info">
-						<div className="username">0x1234123412321432</div>
-						<div className="ilo">(1456)</div>
-					</div>
-					<div className="fallen-peice fallen-peice-op">
-						<WhiteRook size={15} />
-						<WhiteKnight size={15} />
-						<WhiteBishop size={15} />
-					</div>
-				</div>
-
 				<div id="gameBoard">{children}</div>
-
-				<div className="players self">
-					<div className="player-info">
-						<div className="username">
-							{user?.attributes?.ethAddress.slice(0, 8)}...
-							{user?.attributes?.ethAddress.slice(-9, -1)}
-						</div>
-						<div className="ilo">(1456)</div>
-					</div>
-					<div className="fallen-peice fallen-peice-self">
-						<BlackPawn size={15} />
-						<BlackQueen size={15} />
-						<BlackKing size={15} />
-					</div>
-				</div>
 			</Content>
 
 			<Sider
 				className="game-meta"
 				style={styles.Sider}
-				width={winSize.width * 0.3}>
+				width={winSize.width * 0.35}>
 				<Tabs
-					style={{
-						width: "100%",
-						display: "flex",
-						justifyContent: "space-around",
-						color: "white",
-					}}
 					defaultActiveKey="2"
 					tabBarGutter={75}
-					centered={true}>
+					centered={true}
+					className="tabs-container">
 					<TabPane
 						tab={
 							<span>
@@ -91,8 +65,8 @@ const TabView = ({ isPlayerWhite, children, winSize }) => {
 						<div className="prize-pool">
 							<span className="label">Prize Pool</span>
 							<div className="prize">
-								<span className="amount">15</span>
 								<span className="ghd">GHD</span>
+								<span className="amount">19</span>
 							</div>
 						</div>
 
@@ -105,22 +79,59 @@ const TabView = ({ isPlayerWhite, children, winSize }) => {
 								</button>
 							</div>
 						</div>
+
+						<div className="btns">
+							<button>
+								<Win />
+								<span className="text">Claim Win</span>
+							</button>
+							<button>
+								<Draw />
+								<span className="text" style={{ marginTop: "-0.4rem" }}>
+									Draw
+								</span>
+							</button>
+							<button className="danger">
+								<Abort />
+								<span className="text">Abort</span>
+							</button>
+						</div>
 					</TabPane>
 					<TabPane
 						tab={
 							<span>
 								<InfoCircleOutlined />
-								Game Info
+								Game
 							</span>
 						}
 						key="2"
 						className="game-info">
+						<div className="players op">
+							<div className="player-info">
+								<div className="username">0x1234...1234</div>
+								<div className="elo">(1456)</div>
+							</div>
+							<div className="fallen-peice fallen-peice-op">
+								<WhiteRook size={15} />
+								<WhiteKnight size={15} />
+								<WhiteBishop size={15} />
+							</div>
+						</div>
 						<div className="pgn"></div>
-						<div className="btns">
-							<button>Play Again</button>
-							<button>Button2</button>
-							<button>Button3</button>
-							<button className="danger">Button4</button>
+						<div className="players self">
+							<div className="player-info">
+								<div className="username">
+									{/* {user?.attributes?.ethAddress.slice(0, 8)}...
+									{user?.attributes?.ethAddress.slice(-9, -1)} */}
+									0x1234...1234
+								</div>
+								<div className="elo">(1456)</div>
+							</div>
+							<div className="fallen-peice fallen-peice-self">
+								<BlackPawn size={15} />
+								<BlackQueen size={15} />
+								<BlackKing size={15} />
+							</div>
 						</div>
 					</TabPane>
 				</Tabs>
