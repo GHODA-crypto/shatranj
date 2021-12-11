@@ -8,7 +8,7 @@ async function checkExistingChallenges(userEthAddress) {
 	let pipeline = [
 		{
 			match: {
-				gameStatus: { $ne: 3 },
+				challengeStatus: { $ne: 3 },
 			},
 		},
 		{
@@ -36,7 +36,7 @@ async function createNewChallenge(user, gamePreferences) {
 	const challengerSide = gamePreferences?.preferredSide || "any";
 
 	newChallenge.set("player1", user.get("ethAddress"));
-	newChallenge.set("gameStatus", 0);
+	newChallenge.set("challengeStatus", 0);
 
 	newChallenge.set("challengerSide", challengerSide);
 	newChallenge.set("player1ELO", user.get("ELO"));
@@ -49,8 +49,6 @@ async function createNewChallenge(user, gamePreferences) {
 		gamePreferences?.upperElo || user.get("ELO") + 50
 	);
 
-	const logger = Moralis.Cloud.getLogger();
-	logger.info("Saving new challenge");
 	await newChallenge.save(null, { useMasterKey: true });
 	return newChallenge;
 }
@@ -79,19 +77,21 @@ async function createNewGame(challenge, player1, player2) {
 			: challenge.get("player1ELO");
 
 	game.set("players", {
-		white: white,
-		black: black,
+		w: white,
+		b: black,
 	});
 	game.set("sides", {
 		[player1]: player1Side,
 		[player2]: player1Side === "w" ? "b" : "w",
 	});
 	game.set("ELO", {
-		white: whiteElo,
-		black: blackElo,
+		w: whiteElo,
+		b: blackElo,
 	});
-	game.set("turn", 1);
+	game.set("turn", "w");
+	game.set("outcome", 0);
 	game.set("fen", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+	game.set("pgn", " ");
 
 	await game.save(null, { useMasterKey: true });
 	return game;
