@@ -1,8 +1,9 @@
 import { useRef, useState, useEffect, useMemo } from "react";
 import Chess from "chess.js";
-
 import { Chessboard } from "react-chessboard";
+import { useMoralisCloudFunction } from "react-moralis";
 
+const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const LiveBoard = ({
 	user,
 	boardWidth,
@@ -11,15 +12,16 @@ const LiveBoard = ({
 	playerSide,
 }) => {
 	const chessboardRef = useRef();
-	const [game, setGame] = useState(() => new Chess(liveGameAttributes?.pgn));
+	const [game, setGame] = useState(
+		() => new Chess(liveGameAttributes?.fen || DEFAULT_FEN)
+	);
 
 	const liveGameObj = useMemo(
-		() => new Chess(liveGameAttributes?.pgn),
+		() => new Chess(liveGameAttributes?.fen || DEFAULT_FEN),
 		[liveGameAttributes]
 	);
 	useEffect(() => {
 		setGame(liveGameObj);
-		console.log(liveGameObj.fen(), liveGameAttributes);
 	}, [liveGameObj]);
 
 	const [rightClickedSquares, setRightClickedSquares] = useState({});
@@ -34,6 +36,21 @@ const LiveBoard = ({
 		});
 	}
 
+	// const {
+	// 		fetch: sendMove,
+	// 		data: moveData,
+	// 		error: sendMoveError,
+	// 		isLoading: sendingMove,
+	// 	} = useMoralisCloudFunction(
+	// 		"sendMove",
+	// 		{
+	// 			move: move,
+	//             gameId: liveGameAttributes?.id,
+	// 		},
+	// 		{
+	// 			autoFetch: false,
+	// 		}
+	// 	);
 	function onDrop(sourceSquare, targetSquare) {
 		const gameCopy = { ...game };
 		const move = gameCopy.move({
@@ -52,9 +69,7 @@ const LiveBoard = ({
 	}
 
 	function onMouseOverSquare(square) {
-		// console.log("mouse over square", square);
-		// console.log(game.get(square).color);
-		if (game.get(square)?.color === "w") {
+		if (game.get(square)?.color === playerSide) {
 			getMoveOptions(square);
 		}
 	}
@@ -114,7 +129,7 @@ const LiveBoard = ({
 				isDraggablePiece={(piece) => piece.piece[0] === playerSide}
 				boardOrientation={playerSide === "w" ? "white" : "black"}
 				boardWidth={boardWidth}
-				animationDuration={200}
+				animationDuration={300}
 				position={game.fen()}
 				onMouseOverSquare={onMouseOverSquare}
 				onMouseOutSquare={onMouseOutSquare}
@@ -122,7 +137,7 @@ const LiveBoard = ({
 				onSquareRightClick={onSquareRightClick}
 				onPieceDrop={onDrop}
 				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
-				customLightSquareStyle={{ backgroundColor: "#D3FFD8" }}
+				customLightSquareStyle={{ backgroundColor: "#f9ffe4" }}
 				customBoardStyle={{
 					borderRadius: "4px",
 					boxShadow: "0 0px 15px rgba(0, 0, 0, 0.25)",

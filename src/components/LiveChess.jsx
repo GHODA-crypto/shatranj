@@ -118,6 +118,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 					liveGameAttributes={liveGameAttributes}
 					user={user}
 					isPlayerWhite={isPlayerWhite}
+					playerSide={isPlayerWhite ? "w" : "b"}
 					boardWidth={boardWidth}
 				/>
 			</TabView>
@@ -132,6 +133,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 					liveGameAttributes={liveGameAttributes}
 					user={user}
 					isPlayerWhite={isPlayerWhite}
+					playerSide={isPlayerWhite ? "w" : "b"}
 					boardWidth={boardWidth}
 				/>
 			</DesktopView>
