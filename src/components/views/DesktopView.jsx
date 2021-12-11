@@ -21,6 +21,10 @@ import { ReactComponent as BlackBishop } from "../../assets/chess_svgs/black_bis
 import { ReactComponent as BlackRook } from "../../assets/chess_svgs/black_rook.svg";
 import { ReactComponent as BlackPawn } from "../../assets/chess_svgs/black_pawn.svg";
 
+import { ReactComponent as Abort } from "../../assets/abort.svg";
+import { ReactComponent as Draw } from "../../assets/draw.svg";
+import { ReactComponent as Win } from "../../assets/win.svg";
+
 const DesktopView = ({ isPlayerWhite, joinLiveChess, children, winSize }) => {
 	const { user } = useMoralis();
 	const styles = {
@@ -43,7 +47,7 @@ const DesktopView = ({ isPlayerWhite, joinLiveChess, children, winSize }) => {
 				collapsedWidth={0}
 				trigger={<FireOutlined size={40} />}
 				zeroWidthTriggerStyle={{
-					backgroundColor: "rgb(255, 64, 64)",
+					backgroundColor: "rgb(255, 64, 64) ",
 					borderRadius: "50%",
 					width: "3rem",
 					height: "3rem",
@@ -53,15 +57,14 @@ const DesktopView = ({ isPlayerWhite, joinLiveChess, children, winSize }) => {
 					alignItems: "center",
 					right: "-1.5rem",
 				}}
-				width={winSize.width * 0.25}>
+				width={winSize.width * 0.23}>
 				<div className="prize-pool">
 					<span className="label">Prize Pool</span>
 					<div className="prize">
-						<span className="amount">15</span>
 						<span className="ghd">GHD</span>
+						<span className="amount">19</span>
 					</div>
 				</div>
-
 				<div className="chat">
 					<div className="chat-text"></div>
 					<div className="chat-input">
@@ -71,13 +74,36 @@ const DesktopView = ({ isPlayerWhite, joinLiveChess, children, winSize }) => {
 						</button>
 					</div>
 				</div>
+				<div className="btns">
+					<button>
+						<Win />
+						<span className="text">Claim Win</span>
+					</button>
+					<button>
+						<Draw />
+						<span className="text" style={{ marginTop: "-0.4rem" }}>
+							Draw
+						</span>
+					</button>
+					<button className="danger">
+						<Abort />
+						<span className="text">Abort</span>
+					</button>
+				</div>
 			</Sider>
 
 			<Content className="chessboard">
+				<div id="gameBoard">{children}</div>
+			</Content>
+
+			<Sider
+				className="game-info"
+				style={styles.Sider}
+				width={winSize.width * 0.23}>
 				<div className="players op">
 					<div className="player-info">
-						<div className="username">0x1234123412321432</div>
-						<div className="ilo">(1456)</div>
+						<div className="username">0x1234...1234</div>
+						<div className="elo">(1456)</div>
 					</div>
 					<div className="fallen-peice fallen-peice-op">
 						<WhiteRook size={15} />
@@ -85,35 +111,21 @@ const DesktopView = ({ isPlayerWhite, joinLiveChess, children, winSize }) => {
 						<WhiteBishop size={15} />
 					</div>
 				</div>
-
-				<div id="gameBoard">{children}</div>
-
+				<div className="pgn"></div>
 				<div className="players self">
 					<div className="player-info">
 						<div className="username">
-							{user?.attributes?.ethAddress.slice(0, 8)}...
-							{user?.attributes?.ethAddress.slice(-9, -1)}
+							{/* {user?.attributes?.ethAddress.slice(0, 8)}...
+							{user?.attributes?.ethAddress.slice(-9, -1)} */}
+							0x1234...1234
 						</div>
-						<div className="ilo">(1456)</div>
+						<div className="elo">(1456)</div>
 					</div>
 					<div className="fallen-peice fallen-peice-self">
 						<BlackPawn size={15} />
 						<BlackQueen size={15} />
 						<BlackKing size={15} />
 					</div>
-				</div>
-			</Content>
-
-			<Sider
-				className="game-info"
-				style={styles.Sider}
-				width={winSize.width * 0.25}>
-				<div className="pgn"></div>
-				<div className="btns">
-					<button onClick={() => joinLiveChess()}>New Game</button>
-					<button>Something</button>
-					<button>Button3</button>
-					<button className="danger">Button4</button>
 				</div>
 			</Sider>
 		</Layout>

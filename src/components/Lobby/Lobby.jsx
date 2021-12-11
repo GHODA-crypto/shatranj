@@ -33,14 +33,23 @@ const Lobby = ({ setIsPairing }) => {
 			spender: SGHODA_TOKEN_ADDRESS,
 		},
 	});
-	const allowedAmountToSpend = useMemo(
-		() => Moralis.Units.FromWei(allowanceData || 0),
-		[allowanceData]
+	const {
+		data: [stakedBalanceObj],
+	} = useMoralisQuery(
+		"PolygonTokenBalance",
+		(query) =>
+			query
+				.equalTo("address", user?.get("ethAddress"))
+				.equalTo("token_address", SGHODA_TOKEN_ADDRESS),
+		[user],
+		{
+			live: true,
+		}
 	);
-
-	useEffect(() => {
-		isWeb3Enabled && user && getAllowanceForUser();
-	}, [isWeb3Enabled, user]);
+	const stakedTokenBalance = useMemo(
+		() => Moralis.Units.FromWei(stakedBalanceObj?.get("balance") || 0),
+		[stakedBalanceObj]
+	);
 
 	const [gameOptions, setGameOptions] = useState({
 		color: "w",
@@ -76,14 +85,14 @@ const Lobby = ({ setIsPairing }) => {
 
 			<section className="play">
 				<button
-					disabled={allowedAmountToSpend < 10}
+					disabled={stakedTokenBalance < 10}
 					className="join-game-btn"
 					onClick={quickMatch}>
 					🚀
 					<span className="btn-text">Quick Match</span>
 				</button>
 				<button
-					disabled={allowedAmountToSpend < 10}
+					disabled={stakedTokenBalance < 10}
 					className="create-game-btn"
 					onClick={handleCreateGame}>
 					🛠️

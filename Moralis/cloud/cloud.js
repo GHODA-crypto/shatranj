@@ -229,10 +229,17 @@ async function validateMove(request) {
 	}
 
 	const { gameId } = request.params;
+	if (!gameId) throw Error("GameId is required");
+
+	const logger = Moralis.Cloud.getLogger();
+	logger.info("1");
 
 	const gameQuery = new Moralis.Query("Game");
+	logger.info("2");
 	const challengeQuery = new Moralis.Query("Challenge");
+	logger.info(gameId);
 	const game = await gameQuery.get(gameId);
+	logger.info("3");
 
 	const challenge = await challengeQuery.get(game.get("challengeId"));
 	const userSide = game.get("sides")[request.user.get("ethAddress")];
