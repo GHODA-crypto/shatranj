@@ -15,7 +15,6 @@ import "../styles/game.scss";
 import LiveBoard from "./ChessBoards/Live";
 
 const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
-	const [gameId, setGameId] = useState();
 	const [playerSide, setPlayerSide] = useState("white");
 
 	const [isMobileDrawerVisible, setIsMobileDrawerVisible] = useState(false);
@@ -52,6 +51,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 			live: true,
 		}
 	);
+	const gameId = useMemo(() => liveGameData?.id, [liveGameData]);
 	const {
 		data: [liveChallengeData],
 		// error: gameError,
@@ -77,12 +77,12 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 		}
 	}, [isPairing, isLiveChallenge]);
 
-	useEffect(() => {
-		if (challenge) setGameId(challenge?.get("gameId"));
-	}, [challenge]);
-
 	const liveGameAttributes = useMemo(
 		() => liveGameData?.attributes,
+		[liveGameData]
+	);
+	const liveGamePGN = useMemo(
+		() => liveGameData?.attributes?.pgn,
 		[liveGameData]
 	);
 
@@ -105,6 +105,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 				<LiveBoard
 					liveGameAttributes={liveGameAttributes}
 					liveGameId={gameId}
+					liveGamePGN={liveGamePGN}
 					user={user}
 					isPlayerWhite={isPlayerWhite}
 					playerSide={isPlayerWhite ? "w" : "b"}
@@ -118,6 +119,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 				<LiveBoard
 					liveGameAttributes={liveGameAttributes}
 					liveGameId={gameId}
+					liveGamePGN={liveGamePGN}
 					user={user}
 					isPlayerWhite={isPlayerWhite}
 					playerSide={isPlayerWhite ? "w" : "b"}
@@ -134,6 +136,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 				<LiveBoard
 					liveGameAttributes={liveGameAttributes}
 					liveGameId={gameId}
+					liveGamePGN={liveGamePGN}
 					user={user}
 					isPlayerWhite={isPlayerWhite}
 					playerSide={isPlayerWhite ? "w" : "b"}
