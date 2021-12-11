@@ -59,6 +59,7 @@
 	}
 	.stake-unstake {
 		width: 80%;
+		min-height: 480px;
 		display: flex;
 		justify-content: space-around;
 		align-items: center;
@@ -67,7 +68,8 @@
 			position: relative;
 			background-color: $dark;
 			width: 40%;
-			min-height: 20rem;
+			min-width: 360px;
+			min-height: 23rem;
 			// border: 1px solid black;
 			border-radius: 1rem;
 			display: flex;
@@ -174,6 +176,40 @@
 }
 
 //mediaquery 1200
+@media screen and (max-width: 1024px) {
+	.Stakes {
+		height: auto;
+		.amounts {
+			flex-direction: column;
+			min-height: 8rem;
+			justify-content: center;
+			.balance {
+				flex-direction: row;
+				.label {
+					&::after {
+						display: none;
+					}
+				}
+				.amount {
+					margin-top: 0;
+					font-size: 4rem;
+					font-weight: 700;
+					margin-left: 1.5rem;
+				}
+			}
+		}
+		.stake-unstake {
+			flex-direction: column;
+			margin-top: 2rem;
+			.card {
+				margin-top: 2rem;
+				width: 100%;
+				min-width: 400px;
+				max-width: 540px;
+			}
+		}
+	}
+}
 
 // if (winSize.width < 1200)
 // 		return (
