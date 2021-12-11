@@ -32,50 +32,6 @@ const Stakes = () => {
 		});
 	};
 
-	// const {
-	// 	data: [stakedBalanceObj],
-	// 	error: stakedBalanceObjError,
-	// 	isLoading: isStakedBalanceLoading,
-	// } = useMoralisQuery(
-	// 	"PolygonTokenBalance",
-	// 	(query) =>
-	// 		query
-	// 			.equalTo("address", user?.get("ethAddress"))
-	// 			.equalTo("token_address", SGHODA_TOKEN_ADDRESS),
-	// 	[user],
-	// 	{
-	// 		live: true,
-	// 	}
-	// );
-
-	// const {
-	// 	data: [tokenBalanceObj],
-	// 	error: tokenBalanceObjError,
-	// 	isLoading: isTokenBalanceLoading,
-	// } = useMoralisQuery(
-	// 	"PolygonTokenBalance",
-	// 	(query) =>
-	// 		query
-	// 			.equalTo("address", user?.get("ethAddress"))
-	// 			.equalTo("token_address", GHODA_TOKEN_ADDRESS),
-	// 	[user],
-	// 	{
-	// 		live: true,
-	// 	}
-	// );
-
-	// const [tokenBalance, setTokenBalance] = useState(0);
-	// const [stakedBalance, setStakedBalance] = useState(0);
-
-	// useEffect(() => {
-	// 	setTokenBalance(
-	// 		Moralis.Units.FromWei(tokenBalanceObj?.get("balance") || 0)
-	// 	);
-	// 	setStakedBalance(
-	// 		Moralis.Units.FromWei(stakedBalanceObj?.get("balance") || 0)
-	// 	);
-	// }, [stakedBalanceObj, tokenBalanceObj]);
-
 	const {
 		data: tokenBalance,
 		error: tokenBalanceError,

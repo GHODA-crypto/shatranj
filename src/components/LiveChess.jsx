@@ -15,7 +15,7 @@ import "../styles/game.scss";
 import LiveBoard from "./ChessBoards/Live";
 
 const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
-	const [playerSide, setPlayerSide] = useState("white");
+	const [playerSide, setPlayerSide] = useState("w");
 
 	const [isMobileDrawerVisible, setIsMobileDrawerVisible] = useState(false);
 
@@ -88,7 +88,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 
 	const isPlayerWhite = useMemo(() => {
 		return liveGameData
-			? liveGameData.get("sides")[user?.get("ethAddress")] === "w"
+			? liveGameData.get("sides")?.[user?.get("ethAddress")] === "w"
 			: "w";
 	}, [liveGameData, user]);
 
