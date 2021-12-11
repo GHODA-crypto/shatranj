@@ -53,11 +53,15 @@ module.exports = {
 				// See the solidity docs for advice about optimization and evmVersion
 				optimizer: {
 					enabled: true,
-					runs: 1000000000,
+					runs: 1000000,
 				},
 				//  evmVersion: "byzantium"
 			},
 		},
+	},
+	plugins: ["truffle-plugin-verify"],
+	api_keys: {
+		etherscan: process.env.ETHERSCAN_API_KEY,
 	},
 	// db: {
 	//   enabled: true,
