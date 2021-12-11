@@ -48,20 +48,6 @@ const Lobby = ({ setIsPairing }) => {
 		},
 	});
 
-	// const {
-	// 	data: [liveChallengeData],
-	// 	// error: gameError,
-	// 	isLoading: isChallengeLoading,
-	// } = useMoralisQuery(
-	// 	"Game",
-	// 	(query) => query.containedBy("sides", ),
-	// 	[challenge],
-	// 	{
-	// 		autoFetch: true,
-	// 		live: true,
-	// 	}
-	// );
-
 	const stakedTokenBalance = useMemo(
 		() => Moralis.Units.FromWei(stakedBalance),
 		[stakedBalance]
@@ -75,10 +61,18 @@ const Lobby = ({ setIsPairing }) => {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 
 	const handlePlayWithFriend = () => {
+		if (stakedTokenBalance < 10) {
+			openStakeErrorNotification();
+			return;
+		}
 		!user ? openErrorNotification() : showModal();
 	};
 
 	const handleCreateGame = () => {
+		if (stakedTokenBalance < 10) {
+			openStakeErrorNotification();
+			return;
+		}
 		!user ? openErrorNotification() : showModal();
 	};
 
@@ -87,22 +81,22 @@ const Lobby = ({ setIsPairing }) => {
 	};
 
 	const quickMatch = (e) => {
-		setIsPairing(true);
+		if (stakedTokenBalance < 10) {
+			openStakeErrorNotification();
+			return;
+		}
 		if (!user) {
 			openErrorNotification();
 			return;
 		}
+		setIsPairing(true);
 	};
 	useEffect(() => {
 		isWeb3Enabled && user && getAllowanceForUser();
 	}, [isWeb3Enabled, user]);
 
-	const init = async () => {
-		await fetchStakedBalance();
-	};
-
 	useEffect(() => {
-		init();
+		fetchStakedBalance();
 		console.log("stakedBalance", stakedBalance);
 		console.log("stakedBalanceError", stakedBalanceError);
 	}, []);
@@ -117,24 +111,15 @@ const Lobby = ({ setIsPairing }) => {
 			/>
 
 			<section className="play">
-				<button
-					disabled={Moralis.Units.FromWei(stakedBalance) < 10}
-					className="join-game-btn"
-					onClick={quickMatch}>
+				<button className="join-game-btn" onClick={quickMatch}>
 					🚀
 					<span className="btn-text">Quick Match</span>
 				</button>
-				<button
-					disabled={Moralis.Units.FromWei(stakedBalance) < 10}
-					className="create-game-btn"
-					onClick={handleCreateGame}>
+				<button className="create-game-btn" onClick={handleCreateGame}>
 					🛠️
 					<span className="btn-text">Create Game</span>
 				</button>
-				<button
-					disabled={Moralis.Units.FromWei(stakedBalance) < 10}
-					className="play-with-friend-btn"
-					onClick={handlePlayWithFriend}>
+				<button className="play-with-friend-btn" onClick={handlePlayWithFriend}>
 					🤝
 					<span className="btn-text">Play with friend</span>
 				</button>
@@ -194,6 +179,15 @@ const openErrorNotification = () => {
 		message: "User not Authenticated",
 		description:
 			"Please connect your wallet to create a game. You can connect your wallet by clicking on the authenticate button in the top right corner.",
+		placement: "bottomRight",
+	});
+};
+
+const openStakeErrorNotification = () => {
+	notification["error"]({
+		message: "Not Enough GHODA Staked",
+		description:
+			"You have not staked enough $GHODA to play. Please stake more $GHODA in the staked tab to play.",
 		placement: "bottomRight",
 	});
 };

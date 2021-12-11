@@ -170,6 +170,8 @@
 					color: darken($accent, 15%);
 					font-size: 1.5rem;
 					font-weight: 500;
+					overflow: hidden;
+					text-overflow: ellipsis;
 				}
 				.elo {
 					color: $dark;
@@ -253,6 +255,8 @@
 									color: darken($accent, 15%);
 									font-size: 1.5rem;
 									font-weight: 500;
+									overflow: hidden;
+									text-overflow: ellipsis;
 								}
 								.elo {
 									color: $dark;
@@ -431,6 +435,8 @@
 					color: darken($accent, 15%);
 					font-size: 1.5rem;
 					font-weight: 500;
+					overflow: hidden;
+					text-overflow: ellipsis;
 				}
 				.elo {
 					color: $dark;

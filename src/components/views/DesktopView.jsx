@@ -25,7 +25,13 @@ import { ReactComponent as Abort } from "../../assets/abort.svg";
 import { ReactComponent as Draw } from "../../assets/draw.svg";
 import { ReactComponent as Win } from "../../assets/win.svg";
 
-const DesktopView = ({ isPlayerWhite, joinLiveChess, children, winSize }) => {
+const DesktopView = ({
+	playerSide,
+	joinLiveChess,
+	children,
+	winSize,
+	liveGameAttributes,
+}) => {
 	const { user } = useMoralis();
 	const styles = {
 		Sider: {
@@ -102,8 +108,10 @@ const DesktopView = ({ isPlayerWhite, joinLiveChess, children, winSize }) => {
 				width={winSize.width * 0.23}>
 				<div className="players op">
 					<div className="player-info">
-						<div className="username">0x1234...1234</div>
-						<div className="elo">(1456)</div>
+						<div className="username">
+							{liveGameAttributes?.players[playerSide]}
+						</div>
+						<div className="elo">({liveGameAttributes?.ELO[playerSide]})</div>
 					</div>
 					<div className="fallen-peice fallen-peice-op">
 						<WhiteRook size={15} />
@@ -115,11 +123,10 @@ const DesktopView = ({ isPlayerWhite, joinLiveChess, children, winSize }) => {
 				<div className="players self">
 					<div className="player-info">
 						<div className="username">
-							{/* {user?.attributes?.ethAddress.slice(0, 8)}...
-							{user?.attributes?.ethAddress.slice(-9, -1)} */}
-							0x1234...1234
+							{user?.get("ethAddress").slice(0, 5)}...
+							{user?.get("ethAddress").slice(-6, -1)}
 						</div>
-						<div className="elo">(1456)</div>
+						<div className="elo">{user?.get("ELO")}</div>
 					</div>
 					<div className="fallen-peice fallen-peice-self">
 						<BlackPawn size={15} />

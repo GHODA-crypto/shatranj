@@ -22,7 +22,7 @@ import { ReactComponent as Win } from "../../assets/win.svg";
 
 import "../../styles/game.scss";
 
-const TabView = ({ isPlayerWhite, children, winSize }) => {
+const TabView = ({ playerSide, children, winSize, liveGameAttributes }) => {
 	const { user } = useMoralis();
 	const { TabPane } = Tabs;
 	const { Content, Sider } = Layout;
@@ -108,8 +108,12 @@ const TabView = ({ isPlayerWhite, children, winSize }) => {
 						className="game-info">
 						<div className="players op">
 							<div className="player-info">
-								<div className="username">0x1234...1234</div>
-								<div className="elo">(1456)</div>
+								<div className="username">
+									{liveGameAttributes?.players[playerSide]}
+								</div>
+								<div className="elo">
+									({liveGameAttributes?.ELO[playerSide]})
+								</div>
 							</div>
 							<div className="fallen-peice fallen-peice-op">
 								<WhiteRook size={15} />
@@ -121,10 +125,10 @@ const TabView = ({ isPlayerWhite, children, winSize }) => {
 						<div className="players self">
 							<div className="player-info">
 								<div className="username">
-									{user?.attributes?.ethAddress.slice(0, 5)}...
-									{user?.attributes?.ethAddress.slice(-6, -1)}
+									{user?.get("ethAddress").slice(0, 5)}...
+									{user?.get("ethAddress").slice(-6, -1)}
 								</div>
-								<div className="elo">(1456)</div>
+								<div className="elo">({user?.get("ELO")})</div>
 							</div>
 							<div className="fallen-peice fallen-peice-self">
 								<BlackPawn size={15} />
