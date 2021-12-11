@@ -1,5 +1,20 @@
 // Pool and Pairing Functions
 
+// Check if user has a live challenge
+Moralis.Cloud.define(
+	"doesActiveChallengeExist",
+	async (request) => {
+		const existingChallenges = await checkExistingChallenges(
+			request.user.get("ethAddress")
+		);
+		if (existingChallenges.length) return true;
+		return false;
+	},
+	{
+		requireUser: true,
+	}
+);
+
 // Join Pairing Pool
 Moralis.Cloud.define(
 	"joinLiveChess",
@@ -144,6 +159,7 @@ Moralis.Cloud.define(
 		game.set("turn", chess.turn());
 		game.set("fen", chess.fen());
 		game.set("pgn", chess.pgn());
+		game.set("lastMove", request.params.move);
 
 		game.save(null, { useMasterKey: true });
 
@@ -215,13 +231,17 @@ async function validateMove(request) {
 	const { gameId } = request.params;
 
 	const gameQuery = new Moralis.Query("Game");
+	const challengeQuery = new Moralis.Query("Challenge");
 	const game = await gameQuery.get(gameId);
+
+	const challenge = await challengeQuery.get(game.get("challengeId"));
 	const userSide = game.get("sides")[request.user.get("ethAddress")];
 
 	if (!userSide) throw Error("Unauthorized to move");
 	if (game.get("turn") !== userSide) throw Error("Not your turn");
 
-	if (game.status !== 2) throw Error("Game is not in progress");
+	if (challenge.get("challengeStatus") !== 2)
+		throw Error("Game is not in progress");
 
-	return null;
+	return true;
 }
