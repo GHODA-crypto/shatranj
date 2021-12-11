@@ -121,9 +121,8 @@ const TabView = ({ isPlayerWhite, children, winSize }) => {
 						<div className="players self">
 							<div className="player-info">
 								<div className="username">
-									{/* {user?.attributes?.ethAddress.slice(0, 8)}...
-									{user?.attributes?.ethAddress.slice(-9, -1)} */}
-									0x1234...1234
+									{user?.attributes?.ethAddress.slice(0, 5)}...
+									{user?.attributes?.ethAddress.slice(-6, -1)}
 								</div>
 								<div className="elo">(1456)</div>
 							</div>

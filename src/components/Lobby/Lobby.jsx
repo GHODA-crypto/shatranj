@@ -33,22 +33,38 @@ const Lobby = ({ setIsPairing }) => {
 			spender: SGHODA_TOKEN_ADDRESS,
 		},
 	});
+
 	const {
-		data: [stakedBalanceObj],
-	} = useMoralisQuery(
-		"PolygonTokenBalance",
-		(query) =>
-			query
-				.equalTo("address", user?.get("ethAddress"))
-				.equalTo("token_address", SGHODA_TOKEN_ADDRESS),
-		[user],
-		{
-			live: true,
-		}
-	);
+		data: stakedBalance,
+		error: stakedBalanceError,
+		fetch: fetchStakedBalance,
+		isFetching: isStakedBalanceLoading,
+	} = useWeb3ExecuteFunction({
+		abi: ERC20Abi,
+		contractAddress: SGHODA_TOKEN_ADDRESS,
+		functionName: "balanceOf",
+		params: {
+			account: user?.get("ethAddress"),
+		},
+	});
+
+	// const {
+	// 	data: [liveChallengeData],
+	// 	// error: gameError,
+	// 	isLoading: isChallengeLoading,
+	// } = useMoralisQuery(
+	// 	"Game",
+	// 	(query) => query.containedBy("sides", ),
+	// 	[challenge],
+	// 	{
+	// 		autoFetch: true,
+	// 		live: true,
+	// 	}
+	// );
+
 	const stakedTokenBalance = useMemo(
-		() => Moralis.Units.FromWei(stakedBalanceObj?.get("balance") || 0),
-		[stakedBalanceObj]
+		() => Moralis.Units.FromWei(stakedBalance),
+		[stakedBalance]
 	);
 
 	const [gameOptions, setGameOptions] = useState({
@@ -57,6 +73,10 @@ const Lobby = ({ setIsPairing }) => {
 		rangeLower: 100,
 	});
 	const [isModalVisible, setIsModalVisible] = useState(false);
+
+	const handlePlayWithFriend = () => {
+		!user ? openErrorNotification() : showModal();
+	};
 
 	const handleCreateGame = () => {
 		!user ? openErrorNotification() : showModal();
@@ -73,6 +93,19 @@ const Lobby = ({ setIsPairing }) => {
 			return;
 		}
 	};
+	useEffect(() => {
+		isWeb3Enabled && user && getAllowanceForUser();
+	}, [isWeb3Enabled, user]);
+
+	const init = async () => {
+		await fetchStakedBalance();
+	};
+
+	useEffect(() => {
+		init();
+		console.log("stakedBalance", stakedBalance);
+		console.log("stakedBalanceError", stakedBalanceError);
+	}, []);
 
 	return (
 		<div className="lobby">
@@ -85,26 +118,26 @@ const Lobby = ({ setIsPairing }) => {
 
 			<section className="play">
 				<button
-					disabled={stakedTokenBalance < 10}
+					disabled={Moralis.Units.FromWei(stakedBalance) < 10}
 					className="join-game-btn"
 					onClick={quickMatch}>
 					🚀
 					<span className="btn-text">Quick Match</span>
 				</button>
 				<button
-					disabled={stakedTokenBalance < 10}
+					disabled={Moralis.Units.FromWei(stakedBalance) < 10}
 					className="create-game-btn"
 					onClick={handleCreateGame}>
 					🛠️
 					<span className="btn-text">Create Game</span>
 				</button>
-				{/* <button
-					disabled={allowedAmountToSpend >= 10}
-					className="create-link-btn"
-					// onClick={handleCreateGame}
-				>
-					<span className="btn-text">Play With A Friend</span>
-				</button> */}
+				<button
+					disabled={Moralis.Units.FromWei(stakedBalance) < 10}
+					className="play-with-friend-btn"
+					onClick={handlePlayWithFriend}>
+					🤝
+					<span className="btn-text">Play with friend</span>
+				</button>
 			</section>
 
 			<section className="spectate-wrapper">

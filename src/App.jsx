@@ -35,6 +35,7 @@ const App = ({ isServerInfo }) => {
 	const [pairingParams, setPairingParams] = useState({});
 
 	useEffect(() => {
+		// window.Moralis = Moralis;
 		if (isAuthenticated && !isWeb3Enabled && !isWeb3EnableLoading) enableWeb3();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [isAuthenticated, isWeb3Enabled]);
