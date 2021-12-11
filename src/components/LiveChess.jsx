@@ -104,6 +104,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 				winSize={winSize}>
 				<LiveBoard
 					liveGameAttributes={liveGameAttributes}
+					liveGameId={gameId}
 					user={user}
 					isPlayerWhite={isPlayerWhite}
 					playerSide={isPlayerWhite ? "w" : "b"}
@@ -116,6 +117,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 			<TabView isPlayerWhite={isPlayerWhite} winSize={winSize}>
 				<LiveBoard
 					liveGameAttributes={liveGameAttributes}
+					liveGameId={gameId}
 					user={user}
 					isPlayerWhite={isPlayerWhite}
 					playerSide={isPlayerWhite ? "w" : "b"}
@@ -131,6 +133,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 				winSize={winSize}>
 				<LiveBoard
 					liveGameAttributes={liveGameAttributes}
+					liveGameId={gameId}
 					user={user}
 					isPlayerWhite={isPlayerWhite}
 					playerSide={isPlayerWhite ? "w" : "b"}

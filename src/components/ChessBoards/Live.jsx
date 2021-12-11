@@ -1,20 +1,21 @@
-import { useRef, useState, useEffect, useMemo } from "react";
+import { useRef, useState, useEffect, useMemo, useCallback } from "react";
 import Chess from "chess.js";
 import { Chessboard } from "react-chessboard";
-import { useMoralisCloudFunction } from "react-moralis";
+import { useMoralisCloudFunction, useMoralis } from "react-moralis";
 
 const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const LiveBoard = ({
 	user,
 	boardWidth,
-	isPlayerWhite,
 	liveGameAttributes,
+	liveGameId,
 	playerSide,
 }) => {
 	const chessboardRef = useRef();
 	const [game, setGame] = useState(
 		() => new Chess(liveGameAttributes?.fen || DEFAULT_FEN)
 	);
+	const { Moralis } = useMoralis();
 
 	const liveGameObj = useMemo(
 		() => new Chess(liveGameAttributes?.fen || DEFAULT_FEN),
@@ -27,6 +28,7 @@ const LiveBoard = ({
 	const [rightClickedSquares, setRightClickedSquares] = useState({});
 	const [moveSquares, setMoveSquares] = useState({});
 	const [optionSquares, setOptionSquares] = useState({});
+	const [moveFrom, setMoveFrom] = useState("");
 
 	function safeGameMutate(modify) {
 		setGame((g) => {
@@ -36,21 +38,6 @@ const LiveBoard = ({
 		});
 	}
 
-	// const {
-	// 		fetch: sendMove,
-	// 		data: moveData,
-	// 		error: sendMoveError,
-	// 		isLoading: sendingMove,
-	// 	} = useMoralisCloudFunction(
-	// 		"sendMove",
-	// 		{
-	// 			move: move,
-	//             gameId: liveGameAttributes?.id,
-	// 		},
-	// 		{
-	// 			autoFetch: false,
-	// 		}
-	// 	);
 	function onDrop(sourceSquare, targetSquare) {
 		const gameCopy = { ...game };
 		const move = gameCopy.move({
@@ -66,17 +53,6 @@ const LiveBoard = ({
 			[targetSquare]: { backgroundColor: "rgba(255, 255, 0, 0.4)" },
 		});
 		return true;
-	}
-
-	function onMouseOverSquare(square) {
-		if (game.get(square)?.color === playerSide) {
-			getMoveOptions(square);
-		}
-	}
-
-	// Only set squares to {} if not already set to {}
-	function onMouseOutSquare() {
-		if (Object.keys(optionSquares).length !== 0) setOptionSquares({});
 	}
 
 	function getMoveOptions(square) {
@@ -106,9 +82,54 @@ const LiveBoard = ({
 		setOptionSquares(newSquares);
 	}
 
-	function onSquareClick() {
+	function onSquareClick(square) {
 		setRightClickedSquares({});
+		setOptionSquares({});
+
+		function resetFirstMove(square) {
+			setMoveFrom(square);
+			getMoveOptions(square);
+		}
+		// from square
+		if (!moveFrom) {
+			resetFirstMove(square);
+			return;
+		}
+		// attempt to make move
+		const gameCopy = { ...game };
+		const move = gameCopy.move({
+			from: moveFrom,
+			to: square,
+			promotion: "q", // always promote to a queen for example simplicity
+		});
+
+		setGame(gameCopy);
+
+		// if invalid, setMoveFrom and getMoveOptions
+		if (move === null) {
+			resetFirstMove(square);
+			return;
+		}
+		sendMove(move);
+
+		setOptionSquares({});
 	}
+
+	const sendMove = useCallback(async (move) => {
+		try {
+			const res = await Moralis.Cloud.run("sendMove", {
+				move: move.san,
+				gameId: liveGameId,
+			});
+			console.log(res);
+		} catch (e) {
+			safeGameMutate((game) => {
+				game.undo();
+			});
+			chessboardRef.current.clearPremoves();
+			setMoveSquares({});
+		}
+	}, []);
 
 	function onSquareRightClick(square) {
 		const colour = "rgba(0, 0, 255, 0.4)";
@@ -131,8 +152,7 @@ const LiveBoard = ({
 				boardWidth={boardWidth}
 				animationDuration={300}
 				position={game.fen()}
-				onMouseOverSquare={onMouseOverSquare}
-				onMouseOutSquare={onMouseOutSquare}
+				// onMouseOverSquare={onMouseOverSquare}
 				onSquareClick={onSquareClick}
 				onSquareRightClick={onSquareRightClick}
 				onPieceDrop={onDrop}
