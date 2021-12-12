@@ -128,11 +128,11 @@ const DesktopView = ({
 					<div className="players op">
 						<div className="player-info">
 							<div className="username">
-								{/* {liveGameAttributes?.players[opSide]} */}
-								0x123123111313131313
+								{liveGameAttributes?.players[opSide]}
+								{/* 0x123123111313131313 */}
 							</div>
-							{/* <div className="elo">({liveGameAttributes?.ELO[opSide]})</div> */}
-							<div className="elo">(700)</div>
+							<div className="elo">({liveGameAttributes?.ELO[opSide]})</div>
+							{/* <div className="elo">(700)</div> */}
 						</div>
 						<div className="fallen-peice fallen-peice-op">
 							<div className="bp peice">
