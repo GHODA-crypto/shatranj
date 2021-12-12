@@ -72,6 +72,20 @@ const LiveChess = ({
 	useEffect(() => {
 		doesActiveChallengeExist();
 	}, []);
+	const {
+		data: [liveGameData],
+		error: gameError,
+		isLoading: isGameLoading,
+	} = useMoralisQuery(
+		"Game",
+		(query) => query.equalTo("challengeId", challenge?.id),
+		[challenge],
+		{
+			autoFetch: true,
+			live: true,
+		}
+	);
+	const gameId = useMemo(() => liveGameData?.id, [liveGameData?.id]);
 
 	const {
 		fetch: claimVictory,
@@ -88,21 +102,6 @@ const LiveChess = ({
 			autoFetch: false,
 		}
 	);
-
-	const {
-		data: [liveGameData],
-		error: gameError,
-		isLoading: isGameLoading,
-	} = useMoralisQuery(
-		"Game",
-		(query) => query.equalTo("challengeId", challenge?.id),
-		[challenge],
-		{
-			autoFetch: true,
-			live: true,
-		}
-	);
-	const gameId = useMemo(() => liveGameData?.id, [liveGameData?.id]);
 
 	const {
 		fetch: resignGame,
@@ -132,11 +131,6 @@ const LiveChess = ({
 			live: true,
 		}
 	);
-	// 0 - pairing
-	// 1 - matchFound
-	// 2 - in progress
-	// 3 - inactive
-	// liveChallenge?.get("challengeStatus")
 
 	useEffect(() => {
 		setLiveGameAttributes(liveGameData?.attributes);
