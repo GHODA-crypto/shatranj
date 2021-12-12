@@ -142,7 +142,7 @@ contract ChessGame is ERC20, Ownable {
 		string calldata _gameId,
 		uint8 _outcome,
 		string calldata _ipfsHash
-	) public onlyServer {
+	) public onlyServer returns (uint256 nftId) {
 		Game memory game = games[_gameId];
 		require(
 			game.outcome == 1 && _outcome > game.outcome && _outcome < 5,
@@ -163,7 +163,7 @@ contract ChessGame is ERC20, Ownable {
 			uint256 amount = bet - (fee / 2);
 			_mint(game.white, amount);
 			_mint(game.black, amount);
-			return;
+			return 0;
 		}
 		if (_outcome == 3) {
 			winner = game.white;
@@ -172,11 +172,14 @@ contract ChessGame is ERC20, Ownable {
 		}
 		if (bytes(_ipfsHash).length > 0 && _outcome > 2) {
 			// if black or white wins and claims NFT
-			games[_gameId].nft = chessNFT.mint(winner, _ipfsHash);
+			nftId = chessNFT.mint(winner, _ipfsHash);
+			games[_gameId].nft = nftId;
 			_mint(winner, bet + bet - fee - NFTfee);
 			collectedFees += NFTfee;
+			return nftId;
 		} else {
 			_mint(winner, bet + bet - fee);
 		}
+		return 0;
 	}
 }
