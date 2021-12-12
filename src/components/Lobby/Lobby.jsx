@@ -1,14 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
 import ShowBoard from "../ChessBoards/Show";
-import { notification } from "antd";
+import { notification, Modal } from "antd";
 import "../../styles/lobby.scss";
-import {
-	useMoralis,
-	useMoralisQuery,
-	useWeb3ExecuteFunction,
-} from "react-moralis";
+import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
 import GameOptionsModal from "./GameOptionsModal";
-import { useWindowSize } from "../../hooks/useWindowSize";
 import { ERC20Abi } from "../../contracts/abi";
 
 const SGHODA_TOKEN_ADDRESS =
@@ -48,20 +43,6 @@ const Lobby = ({ setIsPairing }) => {
 		},
 	});
 
-	// const {
-	// 	data: [liveChallengeData],
-	// 	// error: gameError,
-	// 	isLoading: isChallengeLoading,
-	// } = useMoralisQuery(
-	// 	"Game",
-	// 	(query) => query.containedBy("sides", ),
-	// 	[challenge],
-	// 	{
-	// 		autoFetch: true,
-	// 		live: true,
-	// 	}
-	// );
-
 	const stakedTokenBalance = useMemo(
 		() => Moralis.Units.FromWei(stakedBalance),
 		[stakedBalance]
@@ -75,10 +56,18 @@ const Lobby = ({ setIsPairing }) => {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 
 	const handlePlayWithFriend = () => {
+		if (stakedTokenBalance < 10) {
+			openStakeErrorNotification();
+			return;
+		}
 		!user ? openErrorNotification() : showModal();
 	};
 
 	const handleCreateGame = () => {
+		if (stakedTokenBalance < 10) {
+			openStakeErrorNotification();
+			return;
+		}
 		!user ? openErrorNotification() : showModal();
 	};
 
@@ -87,11 +76,15 @@ const Lobby = ({ setIsPairing }) => {
 	};
 
 	const quickMatch = (e) => {
-		setIsPairing(true);
+		if (stakedTokenBalance < 10) {
+			openStakeErrorNotification();
+			return;
+		}
 		if (!user) {
 			openErrorNotification();
 			return;
 		}
+		setIsPairing(true);
 	};
 	useEffect(() => {
 		isWeb3Enabled && user && getAllowanceForUser();
@@ -109,6 +102,14 @@ const Lobby = ({ setIsPairing }) => {
 
 	return (
 		<div className="lobby">
+			<Modal
+				title="Initialisng Game"
+				visible={isStakedBalanceLoading}
+				footer={null}
+				closable={false}>
+				<p>Preparing the Knights for war ⚔️</p>
+			</Modal>
+
 			<GameOptionsModal
 				isModalVisible={isModalVisible}
 				setIsModalVisible={setIsModalVisible}
@@ -117,24 +118,15 @@ const Lobby = ({ setIsPairing }) => {
 			/>
 
 			<section className="play">
-				<button
-					disabled={Moralis.Units.FromWei(stakedBalance) < 10}
-					className="join-game-btn"
-					onClick={quickMatch}>
+				<button className="join-game-btn" onClick={quickMatch}>
 					🚀
 					<span className="btn-text">Quick Match</span>
 				</button>
-				<button
-					disabled={Moralis.Units.FromWei(stakedBalance) < 10}
-					className="create-game-btn"
-					onClick={handleCreateGame}>
+				<button className="create-game-btn" onClick={handleCreateGame}>
 					🛠️
 					<span className="btn-text">Create Game</span>
 				</button>
-				<button
-					disabled={Moralis.Units.FromWei(stakedBalance) < 10}
-					className="play-with-friend-btn"
-					onClick={handlePlayWithFriend}>
+				<button className="play-with-friend-btn" onClick={handlePlayWithFriend}>
 					🤝
 					<span className="btn-text">Play with friend</span>
 				</button>
@@ -194,6 +186,15 @@ const openErrorNotification = () => {
 		message: "User not Authenticated",
 		description:
 			"Please connect your wallet to create a game. You can connect your wallet by clicking on the authenticate button in the top right corner.",
+		placement: "bottomRight",
+	});
+};
+
+const openStakeErrorNotification = () => {
+	notification["error"]({
+		message: "Not Enough GHODA Staked",
+		description:
+			"You have not staked enough $GHODA to play. Please stake more $GHODA in the staked tab to play.",
 		placement: "bottomRight",
 	});
 };

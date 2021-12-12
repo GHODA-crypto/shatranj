@@ -30,10 +30,12 @@ import "../../styles/game.scss";
 const MobileView = ({
 	isMobileDrawerVisible,
 	setIsMobileDrawerVisible,
-	isPlayerWhite,
+	opSide,
 	children,
 	gameBoardProps,
 	winSize,
+	gameHistory,
+	liveGameAttributes,
 }) => {
 	const { user } = useMoralis();
 
@@ -83,8 +85,10 @@ const MobileView = ({
 						<WhiteBishop size={15} />
 					</div>
 					<div className="player-info">
-						<div className="username">0x1234...1234</div>
-						<div className="elo">(1456)</div>
+						<div className="username">
+							{liveGameAttributes?.players[opSide]}
+						</div>
+						<div className="elo">({liveGameAttributes?.ELO[opSide]})</div>
 					</div>
 				</div>
 
@@ -92,12 +96,8 @@ const MobileView = ({
 
 				<div className="players self">
 					<div className="player-info">
-						<div className="username">
-							{/* {user?.attributes?.ethAddress.slice(0, 8)}...
-							{user?.attributes?.ethAddress.slice(-9, -1)} */}
-							0x1234...1234
-						</div>
-						<div className="elo">(1456)</div>
+						<div className="username">{user?.get("ethAddress")}</div>
+						<div className="elo">({user?.get("ELO")})</div>
 					</div>
 					<div className="fallen-peice fallen-peice-self">
 						<BlackPawn size={15} />

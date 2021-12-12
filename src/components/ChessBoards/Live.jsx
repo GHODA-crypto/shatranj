@@ -5,21 +5,17 @@ import { useMoralisCloudFunction, useMoralis } from "react-moralis";
 
 const ChessboardMemo = memo(Chessboard);
 
-const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-const DEFAULT_GAME = new Chess(DEFAULT_FEN);
-
 const LiveBoard = ({
 	user,
 	boardWidth,
-	liveGameAttributes,
 	liveGameId,
-	liveGamePGN,
 	playerSide,
+	game,
+	setGame,
+	gameHistory,
 }) => {
 	const chessboardRef = useRef();
 
-	const [game, setGame] = useState(DEFAULT_GAME);
-	const gameHistory = useMemo(() => game.history({ verbose: true }), [game]);
 	const historySquareStyles = useMemo(() => {
 		return gameHistory
 			? {
@@ -40,21 +36,7 @@ const LiveBoard = ({
 			: {};
 	}, [gameHistory]);
 
-	const liveGameObj = useMemo(() => {
-		if (liveGameAttributes?.pgn) {
-			const _chess = new Chess();
-			_chess.load_pgn(liveGameAttributes.pgn);
-			return _chess;
-		} else {
-			return DEFAULT_GAME;
-		}
-	}, [liveGameAttributes]);
-
 	const { Moralis } = useMoralis();
-
-	useEffect(() => {
-		if (liveGameObj) setGame(liveGameObj);
-	}, [liveGameObj]);
 
 	const [rightClickedSquares, setRightClickedSquares] = useState({});
 	const [moveSquares, setMoveSquares] = useState({});
@@ -142,7 +124,7 @@ const LiveBoard = ({
 
 		setOptionSquares({});
 	}
-	console.log(historySquareStyles, rightClickedSquares);
+
 	const sendMove = useCallback(
 		async (move) => {
 			try {

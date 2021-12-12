@@ -1,6 +1,6 @@
 import { useMoralis } from "react-moralis";
-
-import { Layout, Tabs, Drawer } from "antd";
+import { useState, useEffect } from "react";
+import { Layout, Skeleton, Row, Col } from "antd";
 import {
 	FireOutlined,
 	InfoCircleOutlined,
@@ -8,25 +8,38 @@ import {
 } from "@ant-design/icons";
 
 import { ReactComponent as Send } from "../../assets/send.svg";
-import { ReactComponent as WhiteKing } from "../../assets/chess_svgs/white_king.svg";
-import { ReactComponent as WhiteKnight } from "../../assets/chess_svgs/white_knight.svg";
-import { ReactComponent as WhiteQueen } from "../../assets/chess_svgs/white_queen.svg";
-import { ReactComponent as WhiteBishop } from "../../assets/chess_svgs/white_bishop.svg";
-import { ReactComponent as WhiteRook } from "../../assets/chess_svgs/white_rook.svg";
-import { ReactComponent as WhitePawn } from "../../assets/chess_svgs/white_pawn.svg";
-import { ReactComponent as BlackKing } from "../../assets/chess_svgs/black_king.svg";
-import { ReactComponent as BlackKnight } from "../../assets/chess_svgs/black_knight.svg";
-import { ReactComponent as BlackQueen } from "../../assets/chess_svgs/black_queen.svg";
-import { ReactComponent as BlackBishop } from "../../assets/chess_svgs/black_bishop.svg";
-import { ReactComponent as BlackRook } from "../../assets/chess_svgs/black_rook.svg";
-import { ReactComponent as BlackPawn } from "../../assets/chess_svgs/black_pawn.svg";
+import { ReactComponent as WhiteKing } from "../../assets/chess_svgs/k_w.svg";
+import { ReactComponent as WhiteKnight } from "../../assets/chess_svgs/n_w.svg";
+import { ReactComponent as WhiteQueen } from "../../assets/chess_svgs/q_w.svg";
+import { ReactComponent as WhiteBishop } from "../../assets/chess_svgs/b_w.svg";
+import { ReactComponent as WhiteRook } from "../../assets/chess_svgs/r_w.svg";
+import { ReactComponent as WhitePawn } from "../../assets/chess_svgs/p_w.svg";
+import { ReactComponent as BlackKing } from "../../assets/chess_svgs/k_b.svg";
+import { ReactComponent as BlackKnight } from "../../assets/chess_svgs/n_b.svg";
+import { ReactComponent as BlackQueen } from "../../assets/chess_svgs/q_b.svg";
+import { ReactComponent as BlackBishop } from "../../assets/chess_svgs/b_b.svg";
+import { ReactComponent as BlackRook } from "../../assets/chess_svgs/r_b.svg";
+import { ReactComponent as BlackPawn } from "../../assets/chess_svgs/p_b.svg";
 
 import { ReactComponent as Abort } from "../../assets/abort.svg";
 import { ReactComponent as Draw } from "../../assets/draw.svg";
 import { ReactComponent as Win } from "../../assets/win.svg";
 
-const DesktopView = ({ isPlayerWhite, joinLiveChess, children, winSize }) => {
+const DesktopView = ({
+	opSide,
+	joinLiveChess,
+	children,
+	winSize,
+	liveGameAttributes,
+	isGameLoading,
+	gameHistory,
+	captured,
+}) => {
+	const [wPng, setWPng] = useState([]);
+	const [bPng, setBPng] = useState([]);
+	// const [movePairCount, setMovePairCount] = useState(1);
 	const { user } = useMoralis();
+
 	const styles = {
 		Sider: {
 			margin: "0",
@@ -37,6 +50,16 @@ const DesktopView = ({ isPlayerWhite, joinLiveChess, children, winSize }) => {
 		},
 	};
 	const { Sider, Content } = Layout;
+	const { w, b } = captured;
+
+	useEffect(() => {
+		if (gameHistory.length <= 0) return;
+		if (gameHistory[gameHistory.length - 1].color === "w") {
+			setWPng(...wPng, gameHistory[gameHistory.length - 1].san);
+		} else {
+			setBPng(...bPng, gameHistory[gameHistory.length - 1].san);
+		}
+	}, [gameHistory]);
 
 	return (
 		<Layout className="game-desktop">
@@ -100,31 +123,86 @@ const DesktopView = ({ isPlayerWhite, joinLiveChess, children, winSize }) => {
 				className="game-info"
 				style={styles.Sider}
 				width={winSize.width * 0.23}>
-				<div className="players op">
-					<div className="player-info">
-						<div className="username">0x1234...1234</div>
-						<div className="elo">(1456)</div>
+				{isGameLoading ? (
+					<div className="players op">
+						<div className="player-info">
+							<div className="username">
+								{liveGameAttributes?.players[opSide]}
+							</div>
+							<div className="elo">({liveGameAttributes?.ELO[opSide]})</div>
+						</div>
+						<div className="fallen-peice fallen-peice-op">
+							<div className="bp peice">
+								{[...Array(b.p)].map((_, idx) => (
+									<WhitePawn key={idx} />
+								))}
+							</div>
+							<div className="bb peice">
+								{[...Array(b.b)].map((_, idx) => (
+									<WhiteBishop key={idx} />
+								))}
+							</div>
+							<div className="bn peice">
+								{[...Array(b.n)].map((_, idx) => (
+									<WhiteKnight key={idx} />
+								))}
+							</div>
+							<div className="br peice">
+								{[...Array(b.r)].map((_, idx) => (
+									<WhiteRook key={idx} />
+								))}
+							</div>
+							<div className="bq peice">
+								{[...Array(b.q)].map((_, idx) => (
+									<WhiteQueen key={idx} />
+								))}
+							</div>
+						</div>
 					</div>
-					<div className="fallen-peice fallen-peice-op">
-						<WhiteRook size={15} />
-						<WhiteKnight size={15} />
-						<WhiteBishop size={15} />
-					</div>
+				) : (
+					<Skeleton active />
+				)}
+
+				<div className="pgn">
+					{bPng.map((bMove, idx) => (
+						<Row key={idx}>
+							<Col flex={1}>{idx + 1}</Col>
+							<Col flex={2}>{wPng.length !== 0 ? wPng[idx] : ""}</Col>
+							<Col flex={2}>{bMove}</Col>
+						</Row>
+					))}
 				</div>
-				<div className="pgn"></div>
 				<div className="players self">
 					<div className="player-info">
-						<div className="username">
-							{/* {user?.attributes?.ethAddress.slice(0, 8)}...
-							{user?.attributes?.ethAddress.slice(-9, -1)} */}
-							0x1234...1234
-						</div>
-						<div className="elo">(1456)</div>
+						<div className="username">{user?.get("ethAddress")}</div>
+						<div className="elo">({user?.get("ELO")})</div>
 					</div>
 					<div className="fallen-peice fallen-peice-self">
-						<BlackPawn size={15} />
-						<BlackQueen size={15} />
-						<BlackKing size={15} />
+						<div className="bp peice">
+							{[...Array(w.p)].map((_, idx) => (
+								<BlackPawn key={idx} />
+							))}
+						</div>
+						<div className="bb peice">
+							{[...Array(w.b)].map((_, idx) => (
+								<BlackBishop key={idx} />
+							))}
+						</div>
+						<div className="bn peice">
+							{[...Array(w.n)].map((_, idx) => (
+								<BlackKnight key={idx} />
+							))}
+						</div>
+						<div className="br peice">
+							{[...Array(w.r)].map((_, idx) => (
+								<BlackRook key={idx} />
+							))}
+						</div>
+						<div className="bq peice">
+							{[...Array(w.q)].map((_, idx) => (
+								<BlackQueen key={idx} />
+							))}
+						</div>
 					</div>
 				</div>
 			</Sider>
