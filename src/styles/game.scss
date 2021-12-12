@@ -157,8 +157,26 @@
 		.pgn {
 			width: 100%;
 			height: 50%;
-			border: 1px solid grey;
 			border-radius: 1rem;
+			overflow: auto;
+			padding: 1rem;
+			.cell {
+				background-color: red;
+				text-align: center;
+				font-size: 1rem;
+				margin: 0.25rem;
+				padding: 0.5rem 0;
+				border-radius: 0.5rem;
+			}
+			.cell-1 {
+				background: rgba($dark, 0.8);
+				color: $light;
+			}
+			.cell-2 {
+				background: rgba($accent, 0.3);
+				color: $dark;
+				font-weight: 600;
+			}
 		}
 		.players {
 			display: flex;
@@ -264,8 +282,26 @@
 						.pgn {
 							width: 100%;
 							height: 50%;
-							border: 1px solid grey;
 							border-radius: 1rem;
+							overflow: auto;
+							padding: 1rem;
+							.cell {
+								background-color: red;
+								text-align: center;
+								font-size: 1rem;
+								margin: 0.25rem;
+								padding: 0.5rem 0;
+								border-radius: 0.5rem;
+							}
+							.cell-1 {
+								background: rgba($dark, 0.8);
+								color: $light;
+							}
+							.cell-2 {
+								background: rgba($accent, 0.3);
+								color: $dark;
+								font-weight: 600;
+							}
 						}
 						.players {
 							display: flex;
@@ -515,9 +551,26 @@
 									height: 100%;
 									.pgn {
 										width: 100%;
-										height: 70%;
-										border: 1px solid grey;
+										height: 80%;
 										border-radius: 1rem;
+										overflow: auto;
+										padding: 1rem;
+										.cell {
+											text-align: center;
+											font-size: 1rem;
+											margin: 0.25rem;
+											padding: 0.5rem 0;
+											border-radius: 0.5rem;
+										}
+										.cell-1 {
+											background: rgba($light, 0.8);
+											color: $dark;
+										}
+										.cell-2 {
+											background: rgba($accent, 0.8);
+											color: $light;
+											font-weight: 600;
+										}
 									}
 								}
 

@@ -126,11 +126,11 @@ const DesktopView = ({
 					<div className="players op">
 						<div className="player-info">
 							<div className="username">
-								{liveGameAttributes?.players[opSide]}
-								{/* 0x123123111313131313 */}
+								{/* {liveGameAttributes?.players[opSide]} */}
+								0x123123111313131313
 							</div>
-							<div className="elo">({liveGameAttributes?.ELO[opSide]})</div>
-							{/* <div className="elo">(700)</div> */}
+							{/* <div className="elo">({liveGameAttributes?.ELO[opSide]})</div> */}
+							<div className="elo">(700)</div>
 						</div>
 						<div className="fallen-peice fallen-peice-op">
 							<div className="bp peice">
@@ -167,9 +167,15 @@ const DesktopView = ({
 				<div className="pgn">
 					{bPng.map((bMove, idx) => (
 						<Row key={idx}>
-							<Col flex={1}>{idx + 1}</Col>
-							<Col flex={2}>{wPng.length !== 0 ? wPng[idx] : ""}</Col>
-							<Col flex={2}>{bMove}</Col>
+							<Col className="cell cell-1" flex={1}>
+								{idx + 1}
+							</Col>
+							<Col className="cell cell-2" flex={2}>
+								{wPng.length !== 0 ? wPng[idx] : ""}
+							</Col>
+							<Col className="cell cell-2" flex={2}>
+								{bMove}
+							</Col>
 						</Row>
 					))}
 				</div>

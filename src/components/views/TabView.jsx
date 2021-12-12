@@ -1,5 +1,6 @@
 import { useMoralis } from "react-moralis";
-import { Layout, Tabs, Drawer } from "antd";
+import { useState, useEffect } from "react";
+import { Layout, Tabs, Row, Col, Skeleton } from "antd";
 import { FireOutlined, InfoCircleOutlined } from "@ant-design/icons";
 
 import { ReactComponent as Send } from "../../assets/send.svg";
@@ -16,7 +17,6 @@ import { ReactComponent as BlackBishop } from "../../assets/chess_svgs/b_b.svg";
 import { ReactComponent as BlackRook } from "../../assets/chess_svgs/r_b.svg";
 import { ReactComponent as BlackPawn } from "../../assets/chess_svgs/p_b.svg";
 
-
 import { ReactComponent as Abort } from "../../assets/abort.svg";
 import { ReactComponent as Draw } from "../../assets/draw.svg";
 import { ReactComponent as Win } from "../../assets/win.svg";
@@ -29,7 +29,10 @@ const TabView = ({
 	winSize,
 	liveGameAttributes,
 	gameHistory,
+	captured,
 }) => {
+	const [wPng, setWPng] = useState([]);
+	const [bPng, setBPng] = useState([]);
 	const { user } = useMoralis();
 	const { TabPane } = Tabs;
 	const { Content, Sider } = Layout;
@@ -44,6 +47,16 @@ const TabView = ({
 			zIndex: "1",
 		},
 	};
+	const { w, b } = captured;
+
+	useEffect(() => {
+		if (gameHistory.length <= 0) return;
+		if (gameHistory[gameHistory.length - 1].color === "w") {
+			setWPng([...wPng, gameHistory[gameHistory.length - 1].san]);
+		} else {
+			setBPng([...bPng, gameHistory[gameHistory.length - 1].san]);
+		}
+	}, [gameHistory]);
 
 	return (
 		<Layout className="game-tablet">
@@ -113,29 +126,93 @@ const TabView = ({
 						}
 						key="2"
 						className="game-info">
-						<div className="players op">
-							<div className="player-info">
-								<div className="username">
-									{liveGameAttributes?.players[opSide]}
+						{liveGameAttributes ? (
+							<div className="players op">
+								<div className="player-info">
+									<div className="username">
+										{/* {liveGameAttributes?.players[opSide]} */}
+										0x123123111313131313
+									</div>
+									{/* <div className="elo">({liveGameAttributes?.ELO[opSide]})</div> */}
+									<div className="elo">(700)</div>
 								</div>
-								<div className="elo">({liveGameAttributes?.ELO[opSide]})</div>
+								<div className="fallen-peice fallen-peice-op">
+									<div className="bp peice">
+										{[...Array(b.p)].map((_, idx) => (
+											<WhitePawn key={idx} />
+										))}
+									</div>
+									<div className="bb peice">
+										{[...Array(b.b)].map((_, idx) => (
+											<WhiteBishop key={idx} />
+										))}
+									</div>
+									<div className="bn peice">
+										{[...Array(b.n)].map((_, idx) => (
+											<WhiteKnight key={idx} />
+										))}
+									</div>
+									<div className="br peice">
+										{[...Array(b.r)].map((_, idx) => (
+											<WhiteRook key={idx} />
+										))}
+									</div>
+									<div className="bq peice">
+										{[...Array(b.q)].map((_, idx) => (
+											<WhiteQueen key={idx} />
+										))}
+									</div>
+								</div>
 							</div>
-							<div className="fallen-peice fallen-peice-op">
-								<WhiteRook size={15} />
-								<WhiteKnight size={15} />
-								<WhiteBishop size={15} />
-							</div>
+						) : (
+							<Skeleton active />
+						)}
+						<div className="pgn">
+							{bPng.map((bMove, idx) => (
+								<Row key={idx}>
+									<Col className="cell cell-1" flex={1}>
+										{idx + 1}
+									</Col>
+									<Col className="cell cell-2" flex={2}>
+										{wPng.length !== 0 ? wPng[idx] : ""}
+									</Col>
+									<Col className="cell cell-2" flex={2}>
+										{bMove}
+									</Col>
+								</Row>
+							))}
 						</div>
-						<div className="pgn"></div>
 						<div className="players self">
 							<div className="player-info">
 								<div className="username">{user?.get("ethAddress")}</div>
 								<div className="elo">({user?.get("ELO")})</div>
 							</div>
 							<div className="fallen-peice fallen-peice-self">
-								<BlackPawn size={15} />
-								<BlackQueen size={15} />
-								<BlackKing size={15} />
+								<div className="bp peice">
+									{[...Array(w.p)].map((_, idx) => (
+										<BlackPawn key={idx} />
+									))}
+								</div>
+								<div className="bb peice">
+									{[...Array(w.b)].map((_, idx) => (
+										<BlackBishop key={idx} />
+									))}
+								</div>
+								<div className="bn peice">
+									{[...Array(w.n)].map((_, idx) => (
+										<BlackKnight key={idx} />
+									))}
+								</div>
+								<div className="br peice">
+									{[...Array(w.r)].map((_, idx) => (
+										<BlackRook key={idx} />
+									))}
+								</div>
+								<div className="bq peice">
+									{[...Array(w.q)].map((_, idx) => (
+										<BlackQueen key={idx} />
+									))}
+								</div>
 							</div>
 						</div>
 					</TabPane>
