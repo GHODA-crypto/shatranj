@@ -1,6 +1,6 @@
 import { Modal, Radio, InputNumber } from "antd";
-import { ReactComponent as WKing } from "../../assets/chess_svgs/white_king.svg";
-import { ReactComponent as BKing } from "../../assets/chess_svgs/black_king.svg";
+import { ReactComponent as WKing } from "../../assets/chess_svgs/k_w.svg";
+import { ReactComponent as BKing } from "../../assets/chess_svgs/k_b.svg";
 import { useWindowSize } from "../../hooks/useWindowSize";
 
 const GameOptionsModal = ({
