@@ -74,21 +74,6 @@ const LiveChess = ({
 	}, []);
 
 	const {
-		fetch: resignGame,
-		data: resignData,
-		// error: challengeError,
-		isLoading: resigningGame,
-	} = useMoralisCloudFunction(
-		"resign",
-		{
-			gameId: gameId,
-		},
-		{
-			autoFetch: false,
-		}
-	);
-
-	const {
 		fetch: claimVictory,
 		data: victoryData,
 		// error: claimVictoryError,
@@ -118,6 +103,21 @@ const LiveChess = ({
 		}
 	);
 	const gameId = useMemo(() => liveGameData?.id, [liveGameData?.id]);
+
+	const {
+		fetch: resignGame,
+		data: resignData,
+		// error: challengeError,
+		isLoading: resigningGame,
+	} = useMoralisCloudFunction(
+		"resign",
+		{
+			gameId: gameId,
+		},
+		{
+			autoFetch: false,
+		}
+	);
 
 	const {
 		data: [liveChallengeData],
