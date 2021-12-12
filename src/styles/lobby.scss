@@ -8,14 +8,11 @@
 	user-select: none;
 
 	.play {
-		margin: 0 auto;
+		margin: 0 10rem;
 		display: flex;
 		justify-content: space-evenly;
 		align-items: center;
-		width: 80%;
-		min-width: 15rem;
-		height: 40%;
-		min-height: 15rem;
+		min-height: 25rem;
 		button {
 			display: flex;
 			flex-direction: column;
