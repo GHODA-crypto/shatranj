@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useMemo, useCallback, memo } from "react";
 import Chess from "chess.js";
 import { Chessboard } from "react-chessboard";
 import { useMoralisCloudFunction, useMoralis } from "react-moralis";
+import { customPieces } from "./customPieces";
 
 const ChessboardMemo = memo(Chessboard);
 
@@ -155,6 +156,8 @@ const LiveBoard = ({
 		});
 	}
 
+	const custom = customPieces();
+
 	return (
 		<div className="board">
 			<ChessboardMemo
@@ -169,6 +172,7 @@ const LiveBoard = ({
 				onPieceDrop={onDrop}
 				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
 				customLightSquareStyle={{ backgroundColor: "#f9ffe4" }}
+				// customPieces={custom} // {"wP": jsx}
 				customBoardStyle={{
 					borderRadius: "4px",
 					boxShadow: "0 0px 15px rgba(0, 0, 0, 0.25)",

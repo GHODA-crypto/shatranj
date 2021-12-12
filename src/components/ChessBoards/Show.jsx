@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import Chess from "chess.js";
 import { Chessboard } from "react-chessboard";
+import { customPieces } from "./customPieces";
 
 function ShowBoard({ boardWidth, pgn }) {
 	const chessboardRef = useRef();
@@ -28,6 +29,7 @@ function ShowBoard({ boardWidth, pgn }) {
 				position={game.fen()}
 				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
 				customLightSquareStyle={{ backgroundColor: "#D3FFD8" }}
+				// customPieces={customPieces()}
 				customBoardStyle={{
 					borderRadius: "8px",
 					boxShadow: "0 0 10px 0px rgba(0, 0, 0, 0.15)",

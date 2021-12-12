@@ -90,12 +90,8 @@ const Lobby = ({ setIsPairing }) => {
 		isWeb3Enabled && user && getAllowanceForUser();
 	}, [isWeb3Enabled, user]);
 
-	const init = async () => {
-		await fetchStakedBalance();
-	};
-
 	useEffect(() => {
-		init();
+		fetchStakedBalance();
 		console.log("stakedBalance", stakedBalance);
 		console.log("stakedBalanceError", stakedBalanceError);
 	}, []);
