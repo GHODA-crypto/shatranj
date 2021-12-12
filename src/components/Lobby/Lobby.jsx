@@ -1,14 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
 import ShowBoard from "../ChessBoards/Show";
-import { notification } from "antd";
+import { notification, Modal } from "antd";
 import "../../styles/lobby.scss";
-import {
-	useMoralis,
-	useMoralisQuery,
-	useWeb3ExecuteFunction,
-} from "react-moralis";
+import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
 import GameOptionsModal from "./GameOptionsModal";
-import { useWindowSize } from "../../hooks/useWindowSize";
 import { ERC20Abi } from "../../contracts/abi";
 
 const SGHODA_TOKEN_ADDRESS =
@@ -95,14 +90,26 @@ const Lobby = ({ setIsPairing }) => {
 		isWeb3Enabled && user && getAllowanceForUser();
 	}, [isWeb3Enabled, user]);
 
+	const init = async () => {
+		await fetchStakedBalance();
+	};
+
 	useEffect(() => {
-		fetchStakedBalance();
+		init();
 		console.log("stakedBalance", stakedBalance);
 		console.log("stakedBalanceError", stakedBalanceError);
 	}, []);
 
 	return (
 		<div className="lobby">
+			<Modal
+				title="Initialisng Game"
+				visible={isStakedBalanceLoading}
+				footer={null}
+				closable={false}>
+				<p>Preparing the Knights for war ⚔️</p>
+			</Modal>
+
 			<GameOptionsModal
 				isModalVisible={isModalVisible}
 				setIsModalVisible={setIsModalVisible}

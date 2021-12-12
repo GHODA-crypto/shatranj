@@ -16,6 +16,8 @@ import LiveBoard from "./ChessBoards/Live";
 
 const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	const [isMobileDrawerVisible, setIsMobileDrawerVisible] = useState(false);
+	const [liveGameAttributes, setLiveGameAttributes] = useState(null);
+	const [liveGamePGN, setLiveGamePGN] = useState(null);
 	const { user, isInitialized } = useMoralis();
 
 	const {
@@ -67,9 +69,10 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 		doesActiveChallengeExist();
 	}, []);
 
-	// useEffect(() => {
-	// 	console.log("liveGameAtt", liveGameAttributes);
-	// }, [liveGameData]);
+	useEffect(() => {
+		setLiveGameAttributes(liveGameData?.attributes);
+		setLiveGamePGN(liveGameData?.attributes?.pgn);
+	}, [liveGameData]);
 
 	useEffect(() => {
 		if (isPairing || isLiveChallenge) {
@@ -77,9 +80,6 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 			joinLiveChess();
 		}
 	}, [isPairing, isLiveChallenge]);
-
-	const liveGameAttributes = liveGameData?.attributes;
-	const liveGamePGN = liveGameData?.attributes?.pgn;
 
 	const isPlayerWhite = useMemo(() => {
 		return liveGameData
@@ -93,10 +93,11 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	if (winSize.width < 700)
 		return (
 			<MobileView
-				playerSide={isPlayerWhite ? "w" : "b"}
+				opSide={isPlayerWhite ? "b" : "w"}
 				isMobileDrawerVisible={isMobileDrawerVisible}
 				setIsMobileDrawerVisible={setIsMobileDrawerVisible}
 				liveGameAttributes={liveGameAttributes}
+				isGameLoading={isGameLoading}
 				winSize={winSize}>
 				<LiveBoard
 					liveGameAttributes={liveGameAttributes}
@@ -112,9 +113,10 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	else if (winSize.width >= 700 && winSize.width < 1200)
 		return (
 			<TabView
-				playerSide={isPlayerWhite ? "w" : "b"}
+				opSide={isPlayerWhite ? "b" : "w"}
 				winSize={winSize}
-				liveGameAttributes={liveGameAttributes}>
+				liveGameAttributes={liveGameAttributes}
+				isGameLoading={isGameLoading}>
 				<LiveBoard
 					liveGameAttributes={liveGameAttributes}
 					liveGameId={gameId}
@@ -129,10 +131,11 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	else
 		return (
 			<DesktopView
-				playerSide={isPlayerWhite ? "w" : "b"}
+				opSide={isPlayerWhite ? "b" : "w"}
 				joinLiveChess={joinLiveChess}
 				winSize={winSize}
-				liveGameAttributes={liveGameAttributes}>
+				liveGameAttributes={liveGameAttributes}
+				isGameLoading={isGameLoading}>
 				<LiveBoard
 					liveGameAttributes={liveGameAttributes}
 					liveGameId={gameId}
@@ -145,5 +148,9 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 			</DesktopView>
 		);
 };
+
+const VictoryModal = () => {};
+const LossModal = () => {};
+const DrawModal = () => {};
 
 export default LiveChess;

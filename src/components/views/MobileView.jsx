@@ -30,7 +30,7 @@ import "../../styles/game.scss";
 const MobileView = ({
 	isMobileDrawerVisible,
 	setIsMobileDrawerVisible,
-	playerSide,
+	opSide,
 	children,
 	gameBoardProps,
 	winSize,
@@ -85,9 +85,9 @@ const MobileView = ({
 					</div>
 					<div className="player-info">
 						<div className="username">
-							{liveGameAttributes?.players[playerSide]}
+							{liveGameAttributes?.players[opSide]}
 						</div>
-						<div className="elo">({liveGameAttributes?.ELO[playerSide]})</div>
+						<div className="elo">({liveGameAttributes?.ELO[opSide]})</div>
 					</div>
 				</div>
 
@@ -95,11 +95,8 @@ const MobileView = ({
 
 				<div className="players self">
 					<div className="player-info">
-						<div className="username">
-							{user?.get("ethAddress").slice(0, 5)}...
-							{user?.get("ethAddress").slice(-6, -1)}
-						</div>
-						<div className="elo">{user?.get("ELO")}</div>
+						<div className="username">{user?.get("ethAddress")}</div>
+						<div className="elo">({user?.get("ELO")})</div>
 					</div>
 					<div className="fallen-peice fallen-peice-self">
 						<BlackPawn size={15} />

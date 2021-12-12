@@ -22,7 +22,7 @@ import { ReactComponent as Win } from "../../assets/win.svg";
 
 import "../../styles/game.scss";
 
-const TabView = ({ playerSide, children, winSize, liveGameAttributes }) => {
+const TabView = ({ opSide, children, winSize, liveGameAttributes }) => {
 	const { user } = useMoralis();
 	const { TabPane } = Tabs;
 	const { Content, Sider } = Layout;
@@ -109,11 +109,9 @@ const TabView = ({ playerSide, children, winSize, liveGameAttributes }) => {
 						<div className="players op">
 							<div className="player-info">
 								<div className="username">
-									{liveGameAttributes?.players[playerSide]}
+									{liveGameAttributes?.players[opSide]}
 								</div>
-								<div className="elo">
-									({liveGameAttributes?.ELO[playerSide]})
-								</div>
+								<div className="elo">({liveGameAttributes?.ELO[opSide]})</div>
 							</div>
 							<div className="fallen-peice fallen-peice-op">
 								<WhiteRook size={15} />
@@ -124,10 +122,7 @@ const TabView = ({ playerSide, children, winSize, liveGameAttributes }) => {
 						<div className="pgn"></div>
 						<div className="players self">
 							<div className="player-info">
-								<div className="username">
-									{user?.get("ethAddress").slice(0, 5)}...
-									{user?.get("ethAddress").slice(-6, -1)}
-								</div>
+								<div className="username">{user?.get("ethAddress")}</div>
 								<div className="elo">({user?.get("ELO")})</div>
 							</div>
 							<div className="fallen-peice fallen-peice-self">
