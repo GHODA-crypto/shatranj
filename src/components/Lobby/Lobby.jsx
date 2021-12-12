@@ -88,9 +88,7 @@ const Lobby = ({ setIsPairing }) => {
 
 	useEffect(() => {
 		fetchStakedBalance();
-		// console.log("stakedBalance", stakedBalance);
-		// console.log("stakedBalanceError", stakedBalanceError);
-	}, []);
+	}, [isWeb3Enabled, user]);
 
 	return (
 		<div className="lobby">

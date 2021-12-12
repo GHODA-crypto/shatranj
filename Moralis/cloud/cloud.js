@@ -107,37 +107,40 @@ Moralis.Cloud.afterSave("Challenge", async (request) => {
 			challenge.get("player2")
 		);
 
-		// send http request for startGame tx
-		// await Moralis.Cloud.httpRequest({
-		// 	method: "POST",
-		// 	url: "",
-		// 	headers: {
-		// 		"Content-Type": "application/json;charset=utf-8",
-		// 	},
-		// 	body: {
-		// 		gameId: newGame.id,
-		// 		player1: challenge.get("player1"),
-		// 		player2: challenge.get("player2"),
-		// 	},
-		// }).then(
-		// 	async function (httpResponse) {
-		// 		console.log(httpResponse.text);
-		// 		challenge.set("gameId", newGame.id);
-		// 		await challenge.save(null,{ useMasterKey: true });
-		// 	},
-		// 	async function (httpResponse) {
-		// 		challenge.set("challengeStatus", 10);
-		// 		challenge.save(null,{ useMasterKey: true });
-		// 		console.error(
-		// 			"Request failed with response code " + httpResponse.status
-		// 		);
-		// 	}
-		// );
+		const config = await Moralis.Config.get({ useMasterKey: true });
+		const apiKey = config.get("apiKey");
 
-		challenge.set("gameId", newGame.id);
-		challenge.set("challengeStatus", 2);
+		const body = {
+			api: apiKey,
+			id: newGame.id,
+			b: newGame.get("players").b,
+			w: newGame.get("players").w,
+		};
+		// send http request for end game tx
 
-		await challenge.save(null, { useMasterKey: true });
+		const logger = Moralis.Cloud.getLogger();
+		const httpResponse = await Moralis.Cloud.httpRequest({
+			method: "POST",
+			url: "https://shatranj-poc388c1cd6a7ddc783e982f04317f8fe804b7821f-matrix.stackos.io/start",
+			headers: {
+				"Content-Type": "application/json;charset=utf-8",
+			},
+			body: body,
+		})
+			.then(
+				async function (httpResponse) {
+					challenge.set("gameId", newGame.id);
+					challenge.set("challengeStatus", 2);
+					await challenge.save(null, { useMasterKey: true });
+				},
+				async function (httpResponse) {
+					challenge.set("challengeStatus", 9);
+					await challenge.save(null, { useMasterKey: true });
+				}
+			)
+			.catch((error) => {
+				throw Error(error);
+			});
 	}
 });
 
@@ -199,6 +202,37 @@ Moralis.Cloud.afterSave("Game", async (request) => {
 });
 
 Moralis.Cloud.define(
+	"resign",
+	async (request) => {
+		const gameId = request.params.gameId;
+		const gameQuery = new Moralis.Query("Game");
+		const game = await gameQuery.get(gameId);
+		const userSide = game.get("players")[request.user.get("ethAddress")];
+		game.set("outcome", userSide === "w" ? 4 : 3);
+		game.set("turn", "n");
+		// game.set("outcome", 5);
+		game.save(null, { useMasterKey: true });
+	},
+	{
+		requireUser: true,
+		fields: {
+			gameId: {
+				type: "string",
+				required: true,
+				options: async (gameId) => {
+					const gameQuery = new Moralis.Query("Game");
+					const game = await gameQuery.get(gameId);
+					if (!game.get("players"[request.user.get("ethAddress")]))
+						return false;
+					return true;
+				},
+				error: "You are not part of this game",
+			},
+		},
+	}
+);
+
+Moralis.Cloud.define(
 	"claimVictory",
 	async (request) => {
 		const { gameId, needNFT } = request.params;
@@ -225,7 +259,7 @@ Moralis.Cloud.define(
 		const logger = Moralis.Cloud.getLogger();
 		const httpResponse = await Moralis.Cloud.httpRequest({
 			method: "POST",
-			url: "https://shatranj-poc388c1cd6a7ddc783e982f04317f8fe804b7821f-matrix.stackos.io/",
+			url: "https://shatranj-poc388c1cd6a7ddc783e982f04317f8fe804b7821f-matrix.stackos.io/end",
 			headers: {
 				"Content-Type": "application/json;charset=utf-8",
 			},

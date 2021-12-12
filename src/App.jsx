@@ -10,7 +10,6 @@ import {
 import Account from "./components/Account";
 import Chains from "./components/Chains";
 import Stakes from "./components/Stakes";
-import ERC20Transfers from "./components/ERC20Transfers";
 import NFTBalance from "./components/NFTBalance";
 import { Layout } from "antd";
 import "antd/dist/antd.css";
@@ -18,7 +17,6 @@ import "./style.css";
 import MenuItems from "./components/MenuItems";
 import Lobby from "./components/Lobby";
 import LiveChess from "./components/LiveChess";
-import TestCloudFunctions from "./components/TestCloudFunctions";
 import "./styles/main.scss";
 const { Header } = Layout;
 
@@ -55,9 +53,6 @@ const App = ({ isServerInfo }) => {
 						<Route path="/stakes">
 							<Stakes />
 						</Route>
-						<Route path="/erc20transfers">
-							<ERC20Transfers />
-						</Route>
 						<Route path="/nftBalance">
 							<NFTBalance />
 						</Route>
@@ -70,15 +65,9 @@ const App = ({ isServerInfo }) => {
 								setPairingParams={setPairingParams}
 							/>
 						</Route>
-						<Route path="/testcloud">
-							<TestCloudFunctions />
-						</Route>
 						<Route path="/">
 							<Redirect to="/lobby" />
 						</Route>
-						{/* <Route path="/nonauthenticated">
-							<>Please login using the "Authenticate" button</>
-						</Route> */}
 					</Switch>
 				</div>
 			</Router>
