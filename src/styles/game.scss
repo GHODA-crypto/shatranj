@@ -187,6 +187,28 @@
 					margin-bottom: 0.35rem;
 				}
 			}
+			.fallen-peice-self {
+				margin-top: 0.5rem;
+			}
+			.fallen-peice {
+				display: flex;
+				width: 100%;
+				svg {
+					width: 20px;
+					height: 20px;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					margin-right: 0.25rem;
+				}
+				.peice {
+					display: flex;
+					margin-right: 1rem;
+					& > * {
+						margin-right: -0.75rem;
+					}
+				}
+			}
 		}
 	}
 }

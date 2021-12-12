@@ -8,18 +8,18 @@ import {
 } from "@ant-design/icons";
 
 import { ReactComponent as Send } from "../../assets/send.svg";
-import { ReactComponent as WhiteKing } from "../../assets/chess_svgs/white_king.svg";
-import { ReactComponent as WhiteKnight } from "../../assets/chess_svgs/white_knight.svg";
-import { ReactComponent as WhiteQueen } from "../../assets/chess_svgs/white_queen.svg";
-import { ReactComponent as WhiteBishop } from "../../assets/chess_svgs/white_bishop.svg";
-import { ReactComponent as WhiteRook } from "../../assets/chess_svgs/white_rook.svg";
-import { ReactComponent as WhitePawn } from "../../assets/chess_svgs/white_pawn.svg";
-import { ReactComponent as BlackKing } from "../../assets/chess_svgs/black_king.svg";
-import { ReactComponent as BlackKnight } from "../../assets/chess_svgs/black_knight.svg";
-import { ReactComponent as BlackQueen } from "../../assets/chess_svgs/black_queen.svg";
-import { ReactComponent as BlackBishop } from "../../assets/chess_svgs/black_bishop.svg";
-import { ReactComponent as BlackRook } from "../../assets/chess_svgs/black_rook.svg";
-import { ReactComponent as BlackPawn } from "../../assets/chess_svgs/black_pawn.svg";
+import { ReactComponent as WhiteKing } from "../../assets/chess_svgs/k_w.svg";
+import { ReactComponent as WhiteKnight } from "../../assets/chess_svgs/n_w.svg";
+import { ReactComponent as WhiteQueen } from "../../assets/chess_svgs/q_w.svg";
+import { ReactComponent as WhiteBishop } from "../../assets/chess_svgs/b_w.svg";
+import { ReactComponent as WhiteRook } from "../../assets/chess_svgs/r_w.svg";
+import { ReactComponent as WhitePawn } from "../../assets/chess_svgs/p_w.svg";
+import { ReactComponent as BlackKing } from "../../assets/chess_svgs/k_b.svg";
+import { ReactComponent as BlackKnight } from "../../assets/chess_svgs/n_b.svg";
+import { ReactComponent as BlackQueen } from "../../assets/chess_svgs/q_b.svg";
+import { ReactComponent as BlackBishop } from "../../assets/chess_svgs/b_b.svg";
+import { ReactComponent as BlackRook } from "../../assets/chess_svgs/r_b.svg";
+import { ReactComponent as BlackPawn } from "../../assets/chess_svgs/p_b.svg";
 
 import { ReactComponent as Abort } from "../../assets/abort.svg";
 import { ReactComponent as Draw } from "../../assets/draw.svg";
@@ -33,6 +33,7 @@ const DesktopView = ({
 	liveGameAttributes,
 	isGameLoading,
 	gameHistory,
+	captured,
 }) => {
 	const [wPng, setWPng] = useState([]);
 	const [bPng, setBPng] = useState([]);
@@ -49,6 +50,7 @@ const DesktopView = ({
 		},
 	};
 	const { Sider, Content } = Layout;
+	const { w, b } = captured;
 
 	useEffect(() => {
 		if (gameHistory.length <= 0) return;
@@ -130,9 +132,11 @@ const DesktopView = ({
 							<div className="elo">({liveGameAttributes?.ELO[opSide]})</div>
 						</div>
 						<div className="fallen-peice fallen-peice-op">
-							<WhiteRook size={15} />
-							<WhiteKnight size={15} />
+							<WhitePawn size={15} />
 							<WhiteBishop size={15} />
+							<WhiteKnight size={15} />
+							<WhiteRook size={15} />
+							<WhiteQueen size={15} />
 						</div>
 					</div>
 				) : (
@@ -154,9 +158,31 @@ const DesktopView = ({
 						<div className="elo">({user?.get("ELO")})</div>
 					</div>
 					<div className="fallen-peice fallen-peice-self">
-						<BlackPawn size={15} />
-						<BlackQueen size={15} />
-						<BlackKing size={15} />
+						<div className="bp peice">
+							{[...Array(w.p)].map((_, idx) => (
+								<BlackPawn key={idx} />
+							))}
+						</div>
+						<div className="bb peice">
+							{[...Array(w.b)].map((_, idx) => (
+								<BlackBishop key={idx} />
+							))}
+						</div>
+						<div className="bn peice">
+							{[...Array(w.n)].map((_, idx) => (
+								<BlackKnight key={idx} />
+							))}
+						</div>
+						<div className="br peice">
+							{[...Array(w.r)].map((_, idx) => (
+								<BlackRook key={idx} />
+							))}
+						</div>
+						<div className="bq peice">
+							{[...Array(w.q)].map((_, idx) => (
+								<BlackQueen key={idx} />
+							))}
+						</div>
 					</div>
 				</div>
 			</Sider>

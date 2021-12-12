@@ -23,7 +23,29 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	const [liveGameAttributes, setLiveGameAttributes] = useState(null);
 	const [liveGamePGN, setLiveGamePGN] = useState(null);
 	const { user, isInitialized } = useMoralis();
-	const [capturedPeices, setCapturedPeices] = useState({});
+	const [game, setGame] = useState(DEFAULT_GAME);
+	const gameHistory = useMemo(() => game.history({ verbose: true }), [game]);
+
+	const captured = useMemo(
+		() =>
+			gameHistory.reduce(
+				function (acc, move) {
+					if ("captured" in move) {
+						const piece = move.captured;
+						const color = move.color === "w" ? "b" : "w";
+						acc[color][piece] += 1;
+						return acc;
+					} else {
+						return acc;
+					}
+				},
+				{
+					w: { n: 0, p: 0, b: 0, r: 0, q: 0 },
+					b: { n: 0, p: 0, b: 0, r: 0, q: 0 },
+				}
+			),
+		[gameHistory]
+	);
 
 	const {
 		fetch: joinLiveChess,
@@ -85,10 +107,6 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 		}
 	}, [isPairing, isLiveChallenge]);
 
-	const [game, setGame] = useState(DEFAULT_GAME);
-
-	const gameHistory = useMemo(() => game.history({ verbose: true }), [game]);
-
 	const liveGameObj = useMemo(() => {
 		if (liveGameAttributes?.pgn) {
 			const _chess = new Chess();
@@ -111,8 +129,6 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	const winSize = useWindowSize();
 	const boardWidth = useBoardWidth();
 
-	window.game = gameHistory;
-
 	if (winSize.width < 700)
 		return (
 			<MobileView
@@ -122,7 +138,8 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 				liveGameAttributes={liveGameAttributes}
 				gameHistory={gameHistory}
 				isGameLoading={isGameLoading}
-				winSize={winSize}>
+				winSize={winSize}
+				captured={captured}>
 				<LiveBoard
 					liveGameId={gameId}
 					user={user}
@@ -142,7 +159,8 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 				winSize={winSize}
 				liveGameAttributes={liveGameAttributes}
 				isGameLoading={isGameLoading}
-				gameHistory={gameHistory}>
+				gameHistory={gameHistory}
+				captured={captured}>
 				<LiveBoard
 					liveGameId={gameId}
 					user={user}
@@ -163,7 +181,8 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 				winSize={winSize}
 				liveGameAttributes={liveGameAttributes}
 				isGameLoading={isGameLoading}
-				gameHistory={gameHistory}>
+				gameHistory={gameHistory}
+				captured={captured}>
 				<LiveBoard
 					liveGameId={gameId}
 					user={user}
@@ -178,7 +197,9 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 		);
 };
 
-const VictoryModal = () => {};
+const VictoryModal = () => {
+	return <>Victory</>;
+};
 const LossModal = () => {};
 const DrawModal = () => {};
 
