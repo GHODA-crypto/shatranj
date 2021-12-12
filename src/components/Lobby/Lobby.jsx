@@ -7,9 +7,9 @@ import GameOptionsModal from "./GameOptionsModal";
 import { ERC20Abi } from "../../contracts/abi";
 
 const SGHODA_TOKEN_ADDRESS =
-	"0xAb8b8813AD811Fe2f94002647C6A47dDD4b8F477".toLowerCase();
+	"0xa57260c7C943f67BCe9AEc958a5AA29Ccd8372e0".toLowerCase();
 const GHODA_TOKEN_ADDRESS =
-	"0x48a6c3feF5Bc5394f7FF32c4AE3c461A5bD58100".toLowerCase();
+	"0x3706da1458877be03E55caC757938B4130e80EB9".toLowerCase();
 
 const Lobby = ({ setIsPairing }) => {
 	const { Moralis, isWeb3Enabled, user } = useMoralis();

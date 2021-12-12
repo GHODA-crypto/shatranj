@@ -6,7 +6,7 @@ import {
 } from "react-moralis";
 import { useWindowSize } from "../hooks/useWindowSize";
 import useBoardWidth from "../hooks/useBoardWidth";
-import { Modal } from "antd";
+import { Modal, Button } from "antd";
 
 import TabView from "./views/TabView";
 import MobileView from "./views/MobileView";
@@ -95,6 +95,11 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 			live: true,
 		}
 	);
+	// 0 - pairing
+	// 1 - matchFound
+	// 2 - in progress
+	// 3 - inactive
+	// liveChallenge?.get("challengeStatus")
 
 	useEffect(() => {
 		setLiveGameAttributes(liveGameData?.attributes);
@@ -140,6 +145,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 					isPlayerWhite={isPlayerWhite}
 					game={game}
 					liveGameAttributes={liveGameAttributes}
+					liveChallengeData={liveChallengeData}
 				/>
 				<MobileView
 					opSide={isPlayerWhite ? "b" : "w"}
@@ -170,6 +176,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 					isPlayerWhite={isPlayerWhite}
 					game={game}
 					liveGameAttributes={liveGameAttributes}
+					liveChallengeData={liveChallengeData}
 				/>
 				<TabView
 					opSide={isPlayerWhite ? "b" : "w"}
@@ -198,6 +205,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 					isPlayerWhite={isPlayerWhite}
 					game={game}
 					liveGameAttributes={liveGameAttributes}
+					liveChallengeData={liveChallengeData}
 				/>
 				<DesktopView
 					opSide={isPlayerWhite ? "b" : "w"}
@@ -222,9 +230,38 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 		);
 };
 
-const Modals = ({ game, liveGameAttributes, isPlayerWhite }) => {
+const Modals = ({
+	game,
+	liveGameAttributes,
+	isPlayerWhite,
+	liveChallengeData,
+}) => {
+	const handleClaimPool = () => {};
+	const handleClaimPoolAndNFT = () => {};
+	const handleQuickMatch = () => {};
+
 	return (
 		<>
+			<Modal
+				title="Loading"
+				visible={liveChallengeData?.get("challengeStatus") === 0}
+				footer={null}
+				closable={false}>
+				<h2>🔍 Finding you a match...</h2>
+			</Modal>
+			<Modal
+				title="Loading"
+				visible={liveChallengeData?.get("challengeStatus") === 1}
+				footer={null}
+				closable={false}>
+				<h2>Match Found. Waiting for Opponent 🎠 ...</h2>
+			</Modal>
+			<Modal
+				title="Loading"
+				visible={liveChallengeData?.get("challengeStatus") === 3}
+				footer={null}>
+				<h2>🤖 Inactivity from the Opponent...</h2>
+			</Modal>
 			<Modal
 				title="Victory"
 				visible={
@@ -232,9 +269,17 @@ const Modals = ({ game, liveGameAttributes, isPlayerWhite }) => {
 					((liveGameAttributes?.outcome === 3 && isPlayerWhite) ||
 						(liveGameAttributes?.outcome === 4 && !isPlayerWhite))
 				}
-				footer={null}
-				closable={false}>
-				<p>You Won</p>
+				footer={[
+					<Button key="only Stake" onClick={handleClaimPool}>
+						Claim Pool
+					</Button>,
+					<Button key="with NFT" type="primary" onClick={handleClaimPoolAndNFT}>
+						Claim Pool + Mint NFT
+					</Button>,
+				]}
+				width={window.getComputedStyle(document.body).fontSize * 50}>
+				<h1>🎊 You Won the Game 🎊</h1>
+				<h3>{liveGameAttributes?.outcome === 3 ? "1 - 0" : "0 - 1"}</h3>
 			</Modal>
 			<Modal
 				title="Defeat"
@@ -243,16 +288,26 @@ const Modals = ({ game, liveGameAttributes, isPlayerWhite }) => {
 					(!(liveGameAttributes?.outcome === 3 && isPlayerWhite) ||
 						(liveGameAttributes?.outcome === 4 && !isPlayerWhite))
 				}
-				footer={null}
-				closable={false}>
-				<p>You Defeat</p>
+				footer={[
+					<Button key="quickMatch" type="primary" onClick={handleQuickMatch}>
+						Quick Match
+					</Button>,
+				]}
+				width={window.getComputedStyle(document.body).fontSize * 50}>
+				<h1>🫂 You Lost the Game 🫂</h1>
+				<h3>{liveGameAttributes?.outcome === 3 ? "1 - 0" : "0 - 1"}</h3>
 			</Modal>
 			<Modal
 				title="Loading"
 				visible={game.game_over() && !liveGameAttributes?.outcome === 2}
-				footer={null}
-				closable={false}>
-				<p>Game Drawn</p>
+				footer={[
+					<Button key="quickMatch" type="primary" onClick={handleQuickMatch}>
+						Quick Match
+					</Button>,
+				]}
+				width={window.getComputedStyle(document.body).fontSize * 50}>
+				<h1>Game Drawn 😅</h1>
+				<h3>1/2 - 1/2</h3>
 			</Modal>
 		</>
 	);
