@@ -43,10 +43,10 @@ const Lobby = ({ setIsPairing }) => {
 		},
 	});
 
-	const stakedTokenBalance = useMemo(
-		() => Moralis.Units.FromWei(stakedBalance),
-		[stakedBalance]
-	);
+	// const stakedTokenBalance = useMemo(
+	// 	() => Moralis.Units.FromWei(stakedBalance),
+	// 	[stakedBalance]
+	// );
 
 	const [gameOptions, setGameOptions] = useState({
 		color: "w",
@@ -56,7 +56,7 @@ const Lobby = ({ setIsPairing }) => {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 
 	const handlePlayWithFriend = () => {
-		if (stakedTokenBalance < 10) {
+		if (Moralis.Units.FromWei(stakedBalance) < 10) {
 			openStakeErrorNotification();
 			return;
 		}
@@ -64,7 +64,7 @@ const Lobby = ({ setIsPairing }) => {
 	};
 
 	const handleCreateGame = () => {
-		if (stakedTokenBalance < 10) {
+		if (Moralis.Units.FromWei(stakedBalance) < 10) {
 			openStakeErrorNotification();
 			return;
 		}
@@ -76,7 +76,7 @@ const Lobby = ({ setIsPairing }) => {
 	};
 
 	const quickMatch = (e) => {
-		if (stakedTokenBalance < 10) {
+		if (Moralis.Units.FromWei(stakedBalance) < 10) {
 			openStakeErrorNotification();
 			return;
 		}
@@ -86,14 +86,15 @@ const Lobby = ({ setIsPairing }) => {
 		}
 		setIsPairing(true);
 	};
+
 	useEffect(() => {
 		isWeb3Enabled && user && getAllowanceForUser();
 	}, [isWeb3Enabled, user]);
 
 	useEffect(() => {
 		fetchStakedBalance();
-		console.log("stakedBalance", stakedBalance);
-		console.log("stakedBalanceError", stakedBalanceError);
+		// console.log("stakedBalance", stakedBalance);
+		// console.log("stakedBalanceError", stakedBalanceError);
 	}, []);
 
 	return (

@@ -21,7 +21,6 @@ const DEFAULT_GAME = new Chess(DEFAULT_FEN);
 const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	const [isMobileDrawerVisible, setIsMobileDrawerVisible] = useState(false);
 	const [liveGameAttributes, setLiveGameAttributes] = useState(null);
-	const [liveGamePGN, setLiveGamePGN] = useState(null);
 	const { user, isInitialized } = useMoralis();
 	const [game, setGame] = useState(DEFAULT_GAME);
 	const gameHistory = useMemo(() => game.history({ verbose: true }), [game]);
@@ -81,6 +80,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 		}
 	);
 	const gameId = useMemo(() => liveGameData?.id, [liveGameData?.id]);
+
 	const {
 		data: [liveChallengeData],
 		// error: gameError,
@@ -97,7 +97,6 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 
 	useEffect(() => {
 		setLiveGameAttributes(liveGameData?.attributes);
-		setLiveGamePGN(liveGameData?.attributes?.pgn);
 	}, [liveGameData]);
 
 	useEffect(() => {
@@ -116,6 +115,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 			return DEFAULT_GAME;
 		}
 	}, [liveGameAttributes]);
+
 	useEffect(() => {
 		if (liveGameObj) setGame(liveGameObj);
 	}, [liveGameObj]);
@@ -128,6 +128,9 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 
 	const winSize = useWindowSize();
 	const boardWidth = useBoardWidth();
+
+	window.live = liveGameAttributes;
+	window.id = gameId;
 
 	if (winSize.width < 700)
 		return (

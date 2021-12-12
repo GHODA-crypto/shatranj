@@ -54,9 +54,9 @@ const DesktopView = ({
 	useEffect(() => {
 		if (gameHistory.length <= 0) return;
 		if (gameHistory[gameHistory.length - 1].color === "w") {
-			setWPng(...wPng, gameHistory[gameHistory.length - 1].san);
+			setWPng([...wPng, gameHistory[gameHistory.length - 1].san]);
 		} else {
-			setBPng(...bPng, gameHistory[gameHistory.length - 1].san);
+			setBPng([...bPng, gameHistory[gameHistory.length - 1].san]);
 		}
 	}, [gameHistory]);
 
@@ -122,7 +122,7 @@ const DesktopView = ({
 				className="game-info"
 				style={styles.Sider}
 				width={winSize.width * 0.23}>
-				{!isGameLoading ? (
+				{liveGameAttributes ? (
 					<div className="players op">
 						<div className="player-info">
 							<div className="username">
