@@ -177,11 +177,20 @@ Moralis.Cloud.afterSave("Game", async (request) => {
 			game.set("turn", "n");
 			game.set("fen", chess.fen());
 
+			let outcome;
+
+			if (chess.in_checkmate()) {
+				const loser = chess.turn();
+				outcome = loser === "w" ? 4 : 3;
+			} else {
+				outcome = 2;
+			}
+
 			const challengeQuery = new Moralis.Query("Challenge");
 			const challenge = await challengeQuery.get(game.get("challengeId"));
 
 			challenge.set("challengeStatus", 3);
-			game.set("outcome", 3);
+			game.set("outcome", outcome);
 
 			game.save(null, { useMasterKey: true });
 			challenge.save(null, { useMasterKey: true });
@@ -190,37 +199,53 @@ Moralis.Cloud.afterSave("Game", async (request) => {
 });
 
 Moralis.Cloud.define(
-	"endGame",
+	"claimVictory",
 	async (request) => {
-		const { gameId, shouldGenerateNFT } = request.params;
+		const { gameId, needNFT } = request.params;
+
+		const gameQuery = new Moralis.Query("Game");
+		const game = await gameQuery.get(gameId);
+		const challengeQuery = new Moralis.Query("Challenge");
+		const challenge = await challengeQuery.get(game.get("challengeId"));
+
+		const config = await Moralis.Config.get({ useMasterKey: true });
+		const apiKey = config.get("apiKey");
+
+		const body = {
+			api: apiKey,
+			id: gameId,
+			needNFT: needNFT,
+			pgn: game.get("pgn"),
+			outcome: game.get("outcome"),
+			b: game.get("players").b,
+			w: game.get("players").w,
+		};
 		// send http request for end game tx
-		// await Moralis.Cloud.httpRequest({
-		// 	method: "POST",
-		// 	url: "",
-		// 	headers: {
-		// 		"Content-Type": "application/json;charset=utf-8",
-		// 	},
-		// 	body: {
-		// 		gameId: newGame.id,
-		// 		player1: challenge.get("player1"),
-		// 		player2: challenge.get("player2"),
-		// 	},
-		// }).then(
-		// 	async function (httpResponse) {
-		// 		console.log(httpResponse.text);
-		// 		challenge.set("gameId", newGame.id);
-		// 		await challenge.save(null,{ useMasterKey: true });
-		// 	},
-		// 	async function (httpResponse) {
-		// 		challenge.set("challengeStatus", 10);
-		// 		challenge.save(null,{ useMasterKey: true });
-		// 		console.error(
-		// 			"Request failed with response code " + httpResponse.status
-		// 		);
-		// 	}
-		// );
+
+		const logger = Moralis.Cloud.getLogger();
+		const httpResponse = await Moralis.Cloud.httpRequest({
+			method: "POST",
+			url: "https://shatranj-poc388c1cd6a7ddc783e982f04317f8fe804b7821f-matrix.stackos.io/",
+			headers: {
+				"Content-Type": "application/json;charset=utf-8",
+			},
+			body: body,
+		})
+			.then(
+				async function (httpResponse) {
+					logger.info(httpResponse);
+				},
+				async function (httpResponse) {
+					challenge.set("challengeStatus", 10);
+					await challenge.save(null, { useMasterKey: true });
+				}
+			)
+			.catch((error) => {
+				throw Error(error);
+			});
+		logger.info(httpResponse);
 	},
-	{ requireUser: true }
+	validateClaimVictory
 );
 
 async function validateMove(request) {
@@ -231,15 +256,9 @@ async function validateMove(request) {
 	const { gameId } = request.params;
 	if (!gameId) throw Error("GameId is required");
 
-	const logger = Moralis.Cloud.getLogger();
-	logger.info("1");
-
 	const gameQuery = new Moralis.Query("Game");
-	logger.info("2");
 	const challengeQuery = new Moralis.Query("Challenge");
-	logger.info(gameId);
 	const game = await gameQuery.get(gameId);
-	logger.info("3");
 
 	const challenge = await challengeQuery.get(game.get("challengeId"));
 	const userSide = game.get("sides")[request.user.get("ethAddress")];
@@ -249,6 +268,24 @@ async function validateMove(request) {
 
 	if (challenge.get("challengeStatus") !== 2)
 		throw Error("Game is not in progress");
+
+	return true;
+}
+async function validateClaimVictory(request) {
+	if (!request.user || !request.user.id) {
+		throw Error("Unauthorized");
+	}
+
+	const { gameId } = request.params;
+	if (!gameId) throw Error("GameId is required");
+
+	const gameQuery = new Moralis.Query("Game");
+
+	const game = await gameQuery.get(gameId);
+
+	if (game.get("turn") !== "n") throw Error("Game has not finished yet");
+	if (game.get("winner") !== request.user.get("ethAddress"))
+		throw Error("You are not the winner");
 
 	return true;
 }
