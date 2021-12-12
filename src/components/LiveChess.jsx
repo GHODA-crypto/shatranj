@@ -13,6 +13,10 @@ import DesktopView from "./views/DesktopView";
 
 import "../styles/game.scss";
 import LiveBoard from "./ChessBoards/Live";
+import Chess from "chess.js";
+
+const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+const DEFAULT_GAME = new Chess(DEFAULT_FEN);
 
 const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	const [isMobileDrawerVisible, setIsMobileDrawerVisible] = useState(false);
@@ -36,6 +40,9 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	);
 	const { fetch: doesActiveChallengeExist, data: isLiveChallenge } =
 		useMoralisCloudFunction("doesActiveChallengeExist", {});
+	useEffect(() => {
+		doesActiveChallengeExist();
+	}, []);
 
 	const {
 		data: [liveGameData],
@@ -50,7 +57,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 			live: true,
 		}
 	);
-	const gameId = useMemo(() => liveGameData?.id, [liveGameData]);
+	const gameId = useMemo(() => liveGameData?.id, [liveGameData?.id]);
 	const {
 		data: [liveChallengeData],
 		// error: gameError,
@@ -66,10 +73,6 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	);
 
 	useEffect(() => {
-		doesActiveChallengeExist();
-	}, []);
-
-	useEffect(() => {
 		setLiveGameAttributes(liveGameData?.attributes);
 		setLiveGamePGN(liveGameData?.attributes?.pgn);
 	}, [liveGameData]);
@@ -80,6 +83,21 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 			joinLiveChess();
 		}
 	}, [isPairing, isLiveChallenge]);
+
+	const [game, setGame] = useState(DEFAULT_GAME);
+	const gameHistory = useMemo(() => game.history({ verbose: true }), [game]);
+	const liveGameObj = useMemo(() => {
+		if (liveGameAttributes?.pgn) {
+			const _chess = new Chess();
+			_chess.load_pgn(liveGameAttributes.pgn);
+			return _chess;
+		} else {
+			return DEFAULT_GAME;
+		}
+	}, [liveGameAttributes]);
+	useEffect(() => {
+		if (liveGameObj) setGame(liveGameObj);
+	}, [liveGameObj]);
 
 	const isPlayerWhite = useMemo(() => {
 		return liveGameData
@@ -100,13 +118,14 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 				isGameLoading={isGameLoading}
 				winSize={winSize}>
 				<LiveBoard
-					liveGameAttributes={liveGameAttributes}
 					liveGameId={gameId}
-					liveGamePGN={liveGamePGN}
 					user={user}
 					isPlayerWhite={isPlayerWhite}
 					playerSide={isPlayerWhite ? "w" : "b"}
 					boardWidth={boardWidth}
+					gameHistory={gameHistory}
+					game={game}
+					setGame={setGame}
 				/>
 			</MobileView>
 		);
@@ -115,16 +134,16 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 			<TabView
 				opSide={isPlayerWhite ? "b" : "w"}
 				winSize={winSize}
-				liveGameAttributes={liveGameAttributes}
 				isGameLoading={isGameLoading}>
 				<LiveBoard
-					liveGameAttributes={liveGameAttributes}
 					liveGameId={gameId}
-					liveGamePGN={liveGamePGN}
 					user={user}
 					isPlayerWhite={isPlayerWhite}
 					playerSide={isPlayerWhite ? "w" : "b"}
 					boardWidth={boardWidth}
+					gameHistory={gameHistory}
+					game={game}
+					setGame={setGame}
 				/>
 			</TabView>
 		);
@@ -137,13 +156,14 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 				liveGameAttributes={liveGameAttributes}
 				isGameLoading={isGameLoading}>
 				<LiveBoard
-					liveGameAttributes={liveGameAttributes}
 					liveGameId={gameId}
-					liveGamePGN={liveGamePGN}
 					user={user}
 					isPlayerWhite={isPlayerWhite}
 					playerSide={isPlayerWhite ? "w" : "b"}
 					boardWidth={boardWidth}
+					gameHistory={gameHistory}
+					game={game}
+					setGame={setGame}
 				/>
 			</DesktopView>
 		);
