@@ -32,8 +32,6 @@ const App = ({ isServerInfo }) => {
 		Moralis,
 	} = useMoralis();
 
-	window.Moralis = Moralis;
-
 	const [isPairing, setIsPairing] = useState(false);
 	const [pairingParams, setPairingParams] = useState({});
 

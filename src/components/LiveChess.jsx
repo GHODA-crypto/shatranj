@@ -6,6 +6,7 @@ import {
 } from "react-moralis";
 import { useWindowSize } from "../hooks/useWindowSize";
 import useBoardWidth from "../hooks/useBoardWidth";
+import { Modal } from "antd";
 
 import TabView from "./views/TabView";
 import MobileView from "./views/MobileView";
@@ -134,76 +135,130 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 
 	if (winSize.width < 700)
 		return (
-			<MobileView
-				opSide={isPlayerWhite ? "b" : "w"}
-				isMobileDrawerVisible={isMobileDrawerVisible}
-				setIsMobileDrawerVisible={setIsMobileDrawerVisible}
-				liveGameAttributes={liveGameAttributes}
-				gameHistory={gameHistory}
-				isGameLoading={isGameLoading}
-				winSize={winSize}
-				captured={captured}>
-				<LiveBoard
-					liveGameId={gameId}
-					user={user}
+			<>
+				<Modals
 					isPlayerWhite={isPlayerWhite}
-					playerSide={isPlayerWhite ? "w" : "b"}
-					boardWidth={boardWidth}
-					gameHistory={gameHistory}
 					game={game}
-					setGame={setGame}
+					liveGameAttributes={liveGameAttributes}
 				/>
-			</MobileView>
+				<MobileView
+					opSide={isPlayerWhite ? "b" : "w"}
+					isMobileDrawerVisible={isMobileDrawerVisible}
+					setIsMobileDrawerVisible={setIsMobileDrawerVisible}
+					liveGameAttributes={liveGameAttributes}
+					gameHistory={gameHistory}
+					isGameLoading={isGameLoading}
+					winSize={winSize}
+					captured={captured}>
+					<LiveBoard
+						liveGameId={gameId}
+						user={user}
+						isPlayerWhite={isPlayerWhite}
+						playerSide={isPlayerWhite ? "w" : "b"}
+						boardWidth={boardWidth}
+						gameHistory={gameHistory}
+						game={game}
+						setGame={setGame}
+					/>
+				</MobileView>
+			</>
 		);
 	else if (winSize.width >= 700 && winSize.width < 1200)
 		return (
-			<TabView
-				opSide={isPlayerWhite ? "b" : "w"}
-				winSize={winSize}
-				liveGameAttributes={liveGameAttributes}
-				isGameLoading={isGameLoading}
-				gameHistory={gameHistory}
-				captured={captured}>
-				<LiveBoard
-					liveGameId={gameId}
-					user={user}
+			<>
+				<Modals
 					isPlayerWhite={isPlayerWhite}
-					playerSide={isPlayerWhite ? "w" : "b"}
-					boardWidth={boardWidth}
-					gameHistory={gameHistory}
 					game={game}
-					setGame={setGame}
+					liveGameAttributes={liveGameAttributes}
 				/>
-			</TabView>
+				<TabView
+					opSide={isPlayerWhite ? "b" : "w"}
+					winSize={winSize}
+					liveGameAttributes={liveGameAttributes}
+					isGameLoading={isGameLoading}
+					gameHistory={gameHistory}
+					captured={captured}>
+					<LiveBoard
+						liveGameId={gameId}
+						user={user}
+						isPlayerWhite={isPlayerWhite}
+						playerSide={isPlayerWhite ? "w" : "b"}
+						boardWidth={boardWidth}
+						gameHistory={gameHistory}
+						game={game}
+						setGame={setGame}
+					/>
+				</TabView>
+			</>
 		);
 	else
 		return (
-			<DesktopView
-				opSide={isPlayerWhite ? "b" : "w"}
-				joinLiveChess={joinLiveChess}
-				winSize={winSize}
-				liveGameAttributes={liveGameAttributes}
-				isGameLoading={isGameLoading}
-				gameHistory={gameHistory}
-				captured={captured}>
-				<LiveBoard
-					liveGameId={gameId}
-					user={user}
+			<>
+				<Modals
 					isPlayerWhite={isPlayerWhite}
-					playerSide={isPlayerWhite ? "w" : "b"}
-					boardWidth={boardWidth}
-					gameHistory={gameHistory}
 					game={game}
-					setGame={setGame}
+					liveGameAttributes={liveGameAttributes}
 				/>
-			</DesktopView>
+				<DesktopView
+					opSide={isPlayerWhite ? "b" : "w"}
+					joinLiveChess={joinLiveChess}
+					winSize={winSize}
+					liveGameAttributes={liveGameAttributes}
+					isGameLoading={isGameLoading}
+					gameHistory={gameHistory}
+					captured={captured}>
+					<LiveBoard
+						liveGameId={gameId}
+						user={user}
+						isPlayerWhite={isPlayerWhite}
+						playerSide={isPlayerWhite ? "w" : "b"}
+						boardWidth={boardWidth}
+						gameHistory={gameHistory}
+						game={game}
+						setGame={setGame}
+					/>
+				</DesktopView>
+			</>
 		);
 };
 
-const VictoryModal = () => {
-	return <>Victory</>;
+const Modals = ({ game, liveGameAttributes, isPlayerWhite }) => {
+	return (
+		<>
+			<Modal
+				title="Victory"
+				visible={
+					game.game_over() &&
+					((liveGameAttributes?.outcome === 3 && isPlayerWhite) ||
+						(liveGameAttributes?.outcome === 4 && !isPlayerWhite))
+				}
+				footer={null}
+				closable={false}>
+				<p>You Won</p>
+			</Modal>
+			<Modal
+				title="Defeat"
+				visible={
+					game.game_over() &&
+					(!(liveGameAttributes?.outcome === 3 && isPlayerWhite) ||
+						(liveGameAttributes?.outcome === 4 && !isPlayerWhite))
+				}
+				footer={null}
+				closable={false}>
+				<p>You Defeat</p>
+			</Modal>
+			<Modal
+				title="Loading"
+				visible={game.game_over() && !liveGameAttributes?.outcome === 2}
+				footer={null}
+				closable={false}>
+				<p>Game Drawn</p>
+			</Modal>
+		</>
+	);
 };
-const LossModal = () => {};
-const DrawModal = () => {};
 
 export default LiveChess;
+
+//234 dwb
+//
