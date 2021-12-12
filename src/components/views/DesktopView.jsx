@@ -1,6 +1,6 @@
 import { useMoralis } from "react-moralis";
-
-import { Layout, Tabs, Drawer, Skeleton } from "antd";
+import { useState, useEffect } from "react";
+import { Layout, Skeleton, Row, Col } from "antd";
 import {
 	FireOutlined,
 	InfoCircleOutlined,
@@ -32,8 +32,13 @@ const DesktopView = ({
 	winSize,
 	liveGameAttributes,
 	isGameLoading,
+	gameHistory,
 }) => {
+	const [wPng, setWPng] = useState([]);
+	const [bPng, setBPng] = useState([]);
+	// const [movePairCount, setMovePairCount] = useState(1);
 	const { user } = useMoralis();
+
 	const styles = {
 		Sider: {
 			margin: "0",
@@ -44,6 +49,15 @@ const DesktopView = ({
 		},
 	};
 	const { Sider, Content } = Layout;
+
+	useEffect(() => {
+		if (gameHistory.length <= 0) return;
+		if (gameHistory[gameHistory.length - 1].color === "w") {
+			setWPng(...wPng, gameHistory[gameHistory.length - 1].san);
+		} else {
+			setBPng(...bPng, gameHistory[gameHistory.length - 1].san);
+		}
+	}, [gameHistory]);
 
 	return (
 		<Layout className="game-desktop">
@@ -125,7 +139,15 @@ const DesktopView = ({
 					<Skeleton active />
 				)}
 
-				<div className="pgn"></div>
+				<div className="pgn">
+					{bPng.map((bMove, idx) => (
+						<Row key={idx}>
+							<Col flex={1}>{idx + 1}</Col>
+							<Col flex={2}>{wPng.length !== 0 ? wPng[idx] : ""}</Col>
+							<Col flex={2}>{bMove}</Col>
+						</Row>
+					))}
+				</div>
 				<div className="players self">
 					<div className="player-info">
 						<div className="username">{user?.get("ethAddress")}</div>

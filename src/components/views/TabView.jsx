@@ -22,7 +22,13 @@ import { ReactComponent as Win } from "../../assets/win.svg";
 
 import "../../styles/game.scss";
 
-const TabView = ({ opSide, children, winSize, liveGameAttributes }) => {
+const TabView = ({
+	opSide,
+	children,
+	winSize,
+	liveGameAttributes,
+	gameHistory,
+}) => {
 	const { user } = useMoralis();
 	const { TabPane } = Tabs;
 	const { Content, Sider } = Layout;

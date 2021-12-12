@@ -34,6 +34,7 @@ const MobileView = ({
 	children,
 	gameBoardProps,
 	winSize,
+	gameHistory,
 	liveGameAttributes,
 }) => {
 	const { user } = useMoralis();

@@ -23,6 +23,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	const [liveGameAttributes, setLiveGameAttributes] = useState(null);
 	const [liveGamePGN, setLiveGamePGN] = useState(null);
 	const { user, isInitialized } = useMoralis();
+	const [capturedPeices, setCapturedPeices] = useState({});
 
 	const {
 		fetch: joinLiveChess,
@@ -85,7 +86,9 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	}, [isPairing, isLiveChallenge]);
 
 	const [game, setGame] = useState(DEFAULT_GAME);
+
 	const gameHistory = useMemo(() => game.history({ verbose: true }), [game]);
+
 	const liveGameObj = useMemo(() => {
 		if (liveGameAttributes?.pgn) {
 			const _chess = new Chess();
@@ -108,6 +111,8 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	const winSize = useWindowSize();
 	const boardWidth = useBoardWidth();
 
+	window.game = gameHistory;
+
 	if (winSize.width < 700)
 		return (
 			<MobileView
@@ -115,6 +120,7 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 				isMobileDrawerVisible={isMobileDrawerVisible}
 				setIsMobileDrawerVisible={setIsMobileDrawerVisible}
 				liveGameAttributes={liveGameAttributes}
+				gameHistory={gameHistory}
 				isGameLoading={isGameLoading}
 				winSize={winSize}>
 				<LiveBoard
@@ -134,7 +140,9 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 			<TabView
 				opSide={isPlayerWhite ? "b" : "w"}
 				winSize={winSize}
-				isGameLoading={isGameLoading}>
+				liveGameAttributes={liveGameAttributes}
+				isGameLoading={isGameLoading}
+				gameHistory={gameHistory}>
 				<LiveBoard
 					liveGameId={gameId}
 					user={user}
@@ -154,7 +162,8 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 				joinLiveChess={joinLiveChess}
 				winSize={winSize}
 				liveGameAttributes={liveGameAttributes}
-				isGameLoading={isGameLoading}>
+				isGameLoading={isGameLoading}
+				gameHistory={gameHistory}>
 				<LiveBoard
 					liveGameId={gameId}
 					user={user}
