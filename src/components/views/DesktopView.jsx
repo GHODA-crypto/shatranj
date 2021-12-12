@@ -132,11 +132,31 @@ const DesktopView = ({
 							<div className="elo">({liveGameAttributes?.ELO[opSide]})</div>
 						</div>
 						<div className="fallen-peice fallen-peice-op">
-							<WhitePawn size={15} />
-							<WhiteBishop size={15} />
-							<WhiteKnight size={15} />
-							<WhiteRook size={15} />
-							<WhiteQueen size={15} />
+							<div className="bp peice">
+								{[...Array(b.p)].map((_, idx) => (
+									<WhitePawn key={idx} />
+								))}
+							</div>
+							<div className="bb peice">
+								{[...Array(b.b)].map((_, idx) => (
+									<WhiteBishop key={idx} />
+								))}
+							</div>
+							<div className="bn peice">
+								{[...Array(b.n)].map((_, idx) => (
+									<WhiteKnight key={idx} />
+								))}
+							</div>
+							<div className="br peice">
+								{[...Array(b.r)].map((_, idx) => (
+									<WhiteRook key={idx} />
+								))}
+							</div>
+							<div className="bq peice">
+								{[...Array(b.q)].map((_, idx) => (
+									<WhiteQueen key={idx} />
+								))}
+							</div>
 						</div>
 					</div>
 				) : (
