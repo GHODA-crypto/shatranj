@@ -43,11 +43,6 @@ const Lobby = ({ setIsPairing }) => {
 		},
 	});
 
-	// const stakedTokenBalance = useMemo(
-	// 	() => Moralis.Units.FromWei(stakedBalance),
-	// 	[stakedBalance]
-	// );
-
 	const [gameOptions, setGameOptions] = useState({
 		color: "w",
 		rangeUpper: 100,

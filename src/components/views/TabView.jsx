@@ -30,6 +30,8 @@ const TabView = ({
 	liveGameAttributes,
 	gameHistory,
 	captured,
+	resignGame,
+	claimVictory,
 }) => {
 	const [wPng, setWPng] = useState([]);
 	const [bPng, setBPng] = useState([]);
@@ -101,7 +103,7 @@ const TabView = ({
 						</div>
 
 						<div className="btns">
-							<button>
+							<button className={claimVictory}>
 								<Win />
 								<span className="text">Claim Win</span>
 							</button>
@@ -111,7 +113,7 @@ const TabView = ({
 									Draw
 								</span>
 							</button>
-							<button className="danger">
+							<button className="danger" onClick={resignGame}>
 								<Abort />
 								<span className="text">Abort</span>
 							</button>

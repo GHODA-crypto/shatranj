@@ -33,6 +33,8 @@ const DesktopView = ({
 	isGameLoading,
 	gameHistory,
 	captured,
+	resignGame,
+	claimVictory,
 }) => {
 	const [wPng, setWPng] = useState([]);
 	const [bPng, setBPng] = useState([]);
@@ -97,7 +99,7 @@ const DesktopView = ({
 					</div>
 				</div>
 				<div className="btns">
-					<button>
+					<button onClick={claimVictory}>
 						<Win />
 						<span className="text">Claim Win</span>
 					</button>
@@ -107,7 +109,7 @@ const DesktopView = ({
 							Draw
 						</span>
 					</button>
-					<button className="danger">
+					<button className="danger" onClick={resignGame}>
 						<Abort />
 						<span className="text">Abort</span>
 					</button>

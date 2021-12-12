@@ -37,6 +37,8 @@ const MobileView = ({
 	gameHistory,
 	liveGameAttributes,
 	captured,
+	resignGame,
+	claimVictory,
 }) => {
 	const { user } = useMoralis();
 	const [wPng, setWPng] = useState([]);
@@ -208,7 +210,7 @@ const MobileView = ({
 						</div>
 
 						<div className="btns">
-							<button className="win">
+							<button className="win" onClick={claimVictory}>
 								<Win />
 								<span className="text">Claim Win</span>
 							</button>
@@ -218,7 +220,7 @@ const MobileView = ({
 									Draw
 								</span>
 							</button>
-							<button className="abort">
+							<button className="abort" onClick={resignGame}>
 								<Abort />
 								<span className="text">Abort</span>
 							</button>

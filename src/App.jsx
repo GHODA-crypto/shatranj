@@ -67,6 +67,7 @@ const App = ({ isServerInfo }) => {
 								isPairing={isPairing}
 								setIsPairing={setIsPairing}
 								pairingParams={pairingParams}
+								setPairingParams={setPairingParams}
 							/>
 						</Route>
 						<Route path="/testcloud">

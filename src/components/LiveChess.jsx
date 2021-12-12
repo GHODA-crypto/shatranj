@@ -19,12 +19,18 @@ import Chess from "chess.js";
 const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const DEFAULT_GAME = new Chess(DEFAULT_FEN);
 
-const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
+const LiveChess = ({
+	pairingParams,
+	isPairing,
+	setIsPairing,
+	setPairingParams,
+}) => {
 	const [isMobileDrawerVisible, setIsMobileDrawerVisible] = useState(false);
 	const [liveGameAttributes, setLiveGameAttributes] = useState(null);
 	const { user, isInitialized } = useMoralis();
 	const [game, setGame] = useState(DEFAULT_GAME);
 	const gameHistory = useMemo(() => game.history({ verbose: true }), [game]);
+	const [needNFT, setNeedNFT] = useState(true);
 
 	const captured = useMemo(
 		() =>
@@ -66,6 +72,37 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 	useEffect(() => {
 		doesActiveChallengeExist();
 	}, []);
+
+	const {
+		fetch: resignGame,
+		data: resignData,
+		// error: challengeError,
+		isLoading: resigningGame,
+	} = useMoralisCloudFunction(
+		"resign",
+		{
+			gameId: gameId,
+		},
+		{
+			autoFetch: false,
+		}
+	);
+
+	const {
+		fetch: claimVictory,
+		data: victoryData,
+		// error: claimVictoryError,
+		isLoading: claimingVictory,
+	} = useMoralisCloudFunction(
+		"claimVictory",
+		{
+			needNFT: needNFT,
+			gameId: gameId,
+		},
+		{
+			autoFetch: false,
+		}
+	);
 
 	const {
 		data: [liveGameData],
@@ -146,6 +183,9 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 					game={game}
 					liveGameAttributes={liveGameAttributes}
 					liveChallengeData={liveChallengeData}
+					setNeedNFT={setNeedNFT}
+					joinLiveChess={joinLiveChess}
+					setPairingParams={setPairingParams}
 				/>
 				<MobileView
 					opSide={isPlayerWhite ? "b" : "w"}
@@ -155,7 +195,9 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 					gameHistory={gameHistory}
 					isGameLoading={isGameLoading}
 					winSize={winSize}
-					captured={captured}>
+					captured={captured}
+					resignGame={resignGame}
+					claimVictory={claimVictory}>
 					<LiveBoard
 						liveGameId={gameId}
 						user={user}
@@ -177,6 +219,9 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 					game={game}
 					liveGameAttributes={liveGameAttributes}
 					liveChallengeData={liveChallengeData}
+					setNeedNFT={setNeedNFT}
+					joinLiveChess={joinLiveChess}
+					setPairingParams={setPairingParams}
 				/>
 				<TabView
 					opSide={isPlayerWhite ? "b" : "w"}
@@ -184,7 +229,9 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 					liveGameAttributes={liveGameAttributes}
 					isGameLoading={isGameLoading}
 					gameHistory={gameHistory}
-					captured={captured}>
+					captured={captured}
+					resignGame={resignGame}
+					claimVictory={claimVictory}>
 					<LiveBoard
 						liveGameId={gameId}
 						user={user}
@@ -206,6 +253,9 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 					game={game}
 					liveGameAttributes={liveGameAttributes}
 					liveChallengeData={liveChallengeData}
+					setNeedNFT={setNeedNFT}
+					joinLiveChess={joinLiveChess}
+					setPairingParams={setPairingParams}
 				/>
 				<DesktopView
 					opSide={isPlayerWhite ? "b" : "w"}
@@ -214,7 +264,9 @@ const LiveChess = ({ pairingParams, isPairing, setIsPairing }) => {
 					liveGameAttributes={liveGameAttributes}
 					isGameLoading={isGameLoading}
 					gameHistory={gameHistory}
-					captured={captured}>
+					captured={captured}
+					resignGame={resignGame}
+					claimVictory={claimVictory}>
 					<LiveBoard
 						liveGameId={gameId}
 						user={user}
@@ -235,10 +287,24 @@ const Modals = ({
 	liveGameAttributes,
 	isPlayerWhite,
 	liveChallengeData,
+	setNeedNFT,
+	joinLiveChess,
+	setPairingParams,
 }) => {
-	const handleClaimPool = () => {};
-	const handleClaimPoolAndNFT = () => {};
-	const handleQuickMatch = () => {};
+	const handleClaimPool = () => {
+		setNeedNFT(false);
+	};
+	const handleClaimPoolAndNFT = () => {
+		setNeedNFT(true);
+	};
+	const handleQuickMatch = () => {
+		setPairingParams({
+			lowerElo: 100,
+			upperElo: 100,
+			preferedSide: "w",
+		});
+		joinLiveChess();
+	};
 
 	return (
 		<>
