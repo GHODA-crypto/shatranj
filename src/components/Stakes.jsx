@@ -1,36 +1,27 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { Modal, notification, Tooltip } from "antd";
 import {
 	useWeb3ExecuteFunction,
 	useMoralis,
 	useMoralisQuery,
 } from "react-moralis";
-import { Modal } from "antd";
+
 import { gameAbi, ERC20Abi } from "../contracts/abi";
-import { notification, Tooltip } from "antd";
 import { useWindowSize } from "../hooks/useWindowSize";
 import { numDisplayFormatter } from "../helpers/numDisplayFormatter";
+import {
+	SGHODA_TOKEN_ADDRESS,
+	GHODA_TOKEN_ADDRESS,
+} from "../contracts/address";
 
 import "../styles/stakes.scss";
-
-const SGHODA_TOKEN_ADDRESS =
-	"0xa57260c7C943f67BCe9AEc958a5AA29Ccd8372e0".toLowerCase();
-const GHODA_TOKEN_ADDRESS =
-	"0x3706da1458877be03E55caC757938B4130e80EB9".toLowerCase();
 
 const Stakes = () => {
 	const [stakeAmount, setStakeAmount] = useState(0);
 	const [unstakeAmountInput, setUnstakeAmountInput] = useState(0);
+
 	const { user, Moralis, isWeb3Enabled } = useMoralis();
 	const winSize = useWindowSize();
-
-	const openNoStakeErrorNotification = () => {
-		notification["error"]({
-			message: "No Tokens Staked",
-			description:
-				"You have not staked any tokens. Please stake some tokens to unstake tokens.",
-			placement: "bottomRight",
-		});
-	};
 
 	const {
 		data: tokenBalance,
@@ -89,10 +80,7 @@ const Stakes = () => {
 			spender: SGHODA_TOKEN_ADDRESS,
 		},
 	});
-	const allowedAmountToSpend = useMemo(
-		() => Moralis.Units.FromWei(allowanceData || 0),
-		[allowanceData]
-	);
+
 	const {
 		error: stakeError,
 		fetch: stakeTokens,
@@ -118,6 +106,11 @@ const Stakes = () => {
 			_amount: Moralis.Units.Token(unstakeAmountInput, "18"),
 		},
 	});
+
+	const allowedAmountToSpend = useMemo(
+		() => Moralis.Units.FromWei(allowanceData || 0),
+		[allowanceData]
+	);
 
 	useEffect(() => {
 		isWeb3Enabled && user && getAllowanceForUser();

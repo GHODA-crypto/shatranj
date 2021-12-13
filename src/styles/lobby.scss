@@ -49,16 +49,16 @@
 		}
 	}
 
+	.separator {
+		width: 90%;
+		background-color: rgba($accent, 0.4);
+		border-radius: 50%;
+		height: 3px;
+		margin: 0 auto;
+		margin-bottom: 2rem;
+	}
 	.spectate-wrapper {
 		margin-top: 1.2rem;
-		.separator {
-			width: 90%;
-			background-color: rgba($accent, 0.4);
-			border-radius: 50%;
-			height: 3px;
-			margin: 0 auto;
-			margin-bottom: 2rem;
-		}
 		.spectate {
 			margin: 0 auto;
 			width: 85%;
