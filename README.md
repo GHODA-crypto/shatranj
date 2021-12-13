@@ -19,6 +19,8 @@ These NFTs are depiction of all the sacrifices made by the players and records t
 
 **Each NFT provides the users with a chance to claim a special piece skin. This skin can be used in-game to customise the pieces.**
 
+![nft.png](/assets/nft.png)
+
 ---
 
 ## Geek Stuff Ahead
