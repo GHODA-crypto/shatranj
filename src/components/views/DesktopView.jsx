@@ -36,8 +36,8 @@ const DesktopView = ({
 	resignGame,
 	claimVictory,
 }) => {
-	const [wPng, setWPng] = useState([]);
-	const [bPng, setBPng] = useState([]);
+	const [wPgn, setWPgn] = useState([]);
+	const [bPgn, setBPgn] = useState([]);
 	// const [movePairCount, setMovePairCount] = useState(1);
 	const { user } = useMoralis();
 
@@ -56,9 +56,9 @@ const DesktopView = ({
 	useEffect(() => {
 		if (gameHistory.length <= 0) return;
 		if (gameHistory[gameHistory.length - 1].color === "w") {
-			setWPng([...wPng, gameHistory[gameHistory.length - 1].san]);
+			setWPgn([...wPgn, gameHistory[gameHistory.length - 1].san]);
 		} else {
-			setBPng([...bPng, gameHistory[gameHistory.length - 1].san]);
+			setBPgn([...bPgn, gameHistory[gameHistory.length - 1].san]);
 		}
 	}, [gameHistory]);
 
@@ -167,13 +167,13 @@ const DesktopView = ({
 				)}
 
 				<div className="pgn">
-					{bPng.map((bMove, idx) => (
+					{bPgn.map((bMove, idx) => (
 						<Row key={idx}>
 							<Col className="cell cell-1" flex={1}>
 								{idx + 1}
 							</Col>
 							<Col className="cell cell-2" flex={2}>
-								{wPng.length !== 0 ? wPng[idx] : ""}
+								{wPgn.length !== 0 ? wPgn[idx] : ""}
 							</Col>
 							<Col className="cell cell-2" flex={2}>
 								{bMove}

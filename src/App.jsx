@@ -82,7 +82,6 @@ const Nav = () => {
 			<MenuItems />
 			<div style={styles.headerRight}>
 				<Chains />
-				{/* <NativeBalance /> */}
 				<Account />
 			</div>
 		</Header>
