@@ -113,13 +113,10 @@ const Stakes = () => {
 	);
 
 	useEffect(() => {
-		isWeb3Enabled && user && getAllowanceForUser();
-	}, [isWeb3Enabled, user]);
-
-	useEffect(() => {
 		fetchTokenBalance();
 		fetchStakedBalance();
-	}, []);
+		isWeb3Enabled && user && getAllowanceForUser();
+	}, [isWeb3Enabled, user]);
 
 	return (
 		<div className="Stakes" style={{ marginTop: "3rem" }}>
