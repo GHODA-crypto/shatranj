@@ -33,8 +33,7 @@ const TabView = ({
 	resignGame,
 	claimVictory,
 }) => {
-	const [wPng, setWPng] = useState([]);
-	const [bPng, setBPng] = useState([]);
+	const [pgnArray, setPgnArray] = useState([]);
 	const { user } = useMoralis();
 	const { TabPane } = Tabs;
 	const { Content, Sider } = Layout;
@@ -50,15 +49,21 @@ const TabView = ({
 		},
 	};
 	const { w, b } = captured;
+	let tempPgnElement = [];
 
 	useEffect(() => {
 		if (gameHistory.length <= 0) return;
-		if (gameHistory[gameHistory.length - 1].color === "w") {
-			setWPng([...wPng, gameHistory[gameHistory.length - 1].san]);
-		} else {
-			setBPng([...bPng, gameHistory[gameHistory.length - 1].san]);
+		if (tempPgnElement.length < 1) {
+			tempPgnElement.push(gameHistory[gameHistory.length - 1]?.san);
+			setPgnArray([...pgnArray, tempPgnElement]);
 		}
-	}, [gameHistory]);
+		if (tempPgnElement.length === 1) {
+			tempPgnElement.push(gameHistory[gameHistory.length - 1]?.san);
+			setPgnArray(pgnArray.pop());
+			setPgnArray([...pgnArray, tempPgnElement]);
+			tempPgnElement = [];
+		}
+	}, [gameHistory.length]);
 
 	return (
 		<Layout className="game-tablet">
@@ -133,10 +138,8 @@ const TabView = ({
 								<div className="player-info">
 									<div className="username">
 										{liveGameAttributes?.players[opSide]}
-										{/* 0x123123111313131313 */}
 									</div>
 									<div className="elo">({liveGameAttributes?.ELO[opSide]})</div>
-									{/* <div className="elo">(700)</div> */}
 								</div>
 								<div className="fallen-peice fallen-peice-op">
 									<div className="bp peice">
@@ -170,17 +173,16 @@ const TabView = ({
 							<Skeleton active />
 						)}
 						<div className="pgn">
-							{bPng.map((bMove, idx) => (
-								<Row key={idx}>
+							{pgnArray.map((row, rowIdx) => (
+								<Row key={rowIdx}>
 									<Col className="cell cell-1" flex={1}>
-										{idx + 1}
+										{rowIdx + 1}
 									</Col>
-									<Col className="cell cell-2" flex={2}>
-										{wPng.length !== 0 ? wPng[idx] : ""}
-									</Col>
-									<Col className="cell cell-2" flex={2}>
-										{bMove}
-									</Col>
+									{row.map((col, colIdx) => (
+										<Col key={colIdx} className="cell cell-2" flex={2}>
+											{col}
+										</Col>
+									))}
 								</Row>
 							))}
 						</div>

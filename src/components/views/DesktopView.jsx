@@ -1,11 +1,7 @@
 import { useMoralis } from "react-moralis";
 import { useState, useEffect } from "react";
 import { Layout, Skeleton, Row, Col } from "antd";
-import {
-	FireOutlined,
-	InfoCircleOutlined,
-	FireFilled,
-} from "@ant-design/icons";
+import { FireOutlined } from "@ant-design/icons";
 
 import { ReactComponent as WhiteKing } from "../../assets/chess_svgs/k_w.svg";
 import { ReactComponent as WhiteKnight } from "../../assets/chess_svgs/n_w.svg";
@@ -36,9 +32,7 @@ const DesktopView = ({
 	resignGame,
 	claimVictory,
 }) => {
-	const [wPgn, setWPgn] = useState([]);
-	const [bPgn, setBPgn] = useState([]);
-	// const [movePairCount, setMovePairCount] = useState(1);
+	const [pgnArray, setPgnArray] = useState([]);
 	const { user } = useMoralis();
 
 	const styles = {
@@ -52,15 +46,21 @@ const DesktopView = ({
 	};
 	const { Sider, Content } = Layout;
 	const { w, b } = captured;
+	let tempPgnElement = [];
 
 	useEffect(() => {
 		if (gameHistory.length <= 0) return;
-		if (gameHistory[gameHistory.length - 1].color === "w") {
-			setWPgn([...wPgn, gameHistory[gameHistory.length - 1].san]);
-		} else {
-			setBPgn([...bPgn, gameHistory[gameHistory.length - 1].san]);
+		if (tempPgnElement.length < 1) {
+			tempPgnElement.push(gameHistory[gameHistory.length - 1]?.san);
+			setPgnArray([...pgnArray, tempPgnElement]);
 		}
-	}, [gameHistory]);
+		if (tempPgnElement.length === 1) {
+			tempPgnElement.push(gameHistory[gameHistory.length - 1]?.san);
+			setPgnArray(pgnArray.pop());
+			setPgnArray([...pgnArray, tempPgnElement]);
+			tempPgnElement = [];
+		}
+	}, [gameHistory.length]);
 
 	return (
 		<Layout className="game-desktop">
@@ -129,10 +129,8 @@ const DesktopView = ({
 						<div className="player-info">
 							<div className="username">
 								{liveGameAttributes?.players[opSide]}
-								{/* 0x123123111313131313 */}
 							</div>
 							<div className="elo">({liveGameAttributes?.ELO[opSide]})</div>
-							{/* <div className="elo">(700)</div> */}
 						</div>
 						<div className="fallen-peice fallen-peice-op">
 							<div className="bp peice">
@@ -167,17 +165,16 @@ const DesktopView = ({
 				)}
 
 				<div className="pgn">
-					{bPgn.map((bMove, idx) => (
-						<Row key={idx}>
+					{pgnArray.map((row, rowIdx) => (
+						<Row key={rowIdx}>
 							<Col className="cell cell-1" flex={1}>
-								{idx + 1}
+								{rowIdx + 1}
 							</Col>
-							<Col className="cell cell-2" flex={2}>
-								{wPgn.length !== 0 ? wPgn[idx] : ""}
-							</Col>
-							<Col className="cell cell-2" flex={2}>
-								{bMove}
-							</Col>
+							{row.map((col, colIdx) => (
+								<Col key={colIdx} className="cell cell-2" flex={2}>
+									{col}
+								</Col>
+							))}
 						</Row>
 					))}
 				</div>
