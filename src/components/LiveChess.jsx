@@ -286,12 +286,6 @@ const Modals = ({
 				<h2>Canceling this Challenge :x: ...</h2>
 			</Modal>
 			<Modal
-				title="Loading"
-				visible={liveChallengeData?.get("challengeStatus") === 3}
-				footer={null}>
-				<h2>🤖 Inactivity from the Opponent...</h2>
-			</Modal>
-			<Modal
 				title="Victory"
 				visible={
 					game.game_over() &&
