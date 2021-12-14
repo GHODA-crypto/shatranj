@@ -43,7 +43,7 @@ const LiveBoard = ({
 	}, [gameHistory]);
 
 	useEffect(() => {
-		if (game.in_checkmate || game.in_check) {
+		if (game.in_checkmate() || game.in_check()) {
 			if (game.turn === "w") {
 				setCheckStyles({
 					[kingPositions(game).w]: {
@@ -252,7 +252,6 @@ const LiveBoard = ({
 };
 
 const kingPositions = (game) => {
-	console.log([].concat(...game.board()));
 	const a = []
 		.concat(...game.board())
 		.map((p, index) => {
@@ -263,10 +262,8 @@ const kingPositions = (game) => {
 		})
 		.filter((o) => o?.index)
 		.map((king) => {
-			console.log(king);
 			const row = "abcdefgh"[king.index % 8];
 			const column = Math.ceil((64 - king.index) / 8);
-			console.log(king, row, column);
 			return { c: king.color, i: row + column };
 		});
 	return { [a[0].c]: a[0].i, [a[1].c]: a[1].i };
