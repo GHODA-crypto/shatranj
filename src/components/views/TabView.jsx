@@ -7,33 +7,23 @@ import { Send, Abort, Draw, Win } from "./svgs";
 import { WhiteCaptured, BlackCaptured, PieceMap } from "./Pieces";
 
 import "../../styles/game.scss";
+import { useWindowSize } from "../../hooks/useWindowSize";
 
 const TabView = ({
 	opSide,
 	children,
-	winSize,
 	liveGameAttributes,
 	gameHistory,
 	captured,
 	resignGame,
 	claimVictory,
 }) => {
+	const { width } = useWindowSize();
 	const [pgnArray, setPgnArray] = useState([[]]);
-	const [isWhiteTurn, setIsWhiteTurn] = useState(true);
 	const { user } = useMoralis();
 	const { TabPane } = Tabs;
 	const { Content, Sider } = Layout;
 
-	const styles = {
-		Sider: {
-			margin: "0",
-			padding: "1.5rem",
-			borderRadius: "1rem",
-			width: "100%",
-			height: "100%",
-			zIndex: "1",
-		},
-	};
 	const { w: capturedW, b: capturedB } = captured;
 
 	const pgnCurrentRef = useRef(null);
@@ -65,10 +55,7 @@ const TabView = ({
 				<div id="gameBoard">{children}</div>
 			</Content>
 
-			<Sider
-				className="game-meta"
-				style={styles.Sider}
-				width={winSize.width * 0.35}>
+			<Sider className="game-meta" width={width * 0.35}>
 				<Tabs
 					defaultActiveKey="2"
 					tabBarGutter={75}
@@ -131,7 +118,7 @@ const TabView = ({
 							<div className="players op">
 								<div
 									className={
-										opSide === "w" && isWhiteTurn
+										opSide === liveGameAttributes?.turn
 											? "player-info turn"
 											: "player-info"
 									}>
@@ -152,14 +139,12 @@ const TabView = ({
 							<Skeleton active />
 						)}
 						<div className="pgn">
-							{pgnArray.map((row, rowIdx) => (
-								<Row key={rowIdx}>
-									<Col className="cell cell-1" flex={1}>
-										{rowIdx + 1}
-									</Col>
-									{row.map((col, colIdx) => (
-										<Col key={colIdx} className="cell cell-2" flex={2}>
-											{col}
+							{pgnArray?.map((row, rowIdx) => (
+								<Row key={rowIdx} className="row">
+									<Col className="cell cell-1">{rowIdx + 1}</Col>
+									{row.map((move, colIdx) => (
+										<Col key={colIdx} className="cell cell-2">
+											{move.san} {PieceMap[move.color][move.piece]}
 										</Col>
 									))}
 								</Row>
@@ -169,7 +154,7 @@ const TabView = ({
 						<div className="players self">
 							<div
 								className={
-									opSide === "b" && isWhiteTurn
+									opSide !== liveGameAttributes?.turn
 										? "player-info turn"
 										: "player-info"
 								}>

@@ -157,8 +157,6 @@ const LiveBoard = ({
 		});
 	}
 
-	const custom = customPieces();
-
 	return (
 		<div className="board">
 			<Chessboard

@@ -11,14 +11,13 @@ import { Send, Abort, Draw, Win } from "./svgs";
 import { WhiteCaptured, BlackCaptured, PieceMap } from "./Pieces";
 
 import "../../styles/game.scss";
+import { useWindowSize } from "../../hooks/useWindowSize";
 
 const MobileView = ({
 	isMobileDrawerVisible,
 	setIsMobileDrawerVisible,
 	opSide,
 	children,
-	gameBoardProps,
-	winSize,
 	gameHistory,
 	liveGameAttributes,
 	captured,
@@ -26,8 +25,8 @@ const MobileView = ({
 	claimVictory,
 }) => {
 	const { user } = useMoralis();
+	const { width } = useWindowSize();
 	const [pgnArray, setPgnArray] = useState([[]]);
-	const [isWhiteTurn, setIsWhiteTurn] = useState(true);
 	const { Content } = Layout;
 	const { TabPane } = Tabs;
 	const { w: capturedW, b: capturedB } = captured;
@@ -35,7 +34,7 @@ const MobileView = ({
 	const pgnCurrentRef = useRef(null);
 
 	const scrollPgnToCurrent = () => {
-		pgnCurrentRef.current.scrollIntoView({
+		pgnCurrentRef?.current?.scrollIntoView({
 			behavior: "smooth",
 		});
 	};
@@ -66,7 +65,7 @@ const MobileView = ({
 		},
 		Button: {
 			position: "absolute",
-			top: "-1rem",
+			top: "1rem",
 			right: "1rem",
 			width: "3rem",
 			height: "3rem",
@@ -95,7 +94,7 @@ const MobileView = ({
 					<div className="players op">
 						<div
 							className={
-								opSide === "w" && isWhiteTurn
+								opSide === liveGameAttributes?.turn
 									? "player-info turn"
 									: "player-info"
 							}>
@@ -128,7 +127,9 @@ const MobileView = ({
 					</div>
 					<div
 						className={
-							opSide === "b" && isWhiteTurn ? "player-info turn" : "player-info"
+							opSide !== liveGameAttributes?.turn
+								? "player-info turn"
+								: "player-info"
 						}>
 						<div className="username">{user?.get("ethAddress")}</div>
 						<div className="elo">({user?.get("ELO")})</div>
@@ -142,7 +143,7 @@ const MobileView = ({
 				visible={isMobileDrawerVisible}
 				onClose={() => setIsMobileDrawerVisible(false)}
 				drawerStyle={styles.Drawer}
-				width={Math.max(winSize.width * 0.3, 420)}
+				width={Math.max(width * 0.3, 420)}
 				zIndex={1000}>
 				<Tabs
 					defaultActiveKey="2"
@@ -203,14 +204,12 @@ const MobileView = ({
 						key="2"
 						className="game-info">
 						<div className="pgn">
-							{pgnArray.map((row, rowIdx) => (
-								<Row key={rowIdx}>
-									<Col className="cell cell-1" flex={1}>
-										{rowIdx + 1}
-									</Col>
-									{row.map((col, colIdx) => (
-										<Col key={colIdx} className="cell cell-2" flex={2}>
-											{col}
+							{pgnArray?.map((row, rowIdx) => (
+								<Row key={rowIdx} className="row">
+									<Col className="cell cell-1">{rowIdx + 1}</Col>
+									{row.map((move, colIdx) => (
+										<Col key={colIdx} className="cell cell-2">
+											{move.san} {PieceMap[move.color][move.piece]}
 										</Col>
 									))}
 								</Row>

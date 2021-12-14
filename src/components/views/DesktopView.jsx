@@ -4,22 +4,19 @@ import { Layout, Skeleton, Row, Col } from "antd";
 import { FireOutlined } from "@ant-design/icons";
 import { Send, Abort, Draw, Win } from "./svgs";
 import { WhiteCaptured, BlackCaptured, PieceMap } from "./Pieces";
+import { useWindowSize } from "../../hooks/useWindowSize";
 
 const DesktopView = ({
 	opSide,
-	joinLiveChess,
 	children,
-	winSize,
 	liveGameAttributes,
-	isGameLoading,
 	gameHistory,
 	captured,
 	resignGame,
 	claimVictory,
 }) => {
-	const [isWhiteTurn, setIsWhiteTurn] = useState(true);
 	const [pgnArray, setPgnArray] = useState([[]]);
-
+	const { width } = useWindowSize();
 	const { user } = useMoralis();
 	const { Sider, Content } = Layout;
 	const { w: capturedW, b: capturedB } = captured;
@@ -40,7 +37,6 @@ const DesktopView = ({
 		if (gameHistory?.length)
 			setPgnArray(() => {
 				let pgnRenderArray = [];
-
 				for (var i = 0, len = gameHistory.length; i < len; i += 2)
 					pgnRenderArray.push(gameHistory.slice(i, i + 2));
 				return pgnRenderArray;
@@ -65,7 +61,7 @@ const DesktopView = ({
 					alignItems: "center",
 					right: "-1.5rem",
 				}}
-				width={winSize.width * 0.23}>
+				width={width * 0.23}>
 				<div className="prize-pool">
 					<span className="label">Prize Pool</span>
 					<div className="prize">
@@ -104,12 +100,12 @@ const DesktopView = ({
 				<div id="gameBoard">{children}</div>
 			</Content>
 
-			<Sider className="game-info" width={winSize.width * 0.23}>
+			<Sider className="game-info" width={width * 0.23}>
 				{liveGameAttributes ? (
 					<div className="players op">
 						<div
 							className={
-								opSide === "w" && isWhiteTurn
+								opSide === liveGameAttributes?.turn
 									? "player-info turn"
 									: "player-info"
 							}>
@@ -146,7 +142,9 @@ const DesktopView = ({
 				<div className="players self">
 					<div
 						className={
-							opSide === "b" && isWhiteTurn ? "player-info turn" : "player-info"
+							opSide !== liveGameAttributes?.turn
+								? "player-info turn"
+								: "player-info"
 						}>
 						<div className="username">{user?.get("ethAddress")}</div>
 						<div className="elo">({user?.get("ELO")})</div>

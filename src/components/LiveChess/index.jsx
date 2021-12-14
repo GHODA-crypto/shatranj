@@ -32,7 +32,6 @@ const LiveChess = ({
 
 	const { user, isInitialized } = useMoralis();
 
-	const winSize = useWindowSize();
 	const boardWidth = useBoardWidth();
 
 	const {
@@ -209,8 +208,6 @@ const LiveChess = ({
 				setIsMobileDrawerVisible={setIsMobileDrawerVisible}
 				liveGameAttributes={liveGameAttributes}
 				gameHistory={gameHistory}
-				isGameLoading={isGameLoading}
-				winSize={winSize}
 				captured={captured}
 				resignGame={resignGame}
 				claimVictory={claimVictory}>
@@ -230,10 +227,10 @@ const LiveChess = ({
 };
 
 const ViewWrapper = ({ children, ...rest }) => {
-	const winSize = useWindowSize();
+	const { width } = useWindowSize();
 
-	if (winSize.width < 700) return <MobileView {...rest}>{children}</MobileView>;
-	else if (winSize.width >= 700 && winSize.width < 1200)
+	if (width < 700) return <MobileView {...rest}>{children}</MobileView>;
+	else if (width >= 700 && width < 1200)
 		return <TabView {...rest}>{children}</TabView>;
 	else return <DesktopView {...rest}>{children}</DesktopView>;
 };

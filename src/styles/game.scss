@@ -251,13 +251,12 @@
 }
 
 .game-tablet {
-	margin-top: 2rem;
 	width: 100vw;
+	height: calc(100vh - 60px);
 	display: flex;
 	justify-content: space-around;
 	align-items: center;
 	.chessboard {
-		// background-color: green;
 		height: 100%;
 		display: flex;
 		flex-direction: column;
@@ -284,6 +283,7 @@
 		justify-content: space-between;
 
 		.tabs-container {
+			padding: 1.2rem;
 			width: 100%;
 			height: 100%;
 			display: flex;
@@ -300,26 +300,28 @@
 						height: 100%;
 						.pgn {
 							width: 100%;
-							height: 50%;
-							border-radius: 1rem;
-							overflow: auto;
+							height: 40%;
 							padding: 1rem;
-							.cell {
-								background-color: red;
-								text-align: center;
-								font-size: 1rem;
-								margin: 0.25rem;
-								padding: 0.5rem 0;
-								border-radius: 0.5rem;
-							}
-							.cell-1 {
-								background: rgba($dark, 0.8);
-								color: $light;
-							}
-							.cell-2 {
-								background: rgba($accent, 0.3);
-								color: $dark;
-								font-weight: 600;
+							overflow: auto;
+							.row {
+								display: grid;
+								grid-template-columns: 1fr 2fr 2fr;
+								.cell {
+									text-align: center;
+									font-size: 1rem;
+									margin: 0.25rem;
+									padding: 0.5rem 0;
+									border-radius: 0.5rem;
+								}
+								.cell-1 {
+									background: rgba($dark, 0.8);
+									color: $light;
+								}
+								.cell-2 {
+									background: rgba($accent, 0.3);
+									color: $dark;
+									font-weight: 600;
+								}
 							}
 						}
 						.players {
@@ -354,6 +356,32 @@
 							.turn {
 								background-color: rgba($accent, 0.25);
 							}
+							.fallen-peice-self {
+								margin-top: 0.5rem;
+							}
+							.fallen-peice {
+								padding: 0.75rem;
+								display: flex;
+								width: 100%;
+								svg {
+									width: 20px;
+									height: 20px;
+									display: flex;
+									justify-content: center;
+									align-items: center;
+									margin-right: 0.25rem;
+								}
+								.peice {
+									display: flex;
+									margin-right: 1rem;
+									& > * {
+										margin-right: -0.75rem;
+									}
+								}
+								#none {
+									display: none;
+								}
+							}
 						}
 					}
 
@@ -363,26 +391,27 @@
 						display: flex;
 						flex-direction: column;
 						align-items: left;
-						justify-content: space-between;
+						justify-content: space-around;
 						.prize-pool {
+							margin-top: 1rem;
 							height: 20%;
 							//min-height
 							.label {
-								font-size: 1.2rem;
+								font-size: 1.5rem;
 								color: $dark;
 							}
 							.prize {
 								display: flex;
 								align-items: center;
 								margin-top: -1rem;
-								font-size: 3rem;
+								font-size: 4rem;
 								font-weight: 700;
 								color: darken($accent, 15%);
 								.amount {
 									margin-left: 0.5rem;
 								}
 								.ghd {
-									font-size: 1.5rem;
+									font-size: 2rem;
 									padding: 0 0.5rem;
 									border-radius: 0.6rem;
 									background-color: darken($accent, 15%);
@@ -392,18 +421,18 @@
 						}
 
 						.chat {
-							height: 60%;
+							height: 50%;
 							width: 100%;
 							background-color: rgba(darken($light, 40%), 0.3);
 							border-radius: 0.5rem;
 							.chat-text {
-								height: 85%;
+								height: 90%;
 								width: 100%;
 								overflow-y: auto;
 								overflow-x: hidden;
 							}
 							.chat-input {
-								height: 15%;
+								height: 10%;
 								width: 100%;
 								display: flex;
 								align-items: center;
@@ -489,10 +518,10 @@
 }
 
 .game-mobile {
-	margin-top: 4rem;
 	width: 100vw;
+	height: calc(100vh - 60px);
 	display: flex;
-	justify-content: center;
+	justify-content: space-around;
 	align-items: center;
 	.chessboard {
 		// background-color: green;
@@ -537,6 +566,30 @@
 			.turn {
 				background-color: rgba($accent, 0.25);
 			}
+
+			.fallen-peice {
+				padding: 0.75rem;
+				display: flex;
+				width: 100%;
+				svg {
+					width: 20px;
+					height: 20px;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					margin-right: 0.25rem;
+				}
+				.peice {
+					display: flex;
+					margin-right: 1rem;
+					& > * {
+						margin-right: -0.75rem;
+					}
+				}
+				#none {
+					display: none;
+				}
+			}
 		}
 	}
 }
@@ -579,24 +632,27 @@
 									.pgn {
 										width: 100%;
 										height: 80%;
-										border-radius: 1rem;
-										overflow: auto;
 										padding: 1rem;
-										.cell {
-											text-align: center;
-											font-size: 1rem;
-											margin: 0.25rem;
-											padding: 0.5rem 0;
-											border-radius: 0.5rem;
-										}
-										.cell-1 {
-											background: rgba($light, 0.8);
-											color: $dark;
-										}
-										.cell-2 {
-											background: rgba($accent, 0.8);
-											color: $light;
-											font-weight: 600;
+										overflow: auto;
+										.row {
+											display: grid;
+											grid-template-columns: 1fr 2fr 2fr;
+											.cell {
+												text-align: center;
+												font-size: 1rem;
+												margin: 0.25rem;
+												padding: 0.5rem 0;
+												border-radius: 0.5rem;
+											}
+											.cell-1 {
+												background: rgba($light, 0.8);
+												color: $dark;
+											}
+											.cell-2 {
+												background: rgba($accent, 0.9);
+												color: $light;
+												font-weight: 600;
+											}
 										}
 									}
 								}
