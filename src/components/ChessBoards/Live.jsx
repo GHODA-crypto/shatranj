@@ -44,12 +44,6 @@ const LiveBoard = ({
 
 	useEffect(() => {
 		if (game.in_checkmate() || game.in_check()) {
-			console.log(
-				game.in_checkmate() || game.in_check(),
-				game.turn(),
-				kingPositions(game).w,
-				kingPositions(game).b
-			);
 			if (game.turn() === "w") {
 				setCheckStyles({
 					[kingPositions(game).w]: {
@@ -63,6 +57,8 @@ const LiveBoard = ({
 					},
 				});
 			}
+		} else {
+			setCheckStyles({});
 		}
 	}, [game]);
 
@@ -219,7 +215,7 @@ const LiveBoard = ({
 				onPieceDrop={onDrop}
 				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
 				customLightSquareStyle={{ backgroundColor: "#f9ffe4" }}
-				customDropSquareStyle={{ backgroundColor: "#ecc92c" }}
+				// customDropSquareStyle={{ backgroundColor: "#ecc92c" }}
 				customPieces={customPieces(boardWidth / 8 - 5)}
 				customBoardStyle={{
 					borderRadius: "4px",
