@@ -2,6 +2,7 @@ import { Modal, Radio, InputNumber } from "antd";
 import { ReactComponent as WKing } from "../../assets/chess_svgs/k_w.svg";
 import { ReactComponent as BKing } from "../../assets/chess_svgs/k_b.svg";
 import { useWindowSize } from "../../hooks/useWindowSize";
+import { useMoralis } from "react-moralis";
 
 const GameOptionsModal = ({
 	isModalVisible,
@@ -14,6 +15,7 @@ const GameOptionsModal = ({
 	};
 
 	const winSize = useWindowSize();
+	const { user } = useMoralis();
 
 	const handleCancel = () => {
 		setIsModalVisible(false);
@@ -123,6 +125,7 @@ const GameOptionsModal = ({
 						}}>
 						+
 					</span>
+					<span className="user-elo">{user?.get("ELO")}</span>
 					<InputNumber
 						size="large"
 						min={1}

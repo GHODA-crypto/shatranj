@@ -3,7 +3,7 @@ import { notification, Modal } from "antd";
 import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
 
 import GameOptionsModal from "./GameOptionsModal";
-import { ERC20Abi } from "../../contracts/abi";
+import { erc20Abi } from "../../contracts/erc20Abi";
 import {
 	SGHODA_TOKEN_ADDRESS,
 	GHODA_TOKEN_ADDRESS,
@@ -20,7 +20,7 @@ const Lobby = ({ setIsPairing }) => {
 		fetch: getAllowanceForUser,
 		isFetching: isAllowanceFetching,
 	} = useWeb3ExecuteFunction({
-		abi: ERC20Abi,
+		abi: erc20Abi,
 		contractAddress: GHODA_TOKEN_ADDRESS,
 		functionName: "allowance",
 		params: {
@@ -35,7 +35,7 @@ const Lobby = ({ setIsPairing }) => {
 		fetch: fetchStakedBalance,
 		isFetching: isStakedBalanceLoading,
 	} = useWeb3ExecuteFunction({
-		abi: ERC20Abi,
+		abi: erc20Abi,
 		contractAddress: SGHODA_TOKEN_ADDRESS,
 		functionName: "balanceOf",
 		params: {

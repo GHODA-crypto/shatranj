@@ -97,10 +97,8 @@ const Modals = ({
 				title="Defeat"
 				visible={
 					(game.game_over() &&
-						!(
-							(liveGameAttributes?.outcome === 3 && isPlayerWhite) ||
-							(liveGameAttributes?.outcome === 4 && !isPlayerWhite)
-						)) ||
+						((liveGameAttributes?.outcome === 3 && !isPlayerWhite) ||
+							(liveGameAttributes?.outcome === 4 && isPlayerWhite))) ||
 					liveChallengeData?.get("challengeStatus") === 3
 				}
 				footer={[

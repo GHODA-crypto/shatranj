@@ -6,7 +6,8 @@ import {
 	useMoralisQuery,
 } from "react-moralis";
 
-import { gameAbi, ERC20Abi } from "../contracts/abi";
+import { erc20Abi } from "../contracts/erc20Abi";
+import { gameAbi } from "../contracts/gameAbi";
 import { useWindowSize } from "../hooks/useWindowSize";
 import { numDisplayFormatter } from "../helpers/numDisplayFormatter";
 import {
@@ -29,7 +30,7 @@ const Stakes = () => {
 		fetch: fetchTokenBalance,
 		isFetching: isTokenBalanceLoading,
 	} = useWeb3ExecuteFunction({
-		abi: ERC20Abi,
+		abi: erc20Abi,
 		contractAddress: GHODA_TOKEN_ADDRESS,
 		functionName: "balanceOf",
 		params: {
@@ -43,7 +44,7 @@ const Stakes = () => {
 		fetch: fetchStakedBalance,
 		isFetching: isStakedBalanceLoading,
 	} = useWeb3ExecuteFunction({
-		abi: ERC20Abi,
+		abi: erc20Abi,
 		contractAddress: SGHODA_TOKEN_ADDRESS,
 		functionName: "balanceOf",
 		params: {
@@ -57,7 +58,7 @@ const Stakes = () => {
 		fetch: getApprovalFromUser,
 		isFetching: isApproving,
 	} = useWeb3ExecuteFunction({
-		abi: ERC20Abi,
+		abi: erc20Abi,
 		contractAddress: GHODA_TOKEN_ADDRESS,
 		functionName: "approve",
 		params: {
@@ -72,7 +73,7 @@ const Stakes = () => {
 		fetch: getAllowanceForUser,
 		isFetching: isAllowanceFetching,
 	} = useWeb3ExecuteFunction({
-		abi: ERC20Abi,
+		abi: erc20Abi,
 		contractAddress: GHODA_TOKEN_ADDRESS,
 		functionName: "allowance",
 		params: {
