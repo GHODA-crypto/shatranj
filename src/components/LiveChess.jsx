@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useHistory } from "react-router-dom";
 import {
 	useMoralisQuery,
 	useMoralisCloudFunction,
@@ -80,6 +81,7 @@ const LiveChess = ({
 			live: true,
 		}
 	);
+
 	const [gameHistory, setGameHistory] = useState([]);
 	useEffect(() => {
 		setGameHistory(() => {
@@ -248,6 +250,8 @@ const Modals = ({
 	cancelChallenge,
 	cancelingChallenge,
 }) => {
+	const urlHistory = useHistory();
+
 	const handleClaimPool = () => {
 		setNeedNFT(false);
 	};
@@ -288,7 +292,7 @@ const Modals = ({
 				visible={cancelingChallenge}
 				footer={null}
 				closable={false}>
-				<h2>Canceling this Challenge :x: ...</h2>
+				<h2>Canceling this Challenge 🔴 ...</h2>
 			</Modal>
 			<Modal
 				title="Victory"
@@ -320,6 +324,9 @@ const Modals = ({
 					liveChallengeData?.get("challengeStatus") === 3
 				}
 				footer={[
+					<Button key="toLobby" onClick={() => urlHistory.push("/lobby")}>
+						Back to Lobby
+					</Button>,
 					<Button key="quickMatch" type="primary" onClick={handleQuickMatch}>
 						Quick Match
 					</Button>,

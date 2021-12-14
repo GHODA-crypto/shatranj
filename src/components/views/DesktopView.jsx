@@ -20,6 +20,25 @@ import { ReactComponent as Abort } from "../../assets/abort.svg";
 import { ReactComponent as Draw } from "../../assets/draw.svg";
 import { ReactComponent as Win } from "../../assets/win.svg";
 
+const PieceMap = {
+	w: {
+		k: <WhiteKing style={{ width: 10, height: 10 }} />,
+		q: <WhiteQueen style={{ width: 10, height: 10 }} />,
+		r: <WhiteRook style={{ width: 10, height: 10 }} />,
+		b: <WhiteBishop style={{ width: 10, height: 10 }} />,
+		n: <WhiteKnight style={{ width: 10, height: 10 }} />,
+		p: <WhitePawn style={{ width: 10, height: 10 }} />,
+	},
+	b: {
+		k: <BlackKing style={{ width: 10, height: 10 }} />,
+		q: <BlackQueen style={{ width: 10, height: 10 }} />,
+		r: <BlackRook style={{ width: 10, height: 10 }} />,
+		b: <BlackBishop style={{ width: 10, height: 10 }} />,
+		n: <BlackKnight style={{ width: 10, height: 10 }} />,
+		p: <BlackPawn style={{ width: 10, height: 10 }} />,
+	},
+};
+
 const DesktopView = ({
 	opSide,
 	joinLiveChess,
@@ -174,7 +193,7 @@ const DesktopView = ({
 							</Col>
 							{row.map((move, colIdx) => (
 								<Col key={colIdx} className="cell cell-2" flex={2}>
-									{move.san} {move.piece}
+									{move.san} {PieceMap[move.color][move.piece]}
 								</Col>
 							))}
 						</Row>
