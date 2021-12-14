@@ -184,28 +184,13 @@ const LiveBoard = ({
 	}
 
 	const customPieces = useCallback((squareWidth) => {
-		const DEFAULT_PIECES_COMPONENTS = {
-			wP: "./assets/chess_pieces_png/wP.png",
-			wN: "./assets/chess_pieces_png/wN.png",
-			wB: "./assets/chess_pieces_png/wB.png",
-			wR: "./assets/chess_pieces_png/wR.png",
-			wQ: "./assets/chess_pieces_png/wQ.png",
-			wK: "./assets/chess_pieces_png/wK.png",
-			bP: "./assets/chess_pieces_png/bP.png",
-			bN: "./assets/chess_pieces_png/bN.png",
-			bB: "./assets/chess_pieces_png/bB.png",
-			bR: "./assets/chess_pieces_png/bR.png",
-			bQ: "./assets/chess_pieces_png/bQ.png",
-			bK: "./assets/chess_pieces_png/bK.png",
-		};
-
 		const paths = {
-			...DEFAULT_PIECES_COMPONENTS,
+			...DEFAULT_PIECES_PATHS,
 			wR: "https://cdn.discordapp.com/attachments/911999534752755736/920380881586245692/pieceSkin.png",
 		};
 
 		const newPieces = {};
-		Object.keys(DEFAULT_PIECES_COMPONENTS).forEach((p) => {
+		Object.keys(DEFAULT_PIECES_PATHS).forEach((p) => {
 			newPieces[p] = () => {
 				return (
 					<img
@@ -270,6 +255,21 @@ const kingPositions = (game) => {
 			return { c: king.color, i: row + column };
 		});
 	return { [a[0].c]: a[0].i, [a[1].c]: a[1].i };
+};
+
+const DEFAULT_PIECES_PATHS = {
+	wP: "./assets/chess_pieces_png/wP.png",
+	wN: "./assets/chess_pieces_png/wN.png",
+	wB: "./assets/chess_pieces_png/wB.png",
+	wR: "./assets/chess_pieces_png/wR.png",
+	wQ: "./assets/chess_pieces_png/wQ.png",
+	wK: "./assets/chess_pieces_png/wK.png",
+	bP: "./assets/chess_pieces_png/bP.png",
+	bN: "./assets/chess_pieces_png/bN.png",
+	bB: "./assets/chess_pieces_png/bB.png",
+	bR: "./assets/chess_pieces_png/bR.png",
+	bQ: "./assets/chess_pieces_png/bQ.png",
+	bK: "./assets/chess_pieces_png/bK.png",
 };
 
 export default LiveBoard;

@@ -81,6 +81,7 @@ const LiveChess = ({
 	);
 
 	const [gameHistory, setGameHistory] = useState([]);
+
 	useEffect(() => {
 		setGameHistory(() => {
 			return game.history({ verbose: true });
@@ -110,14 +111,18 @@ const LiveChess = ({
 		[gameHistory]
 	);
 
-	const liveGameObj = useMemo(() => {
-		if (liveGameAttributes?.pgn) {
-			const _chess = new Chess();
-			_chess.load_pgn(liveGameAttributes.pgn);
-			return _chess;
-		} else {
-			return DEFAULT_GAME;
-		}
+	const [liveGameObj, setLiveGameObj] = useState(null);
+
+	useEffect(() => {
+		setLiveGameObj(() => {
+			if (liveGameAttributes?.pgn) {
+				const _chess = new Chess();
+				_chess.load_pgn(liveGameAttributes.pgn);
+				return _chess;
+			} else {
+				return DEFAULT_GAME;
+			}
+		});
 	}, [liveGameAttributes]);
 
 	const isPlayerWhite = useMemo(() => {
