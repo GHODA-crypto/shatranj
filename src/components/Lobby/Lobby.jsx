@@ -93,7 +93,7 @@ const Lobby = ({ setIsPairing }) => {
 	return (
 		<div className="lobby">
 			<Modal
-				title="Initialisng Game"
+				title="Initialising Game"
 				visible={isStakedBalanceLoading}
 				footer={null}
 				closable={false}>

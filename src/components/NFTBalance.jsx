@@ -29,9 +29,11 @@ function NFTBalance() {
 	const { Moralis, chainId } = useMoralis();
 	const [visible, setVisibility] = useState(false);
 	const [receiverToSend, setReceiver] = useState(null);
-	// const [amountToSend, setAmount] = useState(null);
 	const [nftToSend, setNftToSend] = useState(null);
 	const [isPending, setIsPending] = useState(false);
+	const [isNFTMetaModalVisible, setIsNFTMetaModalVisible] = useState(false);
+
+	window.nft = NFTBalances;
 
 	async function transfer(nft, receiver) {
 		const options = {
@@ -60,9 +62,6 @@ function NFTBalance() {
 		setVisibility(true);
 	};
 
-	const handleThemeChange = () => {};
-	console.log(NFTBalances?.result);
-
 	return (
 		<>
 			<div style={styles.NFTs}>
@@ -70,7 +69,9 @@ function NFTBalance() {
 					{NFTBalances?.result &&
 						NFTBalances.result.map((nft, index) =>
 							nft.token_address.toLowerCase() !==
-							"0xe472e0e6ee8f74ca7e01e45785d1b335bbbd936a" ? null : (
+							"0xe472e0e6ee8f74ca7e01e45785d1b335bbbd936a" ? (
+								<h1>Cricket Noises</h1>
+							) : (
 								<Card
 									hoverable
 									actions={[
@@ -101,11 +102,11 @@ function NFTBalance() {
 												}
 											/>
 										</Tooltip>,
-										<Tooltip title="Use as Piece Skin">
-											<SkinOutlined onClick={handleThemeChange} />
-										</Tooltip>,
 									]}
-									style={{ width: 300, border: "2px solid #e7eaf3" }}
+									style={{
+										width: 300,
+										border: "2px solid #e7eaf3",
+									}}
 									cover={
 										<Image
 											preview={false}
@@ -134,5 +135,56 @@ function NFTBalance() {
 		</>
 	);
 }
+
+const NFTMetaModal = ({
+	isNFTMetaModalVisible,
+	setNFTMetaModalVisible,
+	nft,
+}) => {
+	const mintedAt = new Date(nft.minted_at);
+
+	const formatAMPM = () => {
+		let hours = mintedAt.getHours();
+		const ampm = hours >= 12 ? "PM" : "AM";
+		hours = hours % 12;
+		hours = hours ? hours : 12;
+		const strTime = hours + ampm;
+		return strTime;
+	};
+
+	const handleThemeChange = () => {};
+
+	return (
+		<Modal
+			visible={isNFTMetaModalVisible}
+			okText="Use this NFT as Piece Skin"
+			onCancel={() => {
+				setNFTMetaModalVisible(false);
+			}}
+			onOk={handleThemeChange}
+			centered={true}
+			title={nft.token_address}>
+			<div className="images">
+				<img src={nft?.metadata?.image} alt="NFT" />
+				<img src={nft?.metadata?.piece} alt="PieceNFT" />
+			</div>
+			<div className="info">
+				<div className="name">{nft?.metadata?.name}</div>
+				<div className="message">
+					You Defeated{" "}
+					<span className="white">{nft?.metadata?.attributes[0]?.value}</span>{" "}
+					in{" "}
+					<span className="moves">{nft?.metadata?.attributes[3]?.value}</span>{" "}
+					moves.
+				</div>
+				<div className="datetime">
+					This NFT was minted on{" "}
+					<span className="date">{mintedAt.toDateString}</span> at{" "}
+					<span className="time">{formatAMPM}</span>
+				</div>
+			</div>
+		</Modal>
+	);
+};
 
 export default NFTBalance;

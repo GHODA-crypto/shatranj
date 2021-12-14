@@ -50,6 +50,24 @@ const Modals = ({
 				<h2>Match Found. Waiting for Opponent 🎠 ...</h2>
 			</Modal>
 			<Modal
+				title="Failed"
+				visible={liveChallengeData?.get("challengeStatus") === 9}
+				footer={[
+					((
+						<Button key="toLobby" onClick={() => urlHistory.push("/lobby")}>
+							Back to Lobby
+						</Button>
+					),
+					(
+						<button onClick={handleQuickMatch} type="primary">
+							Try again
+						</button>
+					)),
+				]}
+				closable={false}>
+				<h2>Search for a Match Failed 🟥 ! Please try again.</h2>
+			</Modal>
+			<Modal
 				title="Canceling"
 				visible={cancelingChallenge}
 				footer={null}

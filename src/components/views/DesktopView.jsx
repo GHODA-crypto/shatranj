@@ -116,9 +116,9 @@ const DesktopView = ({
 						</div>
 						<div className="fallen-peice fallen-peice-op">
 							{opSide === "w" ? (
-								<WhiteCaptured capturedW={capturedW} />
-							) : (
 								<BlackCaptured capturedB={capturedB} />
+							) : (
+								<WhiteCaptured capturedW={capturedW} />
 							)}
 						</div>
 					</div>
@@ -151,9 +151,9 @@ const DesktopView = ({
 					</div>
 					<div className="fallen-peice fallen-peice-self">
 						{opSide === "b" ? (
-							<WhiteCaptured capturedW={capturedW} />
-						) : (
 							<BlackCaptured capturedB={capturedB} />
+						) : (
+							<WhiteCaptured capturedW={capturedW} />
 						)}
 					</div>
 				</div>
