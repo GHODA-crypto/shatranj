@@ -44,7 +44,13 @@ const LiveBoard = ({
 
 	useEffect(() => {
 		if (game.in_checkmate() || game.in_check()) {
-			if (game.turn === "w") {
+			console.log(
+				game.in_checkmate() || game.in_check(),
+				game.turn(),
+				kingPositions(game).w,
+				kingPositions(game).b
+			);
+			if (game.turn() === "w") {
 				setCheckStyles({
 					[kingPositions(game).w]: {
 						backgroundColor: "rgba(255, 0, 0, 0.6)",
@@ -63,7 +69,6 @@ const LiveBoard = ({
 	const { Moralis } = useMoralis();
 
 	const [rightClickedSquares, setRightClickedSquares] = useState({});
-	const [moveSquares, setMoveSquares] = useState({});
 	const [optionSquares, setOptionSquares] = useState({});
 	const [moveFrom, setMoveFrom] = useState("");
 
@@ -161,7 +166,6 @@ const LiveBoard = ({
 					game.undo();
 				});
 				chessboardRef.current.clearPremoves();
-				setMoveSquares({});
 			}
 		},
 		[Moralis, liveGameId]
@@ -239,11 +243,10 @@ const LiveBoard = ({
 				customSquareStyles={{
 					justifyContent: "center",
 					alignItems: "center",
-					...checkStyles,
-					...moveSquares,
-					...optionSquares,
-					...rightClickedSquares,
 					...historySquareStyles,
+					...rightClickedSquares,
+					...optionSquares,
+					...checkStyles,
 				}}
 				ref={chessboardRef}
 			/>
