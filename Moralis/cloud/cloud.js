@@ -14,6 +14,7 @@ Moralis.Cloud.define(
 		requireUser: true,
 	}
 );
+
 // Cancel JOIN Challenge
 Moralis.Cloud.define(
 	"cancelChallenge",
@@ -116,66 +117,7 @@ Moralis.Cloud.define(
 	{ requireUser: true }
 );
 
-// After save trigger
-Moralis.Cloud.afterSave("Challenge", async (request) => {
-	const challenge = request.object;
-	if (challenge.get("challengeStatus") === 1 && !challenge.get("gameId")) {
-		const Game = Moralis.Object.extend("Game");
-		const newGame = new Game();
-		await newGame.save(null, { useMasterKey: true });
-		// const config = await Moralis.Config.get({ useMasterKey: true });
-		// const apiKey = config.get("apiKey");
-		// const body = {
-		// 	api: apiKey,
-		// 	id: newGame.id,
-		// 	b: newGame.get("players").b,
-		// 	w: newGame.get("players").w,
-		// };
-		// // send http request for end game tx
-
-		// const logger = Moralis.Cloud.getLogger();
-		// const httpResponse = await Moralis.Cloud.httpRequest({
-		// 	method: "POST",
-		// 	url: "https://shatranj-poc388c1cd6a7ddc783e982f04317f8fe804b7821f-matrix.stackos.io/start",
-		// 	headers: {
-		// 		"Content-Type": "application/json;charset=utf-8",
-		// 	},
-		// 	body: body,
-		// })
-		// 	.then(
-		// 		async function (httpResponse) {
-		// 			await linkGameToChallenge(
-		// 				challenge,
-		// 				newGame,
-		// 				challenge.get("player1"),
-		// 				challenge.get("player2")
-		// 			);
-		// 			challenge.set("gameId", newGame.id);
-		// 			challenge.set("challengeStatus", 2);
-		// 			await challenge.save(null, { useMasterKey: true });
-		// 		},
-		// 		async function (httpResponse) {
-		// 			challenge.set("challengeStatus", 9);
-		// 			await challenge.save(null, { useMasterKey: true });
-		// 		}
-		// 	)
-		// 	.catch((error) => {
-		// 		throw Error(error);
-		// 	});
-
-		await linkGameToChallenge(
-			challenge,
-			newGame,
-			challenge.get("player1"),
-			challenge.get("player2")
-		);
-		challenge.set("gameId", newGame.id);
-		challenge.set("challengeStatus", 2);
-		await challenge.save(null, { useMasterKey: true });
-		// logger.info(httpResponse);
-	}
-});
-
+// Send Move
 Moralis.Cloud.define(
 	"sendMove",
 	async (request) => {
@@ -202,37 +144,6 @@ Moralis.Cloud.define(
 	},
 	validateMove
 );
-
-// Perform game updates for wins, losses, draws, etc.
-Moralis.Cloud.afterSave("Game", async (request) => {
-	const game = request.object;
-	if (game.get("pgn")) {
-		const chess = new Chess();
-		chess.load_pgn(game.get("pgn") || "");
-		if (chess.game_over()) {
-			game.set("turn", "n");
-			game.set("fen", chess.fen());
-
-			let outcome;
-
-			if (chess.in_checkmate()) {
-				const loser = chess.turn();
-				outcome = loser === "w" ? 4 : 3;
-			} else {
-				outcome = 2;
-			}
-
-			const challengeQuery = new Moralis.Query("Challenge");
-			const challenge = await challengeQuery.get(game.get("challengeId"));
-
-			challenge.set("challengeStatus", 3);
-			game.set("outcome", outcome);
-
-			game.save(null, { useMasterKey: true });
-			challenge.save(null, { useMasterKey: true });
-		}
-	}
-});
 
 // RESIGN GAME
 Moralis.Cloud.define(
@@ -284,6 +195,7 @@ Moralis.Cloud.define(
 
 		const config = await Moralis.Config.get({ useMasterKey: true });
 		const apiKey = config.get("apiKey");
+		const serverUrl = config.get("serverURL");
 
 		const body = {
 			api: apiKey,
@@ -299,7 +211,7 @@ Moralis.Cloud.define(
 		const logger = Moralis.Cloud.getLogger();
 		const httpResponse = await Moralis.Cloud.httpRequest({
 			method: "POST",
-			url: "https://shatranj-poc388c1cd6a7ddc783e982f04317f8fe804b7821f-matrix.stackos.io/end",
+			url: `${serverUrl}/endGame`,
 			headers: {
 				"Content-Type": "application/json;charset=utf-8",
 			},
@@ -321,3 +233,118 @@ Moralis.Cloud.define(
 	},
 	validateClaimVictory
 );
+
+// After Effects && Triggers
+
+// Trigger oracle after challenge save if challenge has two players
+Moralis.Cloud.afterSave("Challenge", async (request) => {
+	const challenge = request.object;
+	if (challenge.get("challengeStatus") === 1 && !challenge.get("gameId")) {
+		const Game = Moralis.Object.extend("Game");
+		const newGame = new Game();
+		await newGame.save(null, { useMasterKey: true });
+		const config = await Moralis.Config.get({ useMasterKey: true });
+		const apiKey = config.get("apiKey");
+		const serverUrl = config.get("serverURL");
+		const body = {
+			api: apiKey,
+			id: newGame.id,
+			b: newGame.get("players").b,
+			w: newGame.get("players").w,
+		};
+		// send http request for end game tx
+
+		const logger = Moralis.Cloud.getLogger();
+		const httpResponse = await Moralis.Cloud.httpRequest({
+			method: "POST",
+			url: `${serverUrl}/startGame`,
+			headers: {
+				"Content-Type": "application/json;charset=utf-8",
+			},
+			body: body,
+		})
+			.then(
+				async function (httpResponse) {
+					await linkGameToChallenge(
+						challenge,
+						newGame,
+						challenge.get("player1"),
+						challenge.get("player2")
+					);
+					challenge.set("gameId", newGame.id);
+					challenge.set("challengeStatus", 2);
+					await challenge.save(null, { useMasterKey: true });
+				},
+				async function (httpResponse) {
+					challenge.set("challengeStatus", 9);
+					await challenge.save(null, { useMasterKey: true });
+				}
+			)
+			.catch((error) => {
+				throw Error(error);
+			});
+
+		// await linkGameToChallenge(
+		// 	challenge,
+		// 	newGame,
+		// 	challenge.get("player1"),
+		// 	challenge.get("player2")
+		// );
+		// challenge.set("gameId", newGame.id);
+		// challenge.set("challengeStatus", 2);
+		// await challenge.save(null, { useMasterKey: true });
+		// logger.info(httpResponse);
+	}
+});
+
+// Perform game updates for wins, losses, draws, etc.
+Moralis.Cloud.afterSave("Game", async (request) => {
+	const game = request.object;
+	if (game.get("pgn")) {
+		const chess = new Chess();
+		chess.load_pgn(game.get("pgn") || "");
+		if (chess.game_over()) {
+			game.set("turn", "n");
+			game.set("fen", chess.fen());
+
+			let outcome;
+
+			if (chess.in_checkmate()) {
+				const loser = chess.turn();
+				outcome = loser === "w" ? 4 : 3;
+			} else {
+				outcome = 2;
+			}
+
+			const challengeQuery = new Moralis.Query("Challenge");
+			const challenge = await challengeQuery.get(game.get("challengeId"));
+
+			challenge.set("challengeStatus", 3);
+			game.set("outcome", outcome);
+
+			game.save(null, { useMasterKey: true });
+			challenge.save(null, { useMasterKey: true });
+		}
+	}
+});
+
+// Update ELO after event received
+Moralis.Cloud.afterSave("GameEnd", async (request) => {
+	const event = request.object;
+	const Game = Moralis.Object.extend("Game");
+	const gameQuery = new Moralis.Query("Game");
+	const game = await gameQuery.get(event.get("gameId"));
+
+	const { w, b } = game.get("players");
+
+	const userQuery = new Moralis.Query("User");
+
+	const whiteP = await userQuery.get(w);
+	const blackP = await userQuery.get(b);
+
+	whiteP.set("ELO", event.get("eloW"));
+	blackP.set("ELO", event.get("eloB"));
+
+	await whiteP.save(null, { useMasterKey: true });
+	await blackP.save(null, { useMasterKey: true });
+});

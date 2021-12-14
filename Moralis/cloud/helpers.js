@@ -5,9 +5,8 @@ async function checkExistingChallenges(userEthAddress) {
 			match: {
 				$expr: {
 					$or: [
-						{ $eq: ["$challengeStatus", 0] },
-						{ $eq: ["$challengeStatus", 1] },
-						{ $eq: ["$challengeStatus", 2] },
+						{ $eq: ["$player1", userEthAddress] },
+						{ $eq: ["$player2", userEthAddress] },
 					],
 				},
 			},
@@ -16,8 +15,9 @@ async function checkExistingChallenges(userEthAddress) {
 			match: {
 				$expr: {
 					$or: [
-						{ $eq: ["$player1", userEthAddress] },
-						{ $eq: ["$player2", userEthAddress] },
+						{ $eq: ["$challengeStatus", 0] },
+						{ $eq: ["$challengeStatus", 1] },
+						{ $eq: ["$challengeStatus", 2] },
 					],
 				},
 			},
@@ -93,4 +93,31 @@ async function linkGameToChallenge(challenge, game, player1, player2) {
 
 	await game.save(null, { useMasterKey: true });
 	return game;
+}
+
+function getScoreChange(eloW, eloB, outcome) {
+	const difference = eloW - eloB;
+	const reverse = difference > 0; // note if difference was positive
+	const diff = Math.abs(difference); // take absolute to lookup in positive table
+	// Score change lookup table
+	let scoreChange = 10;
+
+	if (diff > 636) scoreChange = 20;
+	else if (diff > 436) scoreChange = 19;
+	else if (diff > 338) scoreChange = 18;
+	else if (diff > 269) scoreChange = 17;
+	else if (diff > 214) scoreChange = 16;
+	else if (diff > 168) scoreChange = 15;
+	else if (diff > 126) scoreChange = 14;
+	else if (diff > 88) scoreChange = 13;
+	else if (diff > 52) scoreChange = 12;
+	else if (diff > 17) scoreChange = 11;
+	// Depending on result (win/draw/lose), calculate score changes
+	if (outcome === 3) {
+		return reverse ? 20 - scoreChange : scoreChange;
+	} else if (outcome === 4) {
+		return reverse ? scoreChange - 20 : -scoreChange;
+	} else {
+		return reverse ? 10 - scoreChange : scoreChange - 10;
+	}
 }
