@@ -187,6 +187,8 @@
 			height: 25%;
 			padding: 0 0.5rem;
 			.player-info {
+				padding: 1rem;
+				border-radius: 0.5rem;
 				width: 100%;
 				display: flex;
 				align-items: flex-end;
@@ -204,6 +206,10 @@
 					margin-left: 1.5rem;
 					margin-bottom: 0.35rem;
 				}
+			}
+
+			.turn {
+				background-color: rgba($accent, 0.25);
 			}
 			.fallen-peice-self {
 				margin-top: 0.5rem;
@@ -312,6 +318,8 @@
 							height: 25%;
 							padding: 0 0.5rem;
 							.player-info {
+								padding: 1rem;
+								border-radius: 0.5rem;
 								width: 100%;
 								display: flex;
 								align-items: flex-end;
@@ -329,6 +337,9 @@
 									margin-left: 1.5rem;
 									margin-bottom: 0.35rem;
 								}
+							}
+							.turn {
+								background-color: rgba($accent, 0.25);
 							}
 						}
 					}
@@ -472,10 +483,12 @@
 	align-items: center;
 	.chessboard {
 		// background-color: green;
+		width: 85%;
 		height: 100%;
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
+		align-items: center;
 
 		#gameBoard {
 			display: flex;
@@ -487,14 +500,14 @@
 			display: flex;
 			flex-direction: column;
 			justify-content: center;
-			align-items: flex-start;
 			width: 100%;
 			height: 25%;
-			padding: 0 0.5rem;
 			.player-info {
-				width: 100%;
+				padding: 0.75rem;
+				border-radius: 0.5rem;
+				width: 60%;
 				display: flex;
-				align-items: flex-end;
+				flex-direction: column;
 				.username {
 					color: darken($accent, 15%);
 					font-size: 1.5rem;
@@ -506,9 +519,10 @@
 					color: $dark;
 					font-size: 0.8rem;
 					font-weight: 500;
-					margin-left: 1.5rem;
-					margin-bottom: 0.35rem;
 				}
+			}
+			.turn {
+				background-color: rgba($accent, 0.25);
 			}
 		}
 	}

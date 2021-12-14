@@ -80,8 +80,8 @@ const LiveChess = ({
 			live: true,
 		}
 	);
-	const gameHistory = useMemo(() => game.history({ verbose: true }), [game]);
 
+	const gameHistory = useMemo(() => game.history({ verbose: true }), [game]);
 	const gameId = useMemo(() => liveGameData?.id, [liveGameData?.id]);
 
 	const captured = useMemo(
@@ -306,23 +306,26 @@ const Modals = ({
 						Claim Pool + Mint NFT
 					</Button>,
 				]}
-				width={window.getComputedStyle(document.body).fontSize * 50}>
+				width={window.getComputedStyle(document.body).fontSize * 25}>
 				<h1>🎊 You Won the Game 🎊</h1>
 				<h3>{liveGameAttributes?.outcome === 3 ? "1 - 0" : "0 - 1"}</h3>
 			</Modal>
 			<Modal
 				title="Defeat"
 				visible={
-					game.game_over() &&
-					(!(liveGameAttributes?.outcome === 3 && isPlayerWhite) ||
-						(liveGameAttributes?.outcome === 4 && !isPlayerWhite))
+					(game.game_over() &&
+						!(
+							(liveGameAttributes?.outcome === 3 && isPlayerWhite) ||
+							(liveGameAttributes?.outcome === 4 && !isPlayerWhite)
+						)) ||
+					liveChallengeData?.get("challengeStatus") === 3
 				}
 				footer={[
 					<Button key="quickMatch" type="primary" onClick={handleQuickMatch}>
 						Quick Match
 					</Button>,
 				]}
-				width={window.getComputedStyle(document.body).fontSize * 50}>
+				width={window.getComputedStyle(document.body).fontSize * 25}>
 				<h1>🫂 You Lost the Game 🫂</h1>
 				<h3>{liveGameAttributes?.outcome === 3 ? "1 - 0" : "0 - 1"}</h3>
 			</Modal>
@@ -334,7 +337,7 @@ const Modals = ({
 						Quick Match
 					</Button>,
 				]}
-				width={window.getComputedStyle(document.body).fontSize * 50}>
+				width={window.getComputedStyle(document.body).fontSize * 25}>
 				<h1>Game Drawn 😅</h1>
 				<h3>1/2 - 1/2</h3>
 			</Modal>
@@ -343,6 +346,3 @@ const Modals = ({
 };
 
 export default LiveChess;
-
-//234 dwb
-//

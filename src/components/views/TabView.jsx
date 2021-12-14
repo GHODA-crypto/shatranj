@@ -34,6 +34,7 @@ const TabView = ({
 	claimVictory,
 }) => {
 	const [pgnArray, setPgnArray] = useState([]);
+	const [isWhiteTurn, setIsWhiteTurn] = useState(true);
 	const { user } = useMoralis();
 	const { TabPane } = Tabs;
 	const { Content, Sider } = Layout;
@@ -53,6 +54,9 @@ const TabView = ({
 
 	useEffect(() => {
 		if (gameHistory.length <= 0) return;
+		if (gameHistory.length > 1) {
+			setIsWhiteTurn(!isWhiteTurn);
+		}
 		if (tempPgnElement.length < 1) {
 			tempPgnElement.push(gameHistory[gameHistory.length - 1]?.san);
 			setPgnArray([...pgnArray, tempPgnElement]);
@@ -135,7 +139,12 @@ const TabView = ({
 						className="game-info">
 						{liveGameAttributes ? (
 							<div className="players op">
-								<div className="player-info">
+								<div
+									className={
+										opSide === "w" && isWhiteTurn
+											? "player-info turn"
+											: "player-info"
+									}>
 									<div className="username">
 										{liveGameAttributes?.players[opSide]}
 									</div>
@@ -187,7 +196,12 @@ const TabView = ({
 							))}
 						</div>
 						<div className="players self">
-							<div className="player-info">
+							<div
+								className={
+									opSide === "b" && isWhiteTurn
+										? "player-info turn"
+										: "player-info"
+								}>
 								<div className="username">{user?.get("ethAddress")}</div>
 								<div className="elo">({user?.get("ELO")})</div>
 							</div>
