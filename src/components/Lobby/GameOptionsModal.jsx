@@ -105,7 +105,7 @@ const GameOptionsModal = ({
 						textAlign: "center",
 						marginBottom: "1rem",
 					}}>
-					Rating Range
+					ELO Rating Range
 				</span>
 				<div
 					className="rating-input"
@@ -116,16 +116,6 @@ const GameOptionsModal = ({
 						justifyContent: "center",
 						alignItems: "center",
 					}}>
-					<span
-						className="label inc"
-						style={{
-							fontSize: "1.5rem",
-							fontWeight: 600,
-							marginRight: "0.25rem",
-						}}>
-						+
-					</span>
-					<span className="user-elo">{user?.get("ELO")}</span>
 					<InputNumber
 						size="large"
 						min={1}
@@ -135,6 +125,27 @@ const GameOptionsModal = ({
 							setGameOptions({ ...gameOptions, rangeUpper: val });
 						}}
 					/>
+					<span
+						className="label inc"
+						style={{
+							fontSize: "1.5rem",
+							fontWeight: 600,
+							marginLeft: "0.25rem",
+							marginRight: "1rem",
+						}}>
+						+
+					</span>
+					<span
+						style={{
+							fontSize: "1.5rem",
+							fontWeight: 800,
+							padding: "0 0.5rem",
+							color: "white",
+							backgroundColor: "rgba(0,0,0,0.85)",
+							borderRadius: "0.5rem",
+						}}>
+						{user?.get("ELO")}
+					</span>
 					<span
 						className="label dec"
 						style={{
