@@ -17,24 +17,28 @@ const LiveBoard = ({
 }) => {
 	const chessboardRef = useRef();
 
-	const historySquareStyles = useMemo(() => {
-		return gameHistory
-			? {
-					[gameHistory[gameHistory.length - 2]?.from]: {
-						backgroundColor: "rgba(255, 255, 0, 0.3)",
-					},
-					[gameHistory[gameHistory.length - 2]?.to]: {
-						backgroundColor: "rgba(255, 255, 0, 0.5)",
-					},
+	const [historySquareStyles, setHistorySquareStyles] = useState([]);
 
-					[gameHistory[gameHistory.length - 1]?.from]: {
-						backgroundColor: "rgba(0, 89, 255, 0.3)",
-					},
-					[gameHistory[gameHistory.length - 1]?.to]: {
-						backgroundColor: "rgba(0, 89, 255, 0.5)",
-					},
-			  }
-			: {};
+	useEffect(() => {
+		setHistorySquareStyles(() => {
+			return gameHistory
+				? {
+						[gameHistory[gameHistory.length - 2]?.from]: {
+							backgroundColor: "rgba(255, 255, 0, 0.3)",
+						},
+						[gameHistory[gameHistory.length - 2]?.to]: {
+							backgroundColor: "rgba(255, 255, 0, 0.5)",
+						},
+
+						[gameHistory[gameHistory.length - 1]?.from]: {
+							backgroundColor: "rgba(0, 89, 255, 0.3)",
+						},
+						[gameHistory[gameHistory.length - 1]?.to]: {
+							backgroundColor: "rgba(0, 89, 255, 0.5)",
+						},
+				  }
+				: {};
+		});
 	}, [gameHistory]);
 
 	const { Moralis } = useMoralis();

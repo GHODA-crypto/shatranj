@@ -80,8 +80,13 @@ const LiveChess = ({
 			live: true,
 		}
 	);
+	const [gameHistory, setGameHistory] = useState([]);
+	useEffect(() => {
+		setGameHistory(() => {
+			return game.history({ verbose: true });
+		});
+	}, [game]);
 
-	const gameHistory = useMemo(() => game.history({ verbose: true }), [game]);
 	const gameId = useMemo(() => liveGameData?.id, [liveGameData?.id]);
 
 	const captured = useMemo(

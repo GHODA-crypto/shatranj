@@ -84,7 +84,7 @@ const Lobby = ({ setIsPairing }) => {
 
 	useEffect(() => {
 		isWeb3Enabled && user && getAllowanceForUser();
-	}, [isWeb3Enabled, user]);
+	}, [getAllowanceForUser, isWeb3Enabled, user]);
 
 	useEffect(() => {
 		fetchStakedBalance();

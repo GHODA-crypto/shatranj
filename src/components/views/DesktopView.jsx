@@ -32,10 +32,9 @@ const DesktopView = ({
 	resignGame,
 	claimVictory,
 }) => {
-	const [pgnArray, setPgnArray] = useState([]);
 	const [isWhiteTurn, setIsWhiteTurn] = useState(true);
+	const [pgnArray, setPgnArray] = useState([[]]);
 	const { user } = useMoralis();
-	console.log(isWhiteTurn);
 
 	const styles = {
 		Sider: {
@@ -48,25 +47,17 @@ const DesktopView = ({
 	};
 	const { Sider, Content } = Layout;
 	const { w, b } = captured;
-	let tempPgnElement = [];
 
 	useEffect(() => {
-		if (gameHistory.length <= 0) return;
-		if (gameHistory.length > 1) {
-			setIsWhiteTurn(!isWhiteTurn);
-		}
-		if (tempPgnElement.length < 1) {
-			tempPgnElement.push(gameHistory[gameHistory.length - 1]?.san);
-			setPgnArray([...pgnArray, tempPgnElement]);
-		}
-		if (tempPgnElement.length === 1) {
-			tempPgnElement.push(gameHistory[gameHistory.length - 1]?.san);
-			let temp = pgnArray;
-			temp.pop();
-			setPgnArray([...temp, tempPgnElement]);
-			tempPgnElement = [];
-		}
-	}, [gameHistory.length]);
+		if (gameHistory?.length)
+			setPgnArray(() => {
+				let pgnRenderArray = [];
+
+				for (var i = 0, len = gameHistory.length; i < len; i += 2)
+					pgnRenderArray.push(gameHistory.slice(i, i + 2));
+				return pgnRenderArray;
+			});
+	}, [gameHistory?.length]);
 
 	return (
 		<Layout className="game-desktop">
@@ -176,14 +167,14 @@ const DesktopView = ({
 				)}
 
 				<div className="pgn">
-					{pgnArray.map((row, rowIdx) => (
+					{pgnArray?.map((row, rowIdx) => (
 						<Row key={rowIdx}>
 							<Col className="cell cell-1" flex={1}>
 								{rowIdx + 1}
 							</Col>
-							{row.map((col, colIdx) => (
+							{row.map((move, colIdx) => (
 								<Col key={colIdx} className="cell cell-2" flex={2}>
-									{col}
+									{move.san} {move.piece}
 								</Col>
 							))}
 						</Row>
