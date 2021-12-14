@@ -41,6 +41,8 @@
 
 	@media screen and (max-width: 1200px) {
 		.play {
+			margin: 0 auto;
+			width: 90%;
 			flex-direction: column;
 			button {
 				flex-direction: row;
