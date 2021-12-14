@@ -11,7 +11,7 @@ import TabView from "../views/TabView";
 import MobileView from "../views/MobileView";
 import DesktopView from "../views/DesktopView";
 
-import "../styles/game.scss";
+import "../../styles/game.scss";
 import LiveBoard from "../ChessBoards/Live";
 import Chess from "chess.js";
 import Modals from "./Modals";
