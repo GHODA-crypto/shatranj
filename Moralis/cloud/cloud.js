@@ -14,6 +14,24 @@ Moralis.Cloud.define(
 		requireUser: true,
 	}
 );
+// Cancel JOIN Challenge
+Moralis.Cloud.define(
+	"cancelChallenge",
+	async (request) => {
+		const Challenge = Moralis.Object.extend("Challenge");
+		const challengeQuery = new Moralis.Query(Challenge);
+		challengeQuery.equalTo("player1", request.user.get("ethAddress"));
+		challengeQuery.equalTo("challengeStatus", 0);
+		const challenge = await challengeQuery.first();
+		if (!challenge) throw Error("No unpaired challenge to cancel");
+		challenge.set("challengeStatus", 4);
+		await challenge.save(null, { useMasterKey: true });
+		return true;
+	},
+	{
+		requireUser: true,
+	}
+);
 
 // Join Pairing Pool
 Moralis.Cloud.define(
@@ -98,49 +116,63 @@ Moralis.Cloud.define(
 	{ requireUser: true }
 );
 
+// After save trigger
 Moralis.Cloud.afterSave("Challenge", async (request) => {
 	const challenge = request.object;
 	if (challenge.get("challengeStatus") === 1 && !challenge.get("gameId")) {
-		const newGame = await createNewGame(
+		const Game = Moralis.Object.extend("Game");
+		const newGame = new Game();
+		await newGame.save(null, { useMasterKey: true });
+		// const config = await Moralis.Config.get({ useMasterKey: true });
+		// const apiKey = config.get("apiKey");
+		// const body = {
+		// 	api: apiKey,
+		// 	id: newGame.id,
+		// 	b: newGame.get("players").b,
+		// 	w: newGame.get("players").w,
+		// };
+		// // send http request for end game tx
+
+		// const logger = Moralis.Cloud.getLogger();
+		// const httpResponse = await Moralis.Cloud.httpRequest({
+		// 	method: "POST",
+		// 	url: "https://shatranj-poc388c1cd6a7ddc783e982f04317f8fe804b7821f-matrix.stackos.io/start",
+		// 	headers: {
+		// 		"Content-Type": "application/json;charset=utf-8",
+		// 	},
+		// 	body: body,
+		// })
+		// 	.then(
+		// 		async function (httpResponse) {
+		// 			await linkGameToChallenge(
+		// 				challenge,
+		// 				newGame,
+		// 				challenge.get("player1"),
+		// 				challenge.get("player2")
+		// 			);
+		// 			challenge.set("gameId", newGame.id);
+		// 			challenge.set("challengeStatus", 2);
+		// 			await challenge.save(null, { useMasterKey: true });
+		// 		},
+		// 		async function (httpResponse) {
+		// 			challenge.set("challengeStatus", 9);
+		// 			await challenge.save(null, { useMasterKey: true });
+		// 		}
+		// 	)
+		// 	.catch((error) => {
+		// 		throw Error(error);
+		// 	});
+
+		await linkGameToChallenge(
 			challenge,
+			newGame,
 			challenge.get("player1"),
 			challenge.get("player2")
 		);
-
-		const config = await Moralis.Config.get({ useMasterKey: true });
-		const apiKey = config.get("apiKey");
-
-		const body = {
-			api: apiKey,
-			id: newGame.id,
-			b: newGame.get("players").b,
-			w: newGame.get("players").w,
-		};
-		// send http request for end game tx
-
-		const logger = Moralis.Cloud.getLogger();
-		const httpResponse = await Moralis.Cloud.httpRequest({
-			method: "POST",
-			url: "https://shatranj-poc388c1cd6a7ddc783e982f04317f8fe804b7821f-matrix.stackos.io/start",
-			headers: {
-				"Content-Type": "application/json;charset=utf-8",
-			},
-			body: body,
-		})
-			.then(
-				async function (httpResponse) {
-					challenge.set("gameId", newGame.id);
-					challenge.set("challengeStatus", 2);
-					await challenge.save(null, { useMasterKey: true });
-				},
-				async function (httpResponse) {
-					challenge.set("challengeStatus", 9);
-					await challenge.save(null, { useMasterKey: true });
-				}
-			)
-			.catch((error) => {
-				throw Error(error);
-			});
+		challenge.set("gameId", newGame.id);
+		challenge.set("challengeStatus", 2);
+		await challenge.save(null, { useMasterKey: true });
+		// logger.info(httpResponse);
 	}
 });
 
@@ -171,6 +203,7 @@ Moralis.Cloud.define(
 	validateMove
 );
 
+// Perform game updates for wins, losses, draws, etc.
 Moralis.Cloud.afterSave("Game", async (request) => {
 	const game = request.object;
 	if (game.get("pgn")) {
@@ -201,23 +234,29 @@ Moralis.Cloud.afterSave("Game", async (request) => {
 	}
 });
 
+// RESIGN GAME
 Moralis.Cloud.define(
 	"resign",
 	async (request) => {
 		const gameId = request.params.gameId;
 		const gameQuery = new Moralis.Query("Game");
+		const challengeQuery = new Moralis.Query("Challenge");
 		const game = await gameQuery.get(gameId);
+		const challenge = await challengeQuery.get(game.get("challengeId"));
+
 		const userSide = game.get("players")[request.user.get("ethAddress")];
 		game.set("outcome", userSide === "w" ? 4 : 3);
 		game.set("turn", "n");
-		// game.set("outcome", 5);
+
+		challenge.set("challengeStatus", 3);
+
+		challenge.save(null, { useMasterKey: true });
 		game.save(null, { useMasterKey: true });
 	},
 	{
 		requireUser: true,
 		fields: {
 			gameId: {
-				type: "string",
 				required: true,
 				options: async (gameId) => {
 					const gameQuery = new Moralis.Query("Game");
@@ -232,6 +271,7 @@ Moralis.Cloud.define(
 	}
 );
 
+// CLAIM VICTORY
 Moralis.Cloud.define(
 	"claimVictory",
 	async (request) => {
@@ -281,45 +321,3 @@ Moralis.Cloud.define(
 	},
 	validateClaimVictory
 );
-
-async function validateMove(request) {
-	if (!request.user || !request.user.id) {
-		throw Error("Unauthorized");
-	}
-
-	const { gameId } = request.params;
-	if (!gameId) throw Error("GameId is required");
-
-	const gameQuery = new Moralis.Query("Game");
-	const challengeQuery = new Moralis.Query("Challenge");
-	const game = await gameQuery.get(gameId);
-
-	const challenge = await challengeQuery.get(game.get("challengeId"));
-	const userSide = game.get("sides")[request.user.get("ethAddress")];
-
-	if (!userSide) throw Error("Unauthorized to move");
-	if (game.get("turn") !== userSide) throw Error("Not your turn");
-
-	if (challenge.get("challengeStatus") !== 2)
-		throw Error("Game is not in progress");
-
-	return true;
-}
-async function validateClaimVictory(request) {
-	if (!request.user || !request.user.id) {
-		throw Error("Unauthorized");
-	}
-
-	const { gameId } = request.params;
-	if (!gameId) throw Error("GameId is required");
-
-	const gameQuery = new Moralis.Query("Game");
-
-	const game = await gameQuery.get(gameId);
-
-	if (game.get("turn") !== "n") throw Error("Game has not finished yet");
-	if (game.get("winner") !== request.user.get("ethAddress"))
-		throw Error("You are not the winner");
-
-	return true;
-}

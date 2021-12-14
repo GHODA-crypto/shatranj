@@ -1,14 +1,15 @@
-function hello() {
-	// console.log("Hello World!");
-	return "Hello World!";
-}
-
 async function checkExistingChallenges(userEthAddress) {
 	const Challenge = Moralis.Object.extend("Challenge");
 	let pipeline = [
 		{
 			match: {
-				challengeStatus: { $ne: 3 },
+				$expr: {
+					$or: [
+						{ $eq: ["$challengeStatus", 0] },
+						{ $eq: ["$challengeStatus", 1] },
+						{ $eq: ["$challengeStatus", 2] },
+					],
+				},
 			},
 		},
 		{
@@ -53,10 +54,7 @@ async function createNewChallenge(user, gamePreferences) {
 	return newChallenge;
 }
 
-async function createNewGame(challenge, player1, player2) {
-	const Game = Moralis.Object.extend("Game");
-	const game = new Game();
-
+async function linkGameToChallenge(challenge, game, player1, player2) {
 	game.set("challengeId", challenge.id);
 	// decide player sides
 	let player1Side = "";
