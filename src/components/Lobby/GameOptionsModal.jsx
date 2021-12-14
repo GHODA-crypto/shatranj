@@ -66,7 +66,7 @@ const GameOptionsModal = ({
 					}}
 					className="wb"
 					value="w">
-					<WKing style={{ marginTop: "0.5rem" }} />
+					<WKing style={{ marginTop: "0.5rem", width: 30, height: 30 }} />
 				</Radio.Button>
 				<Radio.Button
 					label="Choose Sides"
@@ -80,7 +80,7 @@ const GameOptionsModal = ({
 					}}
 					className="wb"
 					value="b">
-					<BKing style={{ marginTop: "0.5rem" }} />
+					<BKing style={{ marginTop: "0.5rem", width: 30, height: 30 }} />
 				</Radio.Button>
 			</Radio.Group>
 			<div
