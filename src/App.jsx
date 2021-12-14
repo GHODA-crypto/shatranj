@@ -14,7 +14,7 @@ import Stakes from "./components/Stakes";
 import NFTBalance from "./components/NFTBalance";
 import MenuItems from "./components/MenuItems";
 import Lobby from "./components/Lobby";
-import LiveChess from "./components/LiveChess";
+import LiveChess from "./components/LiveChess/";
 
 import { ReactComponent as LogoArt } from "./assets/logo.svg";
 

@@ -1,10 +1,7 @@
-import { useRef, useState, useEffect, useMemo, useCallback, memo } from "react";
-import Chess from "chess.js";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { Chessboard } from "react-chessboard";
-import { useMoralisCloudFunction, useMoralis } from "react-moralis";
+import { useMoralis } from "react-moralis";
 import { customPieces } from "./customPieces";
-
-const ChessboardMemo = memo(Chessboard);
 
 const LiveBoard = ({
 	user,
@@ -164,7 +161,7 @@ const LiveBoard = ({
 
 	return (
 		<div className="board">
-			<ChessboardMemo
+			<Chessboard
 				arePiecesDraggable={!!user}
 				isDraggablePiece={(piece) => piece.piece[0] === playerSide}
 				boardOrientation={playerSide === "w" ? "white" : "black"}

@@ -2,23 +2,24 @@ import { useMoralis } from "react-moralis";
 import { useState, useEffect } from "react";
 import { Layout, Skeleton, Row, Col } from "antd";
 import { FireOutlined } from "@ant-design/icons";
-
-import { ReactComponent as WhiteKing } from "../../assets/chess_svgs/k_w.svg";
-import { ReactComponent as WhiteKnight } from "../../assets/chess_svgs/n_w.svg";
-import { ReactComponent as WhiteQueen } from "../../assets/chess_svgs/q_w.svg";
-import { ReactComponent as WhiteBishop } from "../../assets/chess_svgs/b_w.svg";
-import { ReactComponent as WhiteRook } from "../../assets/chess_svgs/r_w.svg";
-import { ReactComponent as WhitePawn } from "../../assets/chess_svgs/p_w.svg";
-import { ReactComponent as BlackKing } from "../../assets/chess_svgs/k_b.svg";
-import { ReactComponent as BlackKnight } from "../../assets/chess_svgs/n_b.svg";
-import { ReactComponent as BlackQueen } from "../../assets/chess_svgs/q_b.svg";
-import { ReactComponent as BlackBishop } from "../../assets/chess_svgs/b_b.svg";
-import { ReactComponent as BlackRook } from "../../assets/chess_svgs/r_b.svg";
-import { ReactComponent as BlackPawn } from "../../assets/chess_svgs/p_b.svg";
-import { ReactComponent as Send } from "../../assets/send.svg";
-import { ReactComponent as Abort } from "../../assets/abort.svg";
-import { ReactComponent as Draw } from "../../assets/draw.svg";
-import { ReactComponent as Win } from "../../assets/win.svg";
+import {
+	WhiteKing,
+	WhiteKnight,
+	WhiteQueen,
+	WhiteBishop,
+	WhiteRook,
+	WhitePawn,
+	BlackKing,
+	BlackKnight,
+	BlackQueen,
+	BlackBishop,
+	BlackRook,
+	BlackPawn,
+	Send,
+	Abort,
+	Draw,
+	Win,
+} from "./svgs";
 
 const PieceMap = {
 	w: {
@@ -65,7 +66,7 @@ const DesktopView = ({
 		},
 	};
 	const { Sider, Content } = Layout;
-	const { w, b } = captured;
+	const { w: capturedW, b: capturedBlack } = captured;
 
 	useEffect(() => {
 		if (gameHistory?.length)
@@ -155,27 +156,27 @@ const DesktopView = ({
 						</div>
 						<div className="fallen-peice fallen-peice-op">
 							<div className="bp peice">
-								{[...Array(b.p)].map((_, idx) => (
+								{[...Array(capturedBlack.p)].map((_, idx) => (
 									<WhitePawn key={idx} />
 								))}
 							</div>
 							<div className="bb peice">
-								{[...Array(b.b)].map((_, idx) => (
+								{[...Array(capturedBlack.b)].map((_, idx) => (
 									<WhiteBishop key={idx} />
 								))}
 							</div>
 							<div className="bn peice">
-								{[...Array(b.n)].map((_, idx) => (
+								{[...Array(capturedBlack.n)].map((_, idx) => (
 									<WhiteKnight key={idx} />
 								))}
 							</div>
 							<div className="br peice">
-								{[...Array(b.r)].map((_, idx) => (
+								{[...Array(capturedBlack.r)].map((_, idx) => (
 									<WhiteRook key={idx} />
 								))}
 							</div>
 							<div className="bq peice">
-								{[...Array(b.q)].map((_, idx) => (
+								{[...Array(capturedBlack.q)].map((_, idx) => (
 									<WhiteQueen key={idx} />
 								))}
 							</div>
@@ -209,27 +210,27 @@ const DesktopView = ({
 					</div>
 					<div className="fallen-peice fallen-peice-self">
 						<div className="bp peice">
-							{[...Array(w.p)].map((_, idx) => (
+							{[...Array(capturedW.p)].map((_, idx) => (
 								<BlackPawn key={idx} />
 							))}
 						</div>
 						<div className="bb peice">
-							{[...Array(w.b)].map((_, idx) => (
+							{[...Array(capturedW.b)].map((_, idx) => (
 								<BlackBishop key={idx} />
 							))}
 						</div>
 						<div className="bn peice">
-							{[...Array(w.n)].map((_, idx) => (
+							{[...Array(capturedW.n)].map((_, idx) => (
 								<BlackKnight key={idx} />
 							))}
 						</div>
 						<div className="br peice">
-							{[...Array(w.r)].map((_, idx) => (
+							{[...Array(capturedW.r)].map((_, idx) => (
 								<BlackRook key={idx} />
 							))}
 						</div>
 						<div className="bq peice">
-							{[...Array(w.q)].map((_, idx) => (
+							{[...Array(capturedW.q)].map((_, idx) => (
 								<BlackQueen key={idx} />
 							))}
 						</div>
