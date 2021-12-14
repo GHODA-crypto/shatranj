@@ -146,6 +146,12 @@
 		justify-content: center;
 		align-items: center;
 		margin-top: 1rem;
+		.chess-piece {
+			position: relative;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+		}
 	}
 	.game-info {
 		background-color: $light;
