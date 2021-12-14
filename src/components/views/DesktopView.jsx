@@ -1,44 +1,9 @@
 import { useMoralis } from "react-moralis";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Layout, Skeleton, Row, Col } from "antd";
 import { FireOutlined } from "@ant-design/icons";
-import {
-	WhiteKing,
-	WhiteKnight,
-	WhiteQueen,
-	WhiteBishop,
-	WhiteRook,
-	WhitePawn,
-	BlackKing,
-	BlackKnight,
-	BlackQueen,
-	BlackBishop,
-	BlackRook,
-	BlackPawn,
-	Send,
-	Abort,
-	Draw,
-	Win,
-} from "./svgs";
-
-const PieceMap = {
-	w: {
-		k: <WhiteKing style={{ width: 10, height: 10 }} />,
-		q: <WhiteQueen style={{ width: 10, height: 10 }} />,
-		r: <WhiteRook style={{ width: 10, height: 10 }} />,
-		b: <WhiteBishop style={{ width: 10, height: 10 }} />,
-		n: <WhiteKnight style={{ width: 10, height: 10 }} />,
-		p: <WhitePawn style={{ width: 10, height: 10 }} />,
-	},
-	b: {
-		k: <BlackKing style={{ width: 10, height: 10 }} />,
-		q: <BlackQueen style={{ width: 10, height: 10 }} />,
-		r: <BlackRook style={{ width: 10, height: 10 }} />,
-		b: <BlackBishop style={{ width: 10, height: 10 }} />,
-		n: <BlackKnight style={{ width: 10, height: 10 }} />,
-		p: <BlackPawn style={{ width: 10, height: 10 }} />,
-	},
-};
+import { Send, Abort, Draw, Win } from "./svgs";
+import { WhiteCaptured, BlackCaptured, PieceMap } from "./Pieces";
 
 const DesktopView = ({
 	opSide,
@@ -54,19 +19,22 @@ const DesktopView = ({
 }) => {
 	const [isWhiteTurn, setIsWhiteTurn] = useState(true);
 	const [pgnArray, setPgnArray] = useState([[]]);
-	const { user } = useMoralis();
 
-	const styles = {
-		Sider: {
-			margin: "0",
-			padding: "1.5rem",
-			borderRadius: "1rem",
-			width: "100%",
-			zIndex: "1",
-		},
-	};
+	const { user } = useMoralis();
 	const { Sider, Content } = Layout;
-	const { w: capturedW, b: capturedBlack } = captured;
+	const { w: capturedW, b: capturedB } = captured;
+
+	const pgnCurrentRef = useRef(null);
+
+	const scrollPgnToCurrent = () => {
+		pgnCurrentRef.current.scrollIntoView({
+			behavior: "smooth",
+		});
+	};
+
+	useEffect(() => {
+		scrollPgnToCurrent();
+	}, [pgnArray]);
 
 	useEffect(() => {
 		if (gameHistory?.length)
@@ -83,7 +51,6 @@ const DesktopView = ({
 		<Layout className="game-desktop">
 			<Sider
 				className="chat-room"
-				style={styles.Sider}
 				collapsible={true}
 				collapsedWidth={0}
 				trigger={<FireOutlined size={40} />}
@@ -137,10 +104,7 @@ const DesktopView = ({
 				<div id="gameBoard">{children}</div>
 			</Content>
 
-			<Sider
-				className="game-info"
-				style={styles.Sider}
-				width={winSize.width * 0.23}>
+			<Sider className="game-info" width={winSize.width * 0.23}>
 				{liveGameAttributes ? (
 					<div className="players op">
 						<div
@@ -155,31 +119,11 @@ const DesktopView = ({
 							<div className="elo">({liveGameAttributes?.ELO[opSide]})</div>
 						</div>
 						<div className="fallen-peice fallen-peice-op">
-							<div className="bp peice">
-								{[...Array(capturedBlack.p)].map((_, idx) => (
-									<WhitePawn key={idx} />
-								))}
-							</div>
-							<div className="bb peice">
-								{[...Array(capturedBlack.b)].map((_, idx) => (
-									<WhiteBishop key={idx} />
-								))}
-							</div>
-							<div className="bn peice">
-								{[...Array(capturedBlack.n)].map((_, idx) => (
-									<WhiteKnight key={idx} />
-								))}
-							</div>
-							<div className="br peice">
-								{[...Array(capturedBlack.r)].map((_, idx) => (
-									<WhiteRook key={idx} />
-								))}
-							</div>
-							<div className="bq peice">
-								{[...Array(capturedBlack.q)].map((_, idx) => (
-									<WhiteQueen key={idx} />
-								))}
-							</div>
+							{opSide === "w" ? (
+								<WhiteCaptured capturedW={capturedW} />
+							) : (
+								<BlackCaptured capturedB={capturedB} />
+							)}
 						</div>
 					</div>
 				) : (
@@ -188,17 +132,16 @@ const DesktopView = ({
 
 				<div className="pgn">
 					{pgnArray?.map((row, rowIdx) => (
-						<Row key={rowIdx}>
-							<Col className="cell cell-1" flex={1}>
-								{rowIdx + 1}
-							</Col>
+						<Row key={rowIdx} className="row">
+							<Col className="cell cell-1">{rowIdx + 1}</Col>
 							{row.map((move, colIdx) => (
-								<Col key={colIdx} className="cell cell-2" flex={2}>
+								<Col key={colIdx} className="cell cell-2">
 									{move.san} {PieceMap[move.color][move.piece]}
 								</Col>
 							))}
 						</Row>
 					))}
+					<div ref={pgnCurrentRef} />
 				</div>
 				<div className="players self">
 					<div
@@ -209,31 +152,11 @@ const DesktopView = ({
 						<div className="elo">({user?.get("ELO")})</div>
 					</div>
 					<div className="fallen-peice fallen-peice-self">
-						<div className="bp peice">
-							{[...Array(capturedW.p)].map((_, idx) => (
-								<BlackPawn key={idx} />
-							))}
-						</div>
-						<div className="bb peice">
-							{[...Array(capturedW.b)].map((_, idx) => (
-								<BlackBishop key={idx} />
-							))}
-						</div>
-						<div className="bn peice">
-							{[...Array(capturedW.n)].map((_, idx) => (
-								<BlackKnight key={idx} />
-							))}
-						</div>
-						<div className="br peice">
-							{[...Array(capturedW.r)].map((_, idx) => (
-								<BlackRook key={idx} />
-							))}
-						</div>
-						<div className="bq peice">
-							{[...Array(capturedW.q)].map((_, idx) => (
-								<BlackQueen key={idx} />
-							))}
-						</div>
+						{opSide === "b" ? (
+							<WhiteCaptured capturedW={capturedW} />
+						) : (
+							<BlackCaptured capturedB={capturedB} />
+						)}
 					</div>
 				</div>
 			</Sider>

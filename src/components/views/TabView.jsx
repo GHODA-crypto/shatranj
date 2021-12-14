@@ -1,25 +1,10 @@
 import { useMoralis } from "react-moralis";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Layout, Tabs, Row, Col, Skeleton } from "antd";
 import { FireOutlined, InfoCircleOutlined } from "@ant-design/icons";
 
-import { ReactComponent as Send } from "../../assets/send.svg";
-import { ReactComponent as WhiteKing } from "../../assets/chess_svgs/k_w.svg";
-import { ReactComponent as WhiteKnight } from "../../assets/chess_svgs/n_w.svg";
-import { ReactComponent as WhiteQueen } from "../../assets/chess_svgs/q_w.svg";
-import { ReactComponent as WhiteBishop } from "../../assets/chess_svgs/b_w.svg";
-import { ReactComponent as WhiteRook } from "../../assets/chess_svgs/r_w.svg";
-import { ReactComponent as WhitePawn } from "../../assets/chess_svgs/p_w.svg";
-import { ReactComponent as BlackKing } from "../../assets/chess_svgs/k_b.svg";
-import { ReactComponent as BlackKnight } from "../../assets/chess_svgs/n_b.svg";
-import { ReactComponent as BlackQueen } from "../../assets/chess_svgs/q_b.svg";
-import { ReactComponent as BlackBishop } from "../../assets/chess_svgs/b_b.svg";
-import { ReactComponent as BlackRook } from "../../assets/chess_svgs/r_b.svg";
-import { ReactComponent as BlackPawn } from "../../assets/chess_svgs/p_b.svg";
-
-import { ReactComponent as Abort } from "../../assets/abort.svg";
-import { ReactComponent as Draw } from "../../assets/draw.svg";
-import { ReactComponent as Win } from "../../assets/win.svg";
+import { Send, Abort, Draw, Win } from "./svgs";
+import { WhiteCaptured, BlackCaptured, PieceMap } from "./Pieces";
 
 import "../../styles/game.scss";
 
@@ -33,7 +18,7 @@ const TabView = ({
 	resignGame,
 	claimVictory,
 }) => {
-	const [pgnArray, setPgnArray] = useState([]);
+	const [pgnArray, setPgnArray] = useState([[]]);
 	const [isWhiteTurn, setIsWhiteTurn] = useState(true);
 	const { user } = useMoralis();
 	const { TabPane } = Tabs;
@@ -49,25 +34,30 @@ const TabView = ({
 			zIndex: "1",
 		},
 	};
-	const { w, b } = captured;
-	let tempPgnElement = [];
+	const { w: capturedW, b: capturedB } = captured;
+
+	const pgnCurrentRef = useRef(null);
+
+	const scrollPgnToCurrent = () => {
+		pgnCurrentRef.current.scrollIntoView({
+			behavior: "smooth",
+		});
+	};
 
 	useEffect(() => {
-		if (gameHistory.length <= 0) return;
-		if (gameHistory.length > 1) {
-			setIsWhiteTurn(!isWhiteTurn);
-		}
-		if (tempPgnElement.length < 1) {
-			tempPgnElement.push(gameHistory[gameHistory.length - 1]?.san);
-			setPgnArray([...pgnArray, tempPgnElement]);
-		}
-		if (tempPgnElement.length === 1) {
-			tempPgnElement.push(gameHistory[gameHistory.length - 1]?.san);
-			setPgnArray(pgnArray.pop());
-			setPgnArray([...pgnArray, tempPgnElement]);
-			tempPgnElement = [];
-		}
-	}, [gameHistory.length]);
+		scrollPgnToCurrent();
+	}, [pgnArray]);
+
+	useEffect(() => {
+		if (gameHistory?.length)
+			setPgnArray(() => {
+				let pgnRenderArray = [];
+
+				for (var i = 0, len = gameHistory.length; i < len; i += 2)
+					pgnRenderArray.push(gameHistory.slice(i, i + 2));
+				return pgnRenderArray;
+			});
+	}, [gameHistory?.length]);
 
 	return (
 		<Layout className="game-tablet">
@@ -151,31 +141,11 @@ const TabView = ({
 									<div className="elo">({liveGameAttributes?.ELO[opSide]})</div>
 								</div>
 								<div className="fallen-peice fallen-peice-op">
-									<div className="bp peice">
-										{[...Array(b.p)].map((_, idx) => (
-											<WhitePawn key={idx} />
-										))}
-									</div>
-									<div className="bb peice">
-										{[...Array(b.b)].map((_, idx) => (
-											<WhiteBishop key={idx} />
-										))}
-									</div>
-									<div className="bn peice">
-										{[...Array(b.n)].map((_, idx) => (
-											<WhiteKnight key={idx} />
-										))}
-									</div>
-									<div className="br peice">
-										{[...Array(b.r)].map((_, idx) => (
-											<WhiteRook key={idx} />
-										))}
-									</div>
-									<div className="bq peice">
-										{[...Array(b.q)].map((_, idx) => (
-											<WhiteQueen key={idx} />
-										))}
-									</div>
+									{opSide === "w" ? (
+										<WhiteCaptured capturedW={capturedW} />
+									) : (
+										<BlackCaptured capturedB={capturedB} />
+									)}
 								</div>
 							</div>
 						) : (
@@ -194,6 +164,7 @@ const TabView = ({
 									))}
 								</Row>
 							))}
+							<div ref={pgnCurrentRef} />
 						</div>
 						<div className="players self">
 							<div
@@ -206,31 +177,11 @@ const TabView = ({
 								<div className="elo">({user?.get("ELO")})</div>
 							</div>
 							<div className="fallen-peice fallen-peice-self">
-								<div className="bp peice">
-									{[...Array(w.p)].map((_, idx) => (
-										<BlackPawn key={idx} />
-									))}
-								</div>
-								<div className="bb peice">
-									{[...Array(w.b)].map((_, idx) => (
-										<BlackBishop key={idx} />
-									))}
-								</div>
-								<div className="bn peice">
-									{[...Array(w.n)].map((_, idx) => (
-										<BlackKnight key={idx} />
-									))}
-								</div>
-								<div className="br peice">
-									{[...Array(w.r)].map((_, idx) => (
-										<BlackRook key={idx} />
-									))}
-								</div>
-								<div className="bq peice">
-									{[...Array(w.q)].map((_, idx) => (
-										<BlackQueen key={idx} />
-									))}
-								</div>
+								{opSide === "b" ? (
+									<WhiteCaptured capturedW={capturedW} />
+								) : (
+									<BlackCaptured capturedB={capturedB} />
+								)}
 							</div>
 						</div>
 					</TabPane>

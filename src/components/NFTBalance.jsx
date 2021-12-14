@@ -5,6 +5,7 @@ import {
 	FileSearchOutlined,
 	SendOutlined,
 	ShoppingCartOutlined,
+	SkinOutlined,
 } from "@ant-design/icons";
 import { getExplorer } from "../helpers/networks";
 import AddressInput from "./AddressInput";
@@ -59,17 +60,15 @@ function NFTBalance() {
 		setVisibility(true);
 	};
 
-	// const handleChange = (e) => {
-	// 	setAmount(e.target.value);
-	// };
-	console.log(NFTBalances);
+	const handleThemeChange = () => {};
+
 	return (
 		<>
 			<div style={styles.NFTs}>
 				<Skeleton loading={!NFTBalances?.result}>
 					{NFTBalances?.result &&
 						NFTBalances.result.map((nft, index) =>
-							nft.token_address.toLowerCase() !=
+							nft.token_address.toLowerCase() !==
 							"0xe472e0e6ee8f74ca7e01e45785d1b335bbbd936a" ? null : (
 								<Card
 									hoverable
@@ -100,6 +99,9 @@ function NFTBalance() {
 														.focus()
 												}
 											/>
+										</Tooltip>,
+										<Tooltip title="Use as Piece Skin">
+											<SkinOutlined onClick={handleThemeChange} />
 										</Tooltip>,
 									]}
 									style={{ width: 300, border: "2px solid #e7eaf3" }}

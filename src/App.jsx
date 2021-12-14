@@ -57,7 +57,7 @@ const App = ({ isServerInfo }) => {
 						<Route path="/nftBalance">
 							<NFTBalance />
 						</Route>
-						<PrivateRoute user={user} path="/live-chess">
+						<Route user={user} path="/live-chess">
 							<LiveChess
 								user={user}
 								isPairing={isPairing}
@@ -65,7 +65,7 @@ const App = ({ isServerInfo }) => {
 								pairingParams={pairingParams}
 								setPairingParams={setPairingParams}
 							/>
-						</PrivateRoute>
+						</Route>
 						<Route path="/">
 							<Redirect to="/lobby" />
 						</Route>
@@ -106,8 +106,7 @@ const styles = {
 		justifyContent: "center",
 		fontFamily: "Roboto, sans-serif",
 		color: "#041836",
-		marginTop: "40px",
-		padding: "10px",
+		marginTop: "60px",
 	},
 	header: {
 		position: "fixed",

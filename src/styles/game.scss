@@ -1,23 +1,28 @@
 @import "var";
 
 .game-desktop {
-	margin-top: 2rem;
 	width: 100vw;
+	height: calc(100vh - 60px); // vh - (nav height)
+	min-height: 42rem;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	.chat-room {
-		box-shadow: 0px 0px 12px 2px rgba($accent, 0.25);
 		background-color: $light;
+		width: 100%;
 		height: 100%;
-		//min-height -> calc
+		padding: 1.2rem;
+		box-shadow: 0px 0px 12px 2px rgba($accent, 0.25);
+		z-index: 1;
+		// min-height: 48rem;
 		display: flex;
 		flex-direction: column;
 		align-items: left;
-		justify-content: space-between;
+		justify-content: space-around;
+		// overflow-y: auto;
 
 		.prize-pool {
-			margin-top: 5%;
+			margin-top: 1rem;
 			height: 20%;
 			//min-height
 			.label {
@@ -137,45 +142,49 @@
 	}
 
 	.chessboard {
-		// background-color: green;
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		margin-top: 1rem;
 	}
 	.game-info {
-		box-shadow: 0px 0px 12px 2px rgba($accent, 0.25);
 		background-color: $light;
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
+		width: 100%;
 		height: 100%;
+		padding: 1.2rem;
+		box-shadow: 0px 0px 12px 2px rgba($accent, 0.25);
+		z-index: 1;
+
 		.ant-layout-sider-children {
 			.ant-skeleton {
-				margin-bottom: 3rem;
+				margin-bottom: 2rem;
 			}
 		}
+
 		.pgn {
 			width: 100%;
-			height: 30%;
-			border-radius: 1rem;
-			overflow: auto;
+			height: 40%;
 			padding: 1rem;
-			.cell {
-				background-color: red;
-				text-align: center;
-				font-size: 1rem;
-				margin: 0.25rem;
-				padding: 0.5rem 0;
-				border-radius: 0.5rem;
-			}
-			.cell-1 {
-				background: rgba($dark, 0.8);
-				color: $light;
-			}
-			.cell-2 {
-				background: rgba($accent, 0.3);
-				color: $dark;
-				font-weight: 600;
+			overflow: auto;
+			.row {
+				display: grid;
+				grid-template-columns: 1fr 2fr 2fr;
+				.cell {
+					text-align: center;
+					font-size: 1rem;
+					margin: 0.25rem;
+					padding: 0.5rem 0;
+					border-radius: 0.5rem;
+				}
+				.cell-1 {
+					background: rgba($dark, 0.8);
+					color: $light;
+				}
+				.cell-2 {
+					background: rgba($accent, 0.3);
+					color: $dark;
+					font-weight: 600;
+				}
 			}
 		}
 		.players {
@@ -215,6 +224,7 @@
 				margin-top: 0.5rem;
 			}
 			.fallen-peice {
+				padding: 0.75rem;
 				display: flex;
 				width: 100%;
 				svg {
@@ -231,6 +241,9 @@
 					& > * {
 						margin-right: -0.75rem;
 					}
+				}
+				#none {
+					display: none;
 				}
 			}
 		}
