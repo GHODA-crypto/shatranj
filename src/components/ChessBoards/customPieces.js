@@ -15,15 +15,14 @@ const pieces = [
 
 export const customPieces = () => {
 	const returnPieces = {};
-	pieces.map((p) => {
+	pieces.forEach((p) => {
 		returnPieces[p] = ({ squareWidth }) => (
 			<img
 				style={{ width: squareWidth, height: squareWidth }}
-				src={`/src/assets/chess_pieces_pngs/${p}.png`}
+				src={`./assets/chess_pieces_png/${p}.png`}
 				alt={p}
 			/>
 		);
-		return null;
 	});
 	return returnPieces;
 };

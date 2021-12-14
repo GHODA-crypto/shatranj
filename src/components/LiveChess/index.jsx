@@ -6,7 +6,6 @@ import {
 } from "react-moralis";
 import { useWindowSize } from "../../hooks/useWindowSize";
 import useBoardWidth from "../../hooks/useBoardWidth";
-import { Modal, Button } from "antd";
 
 import TabView from "../views/TabView";
 import MobileView from "../views/MobileView";

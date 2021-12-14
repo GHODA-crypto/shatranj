@@ -173,7 +173,7 @@ const LiveBoard = ({
 				onPieceDrop={onDrop}
 				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
 				customLightSquareStyle={{ backgroundColor: "#f9ffe4" }}
-				// customPieces={custom} // {"wP": jsx}
+				customPieces={customPieces(boardWidth / 8 - 10)}
 				customBoardStyle={{
 					borderRadius: "4px",
 					boxShadow: "0 0px 15px rgba(0, 0, 0, 0.25)",

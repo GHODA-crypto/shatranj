@@ -29,7 +29,7 @@ function ShowBoard({ boardWidth, pgn }) {
 				position={game.fen()}
 				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
 				customLightSquareStyle={{ backgroundColor: "#D3FFD8" }}
-				// customPieces={customPieces()}
+				customPieces={customPieces()}
 				customBoardStyle={{
 					borderRadius: "8px",
 					boxShadow: "0 0 10px 0px rgba(0, 0, 0, 0.15)",
