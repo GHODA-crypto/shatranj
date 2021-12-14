@@ -61,6 +61,7 @@ function NFTBalance() {
 	};
 
 	const handleThemeChange = () => {};
+	console.log(NFTBalances?.result);
 
 	return (
 		<>
