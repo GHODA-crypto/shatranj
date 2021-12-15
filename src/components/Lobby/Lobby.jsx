@@ -11,8 +11,9 @@ import {
 
 import "../../styles/lobby.scss";
 
-const Lobby = ({ setIsPairing }) => {
+const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 	const { Moralis, isWeb3Enabled, user } = useMoralis();
+	const [isModalVisible, setIsModalVisible] = useState(false);
 
 	const {
 		data: allowanceData,
@@ -43,13 +44,6 @@ const Lobby = ({ setIsPairing }) => {
 		},
 	});
 
-	const [gameOptions, setGameOptions] = useState({
-		color: "w",
-		rangeUpper: 100,
-		rangeLower: 100,
-	});
-	const [isModalVisible, setIsModalVisible] = useState(false);
-
 	const handlePlayWithFriend = () => {
 		if (Moralis.Units.FromWei(stakedBalance) < 10) {
 			openStakeErrorNotification();
@@ -59,12 +53,11 @@ const Lobby = ({ setIsPairing }) => {
 	};
 
 	const handleCreateGame = () => {
-		// if (Moralis.Units.FromWei(stakedBalance) < 10) {
-		// 	openStakeErrorNotification();
-		// 	return;
-		// }
-		// !user ? openErrorNotification() : showModal();
-		showModal();
+		if (Moralis.Units.FromWei(stakedBalance) < 10) {
+			openStakeErrorNotification();
+			return;
+		}
+		!user ? openErrorNotification() : showModal();
 	};
 
 	const showModal = () => {
@@ -104,8 +97,9 @@ const Lobby = ({ setIsPairing }) => {
 			<GameOptionsModal
 				isModalVisible={isModalVisible}
 				setIsModalVisible={setIsModalVisible}
-				gameOptions={gameOptions}
-				setGameOptions={setGameOptions}
+				pairingParams={pairingParams}
+				setPairingParams={setPairingParams}
+				setIsPairing={setIsPairing}
 			/>
 
 			<section className="play">

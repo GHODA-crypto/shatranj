@@ -49,7 +49,11 @@ const App = ({ isServerInfo }) => {
 				<div style={styles.content}>
 					<Switch>
 						<Route exact path="/lobby">
-							<Lobby setIsPairing={setIsPairing} />
+							<Lobby
+								setIsPairing={setIsPairing}
+								setPairingParams={setPairingParams}
+								pairingParams={pairingParams}
+							/>
 						</Route>
 						<Route path="/stakes">
 							<Stakes />

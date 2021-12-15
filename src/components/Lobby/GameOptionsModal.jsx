@@ -1,16 +1,26 @@
+import { useState } from "react";
 import { Modal, Radio, InputNumber } from "antd";
 import { ReactComponent as WKing } from "../../assets/chess_svgs/k_w.svg";
 import { ReactComponent as BKing } from "../../assets/chess_svgs/k_b.svg";
 import { useWindowSize } from "../../hooks/useWindowSize";
-import { useMoralis } from "react-moralis";
+import { useMoralis, useMoralisCloudFunction } from "react-moralis";
 
 const GameOptionsModal = ({
 	isModalVisible,
 	setIsModalVisible,
-	gameOptions,
-	setGameOptions,
+	pairingParams,
+	setPairingParams,
+	setIsPairing,
 }) => {
+	const [gameOptions, setGameOptions] = useState({
+		color: "w",
+		rangeUpper: 100,
+		rangeLower: 100,
+	});
+
 	const handleOk = () => {
+		setPairingParams(gameOptions);
+		setIsPairing(true);
 		setIsModalVisible(false);
 	};
 
