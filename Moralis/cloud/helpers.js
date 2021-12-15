@@ -25,8 +25,30 @@ async function checkExistingChallenges(userEthAddress) {
 	];
 
 	const challengesQuery = new Moralis.Query(Challenge);
+	const challengeQuery = new Moralis.Query(Challenge);
+
 	const existingChallenges = await challengesQuery.aggregate(pipeline);
-	return existingChallenges;
+	const logger = Moralis.Cloud.getLogger();
+	logger.info(existingChallenges?.length);
+
+	if (existingChallenges?.length > 0) {
+		return challengeQuery.get(existingChallenges[0]?.objectId);
+	} else {
+		const Game = Moralis.Object.extend("Game");
+		const gameQuery = new Moralis.Query(Game);
+
+		gameQuery.equalTo("winner", userEthAddress);
+		gameQuery.equalTo("gameStatus", 4);
+
+		const [game] = await gameQuery.find();
+		if (game) {
+			logger.info("Existing game found");
+			logger.info(game);
+			const challenge = await challengeQuery.get(game.get("challengeId"));
+			return challenge;
+		}
+	}
+	logger.info("No existing challenges found");
 }
 
 // Create a new challenge
@@ -54,7 +76,9 @@ async function createNewChallenge(user, gamePreferences) {
 	return newChallenge;
 }
 
-async function linkGameToChallenge(challenge, game, player1, player2) {
+async function createNewGame(challenge, player1, player2) {
+	const Game = Moralis.Object.extend("Game");
+	const game = new Game();
 	game.set("challengeId", challenge.id);
 	// decide player sides
 	let player1Side = "";
@@ -90,6 +114,7 @@ async function linkGameToChallenge(challenge, game, player1, player2) {
 	game.set("outcome", 0);
 	game.set("fen", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 	game.set("pgn", " ");
+	game.set("canPlay", false);
 
 	await game.save(null, { useMasterKey: true });
 	return game;
@@ -116,7 +141,7 @@ function getScoreChange(eloW, eloB, outcome) {
 	if (outcome === 3) {
 		return reverse ? 20 - scoreChange : scoreChange;
 	} else if (outcome === 4) {
-		return reverse ? scoreChange - 20 : -scoreChange;
+		return reverse ? -scoreChange : scoreChange - 20;
 	} else {
 		return reverse ? 10 - scoreChange : scoreChange - 10;
 	}

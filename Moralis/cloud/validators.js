@@ -16,11 +16,12 @@ async function validateMove(request) {
 	if (!userSide) throw Error("Unauthorized to move");
 	if (game.get("turn") !== userSide) throw Error("Not your turn");
 
-	if (challenge.get("challengeStatus") !== 2)
+	if (challenge.get("challengeStatus") !== 2 || !game.get("canPlay"))
 		throw Error("Game is not in progress");
 
 	return true;
 }
+
 async function validateClaimVictory(request) {
 	if (!request.user || !request.user.id) {
 		throw Error("Unauthorized");

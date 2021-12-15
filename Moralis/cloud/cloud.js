@@ -2,13 +2,13 @@
 
 // Check if user has a live challenge
 Moralis.Cloud.define(
-	"doesActiveChallengeExist",
+	"joinExistingChallenge",
 	async (request) => {
-		const existingChallenges = await checkExistingChallenges(
+		const existingChallenge = await checkExistingChallenges(
 			request.user.get("ethAddress")
 		);
-		if (existingChallenges.length) return true;
-		return false;
+
+		return existingChallenge;
 	},
 	{
 		requireUser: true,
@@ -25,8 +25,7 @@ Moralis.Cloud.define(
 		challengeQuery.equalTo("challengeStatus", 0);
 		const challenge = await challengeQuery.first();
 		if (!challenge) throw Error("No unpaired challenge to cancel");
-		challenge.set("challengeStatus", 4);
-		await challenge.save(null, { useMasterKey: true });
+		await challenge.destroy();
 		return true;
 	},
 	{
@@ -43,11 +42,13 @@ Moralis.Cloud.define(
 		const user = request.user;
 		const params = request.params;
 
-		const existingChallenges = await checkExistingChallenges(
+		const existingChallenge = await checkExistingChallenges(
 			request.user.get("ethAddress")
 		);
-		if (existingChallenges.length)
-			return challengeQuery.get(existingChallenges[0].objectId);
+
+		if (existingChallenge) {
+			return existingChallenge;
+		}
 
 		// Get available challenge
 		let pipeline = [
@@ -208,28 +209,40 @@ Moralis.Cloud.define(
 		};
 		// send http request for end game tx
 
-		const logger = Moralis.Cloud.getLogger();
 		const httpResponse = await Moralis.Cloud.httpRequest({
 			method: "POST",
-			url: `${serverUrl}/endGame`,
+			url: `${serverUrl}/end`,
 			headers: {
 				"Content-Type": "application/json;charset=utf-8",
 			},
 			body: body,
-		})
-			.then(
-				async function (httpResponse) {
-					logger.info(httpResponse);
-				},
-				async function (httpResponse) {
-					challenge.set("challengeStatus", 10);
-					await challenge.save(null, { useMasterKey: true });
-				}
-			)
-			.catch((error) => {
-				throw Error(error);
-			});
-		logger.info(httpResponse);
+		}).catch((error) => {
+			throw Error(error);
+		});
+
+		if (httpResponse.statusCode === 500) {
+			challenge.set("challengeStatus", 10);
+			await challenge.save(null, { useMasterKey: true });
+
+			return { txStatus: "unsuccessful" };
+		} else if (httpResponse.statusCode === 200 && needNFT) {
+			let { ipfs, token_id } = httpResponse.data;
+			game.set("nftIpfs", ipfs);
+			game.set("nftTokenId", token_id);
+			game.set("gameStatus", 5);
+
+			game.save(null, { useMasterKey: true });
+
+			return { txStatus: "successful", ipfs, token_id };
+		} else if (httpResponse.statusCode === 200) {
+			game.set("gameStatus", 5);
+			game.save(null, { useMasterKey: true });
+
+			return { txStatus: "successful" };
+		}
+		throw Error(
+			"Something went wrong. Unknown status code " + httpResponse.statusCode
+		);
 	},
 	validateClaimVictory
 );
@@ -241,11 +254,17 @@ Moralis.Cloud.afterSave("Challenge", async (request) => {
 	const challenge = request.object;
 	if (challenge.get("challengeStatus") === 1 && !challenge.get("gameId")) {
 		const Game = Moralis.Object.extend("Game");
-		const newGame = new Game();
+		const newGame = await createNewGame(
+			challenge,
+			challenge.get("player1"),
+			challenge.get("player2")
+		);
 		await newGame.save(null, { useMasterKey: true });
+
 		const config = await Moralis.Config.get({ useMasterKey: true });
 		const apiKey = config.get("apiKey");
 		const serverUrl = config.get("serverURL");
+
 		const body = {
 			api: apiKey,
 			id: newGame.id,
@@ -253,11 +272,9 @@ Moralis.Cloud.afterSave("Challenge", async (request) => {
 			w: newGame.get("players").w,
 		};
 		// send http request for end game tx
-
-		const logger = Moralis.Cloud.getLogger();
 		const httpResponse = await Moralis.Cloud.httpRequest({
 			method: "POST",
-			url: `${serverUrl}/startGame`,
+			url: `${serverUrl}/start`,
 			headers: {
 				"Content-Type": "application/json;charset=utf-8",
 			},
@@ -265,15 +282,11 @@ Moralis.Cloud.afterSave("Challenge", async (request) => {
 		})
 			.then(
 				async function (httpResponse) {
-					await linkGameToChallenge(
-						challenge,
-						newGame,
-						challenge.get("player1"),
-						challenge.get("player2")
-					);
 					challenge.set("gameId", newGame.id);
 					challenge.set("challengeStatus", 2);
+					newGame.set("canPlay", true);
 					await challenge.save(null, { useMasterKey: true });
+					await newGame.save(null, { useMasterKey: true });
 				},
 				async function (httpResponse) {
 					challenge.set("challengeStatus", 9);
@@ -283,24 +296,19 @@ Moralis.Cloud.afterSave("Challenge", async (request) => {
 			.catch((error) => {
 				throw Error(error);
 			});
-
-		// await linkGameToChallenge(
-		// 	challenge,
-		// 	newGame,
-		// 	challenge.get("player1"),
-		// 	challenge.get("player2")
-		// );
-		// challenge.set("gameId", newGame.id);
-		// challenge.set("challengeStatus", 2);
-		// await challenge.save(null, { useMasterKey: true });
-		// logger.info(httpResponse);
 	}
 });
 
 // Perform game updates for wins, losses, draws, etc.
 Moralis.Cloud.afterSave("Game", async (request) => {
 	const game = request.object;
-	if (game.get("pgn")) {
+	if (
+		game.get("pgn") &&
+		game.get("gameStatus") !== 4 &&
+		game.get("gameStatus") !== 5 &&
+		!game.get("gameStatus")
+	) {
+		const logger = Moralis.Cloud.getLogger();
 		const chess = new Chess();
 		chess.load_pgn(game.get("pgn") || "");
 		if (chess.game_over()) {
@@ -321,9 +329,40 @@ Moralis.Cloud.afterSave("Game", async (request) => {
 
 			challenge.set("challengeStatus", 3);
 			game.set("outcome", outcome);
+			game.set(
+				"winner",
+				outcome === 3
+					? game.get("players")["w"]
+					: outcome === 4
+					? game.get("players")["b"]
+					: null
+			);
 
 			game.save(null, { useMasterKey: true });
 			challenge.save(null, { useMasterKey: true });
+
+			// Change ELOs
+			const whitePlayerQuery = new Moralis.Query(Moralis.User);
+			const blackPlayerQuery = new Moralis.Query(Moralis.User);
+
+			const white = await whitePlayerQuery
+				.equalTo("ethAddress", game.get("players").w)
+				.first({ useMasterKey: true });
+			const black = await blackPlayerQuery
+				.equalTo("ethAddress", game.get("players").b)
+				.first({ useMasterKey: true });
+
+			const scoreChange = getScoreChange(
+				white.get("ELO"),
+				black.get("ELO"),
+				outcome
+			);
+
+			white.set("ELO", white.get("ELO") + scoreChange);
+			black.set("ELO", black.get("ELO") - scoreChange);
+
+			await white.save(null, { useMasterKey: true });
+			await black.save(null, { useMasterKey: true });
 		}
 	}
 });
