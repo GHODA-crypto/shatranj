@@ -6,6 +6,7 @@ import { LiveChessContext } from "../../context/LiveChessContext";
 
 const Modals = ({ joinLiveChess, setPairingParams }) => {
 	const urlHistory = useHistory();
+	const [isConfirmVisible, setIsConfirmVisible] = useState(false);
 	const { liveGameAttributes, userSide, game, gameId, liveChallengeData } =
 		useContext(LiveChessContext);
 
@@ -59,9 +60,7 @@ const Modals = ({ joinLiveChess, setPairingParams }) => {
 		<>
 			<Modal
 				title="Loading"
-				visible={
-					liveChallengeData && liveChallengeData.get("challengeStatus") === 0
-				}
+				visible={liveChallengeData?.get("challengeStatus") === 0}
 				footer={
 					<Button
 						key="Pairing"
@@ -86,7 +85,10 @@ const Modals = ({ joinLiveChess, setPairingParams }) => {
 				title="Transfering Funds"
 				visible={isClaimingPrize}
 				okText="Go to Lobby"
-				onOk={() => urlHistory.push("/lobby")}
+				onOk={() => {
+					setIsConfirmVisible(false);
+					urlHistory.push("/lobby");
+				}}
 				closable={false}>
 				<h2>
 					Congrats! Your Prize Pool is being processed. Tansfer will happeen
@@ -96,9 +98,12 @@ const Modals = ({ joinLiveChess, setPairingParams }) => {
 			</Modal>
 			<Modal
 				title="Minting"
-				visible={isClaimingPrizeWithNFT}
+				visible={isConfirmVisible}
 				okText="Go to Lobby"
-				onOk={() => urlHistory.push("/lobby")}
+				onOk={() => {
+					setIsConfirmVisible(false);
+					urlHistory.push("/lobby");
+				}}
 				closable={false}>
 				<h2>
 					Congrats! Your Prize Pool is being processed 💸 and your NFT is on its
@@ -140,13 +145,21 @@ const Modals = ({ joinLiveChess, setPairingParams }) => {
 							(liveGameAttributes?.outcome === 4 && userSide === "b")
 						}
 						footer={[
-							<Button key="only Stake" onClick={claimVictory}>
+							<Button
+								key="only Stake"
+								onClick={() => {
+									claimVictory();
+									setIsConfirmVisible(true);
+								}}>
 								Claim Pool
 							</Button>,
 							<Button
 								key="with NFT"
 								type="primary"
-								onClick={claimVictoryWithNFT}>
+								onClick={() => {
+									claimVictoryWithNFT();
+									setIsConfirmVisible(true);
+								}}>
 								Claim Pool + Mint NFT
 							</Button>,
 						]}
@@ -179,6 +192,9 @@ const Modals = ({ joinLiveChess, setPairingParams }) => {
 						title="Draw"
 						visible={liveGameAttributes?.outcome === 2}
 						footer={[
+							<Button key="toLobby" onClick={() => urlHistory.push("/lobby")}>
+								Back to Lobby
+							</Button>,
 							<Button
 								key="quickMatch"
 								type="primary"

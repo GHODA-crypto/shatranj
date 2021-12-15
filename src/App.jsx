@@ -126,7 +126,7 @@ const ActiveChallengeNotification = ({ setIsPairing }) => {
 		if (challenge && !location.pathname.includes("live-chess")) {
 			openNotification();
 		}
-		if (location.pathname.includes("live-chess")) {
+		if (location.pathname.includes("live-chess") || !challenge) {
 			notification.close(`live-chess-notification`);
 		}
 	}, [challenge, location, openNotification]);

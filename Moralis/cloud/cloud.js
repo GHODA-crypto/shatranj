@@ -462,6 +462,41 @@ Moralis.Cloud.afterSave("Game", async (request) => {
 
 			game.save(null, { useMasterKey: true });
 			challenge.save(null, { useMasterKey: true });
+
+			if (outcome === 2) {
+				const config = await Moralis.Config.get({ useMasterKey: true });
+				const apiKey = config.get("apiKey");
+
+				const body = {
+					api: apiKey,
+					id: game.id,
+					needNFT: false,
+					pgn: game.get("pgn"),
+					outcome: game.get("outcome"),
+					b: game.get("players").b,
+					w: game.get("players").w,
+				};
+				// send http request for end game tx
+
+				const httpResponse = await Moralis.Cloud.httpRequest({
+					method: "POST",
+					url: `https://server.shatranj.ga/end`,
+					headers: {
+						"Content-Type": "application/json;charset=utf-8",
+					},
+					body: body,
+				}).catch((error) => {
+					throw Error(error);
+				});
+				if (httpResponse.status === 500) {
+					challenge.set("challengeStatus", 10);
+					await challenge.save(null, { useMasterKey: true });
+				} else if (httpResponse.status === 200) {
+					game.set("gameStatus", 5);
+					game.save(null, { useMasterKey: true });
+					await game.save(null, { useMasterKey: true });
+				}
+			}
 		}
 	}
 	if (game.get("gameStatus") === 4) {
