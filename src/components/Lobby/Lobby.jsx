@@ -135,10 +135,7 @@ const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 					<span className="btn-text">Play with friend</span>
 				</button>
 			</section>
-
-			<div className="separator"></div>
-
-			<section className="prev-games"></section>
+			<section className="knight-art"></section>
 		</div>
 	);
 };

@@ -79,10 +79,20 @@ Moralis.Cloud.define(
 					$expr: {
 						$and: [
 							{
-								$lte: ["$player1ELO", user.get("ELO") + 50],
+								$lte: [
+									"$player1ELO",
+									params.gamePreferences?.upperElo
+										? user.get("ELO") + params.gamePreferences?.upperElo
+										: user.get("ELO") + 50,
+								],
 							},
 							{
-								$gte: ["$player1ELO", user.get("ELO") - 50],
+								$gte: [
+									"$player1ELO",
+									params.gamePreferences?.lowerElo
+										? user.get("ELO") - params.gamePreferences?.lowerElo
+										: user.get("ELO") - 50,
+								],
 							},
 						],
 					},
@@ -93,10 +103,8 @@ Moralis.Cloud.define(
 		];
 		const challenges = await challengeQuery.aggregate(pipeline);
 
-		const logger = Moralis.Cloud.getLogger();
-		logger.info("challenges");
-		logger.info(challenges);
-		logger.info(pipeline);
+		const logger = Moralis.Cloud.getLogger("joinLiveChess");
+
 		if (challenges.length > 0) {
 			// Join an existing challenge
 			const challenge = await challengeQuery.get(challenges[0].objectId);
@@ -117,7 +125,9 @@ Moralis.Cloud.define(
 		// No challenge found -> create new challenge
 		return await createNewChallenge(user, { ...params.gamePreferences });
 	},
-	{ requireUser: true }
+	{
+		requireUser: true,
+	}
 );
 
 // Send Move
@@ -195,8 +205,8 @@ Moralis.Cloud.define(
 Moralis.Cloud.define(
 	"claimVictory",
 	async (request) => {
-		const logger = Moralis.Cloud.getLogger();
-
+		const logger = Moralis.Cloud.getLogger("claimVictory");
+		logger.info("Claiming Victory");
 		const { gameId, needNFT } = request.params;
 
 		const gameQuery = new Moralis.Query("Game");
@@ -221,7 +231,7 @@ Moralis.Cloud.define(
 
 		const httpResponse = await Moralis.Cloud.httpRequest({
 			method: "POST",
-			url: `${serverUrl}/end`,
+			url: `https://server.shatranj.ga/end`,
 			headers: {
 				"Content-Type": "application/json;charset=utf-8",
 			},
@@ -230,12 +240,12 @@ Moralis.Cloud.define(
 			throw Error(error);
 		});
 
-		if (httpResponse.statusCode === 500) {
+		if (httpResponse.status === 500) {
 			challenge.set("challengeStatus", 10);
 			await challenge.save(null, { useMasterKey: true });
 
 			return { txStatus: "unsuccessful" };
-		} else if (httpResponse.statusCode === 200 && needNFT) {
+		} else if (httpResponse.status === 200 && needNFT) {
 			let { ipfs, token_id } = httpResponse.data;
 			game.set("nftTokenId", token_id);
 			game.set("gameStatus", 5);
@@ -243,14 +253,14 @@ Moralis.Cloud.define(
 			await game.save(null, { useMasterKey: true });
 
 			return { txStatus: "successful", ipfs, token_id };
-		} else if (httpResponse.statusCode === 200) {
+		} else if (httpResponse.status === 200) {
 			game.set("gameStatus", 5);
 			game.save(null, { useMasterKey: true });
 
 			await game.save(null, { useMasterKey: true });
 			return { txStatus: "successful" };
 		}
-		if (httpResponse.statusCode === 400) {
+		if (httpResponse.status === 400) {
 			return { txStatus: "bad request" };
 		}
 		return { txStatus: "unsuccessful", httpResponse };
@@ -263,14 +273,17 @@ Moralis.Cloud.define(
 	"usePieceSkin",
 	async (request) => {
 		const { token_uri } = request.params;
+		const logger = Moralis.Cloud.getLogger("usePieceSkin");
+		logger.info(token_uri);
 
 		const polygonNFTOwnersQuery = new Moralis.Query("PolygonNFTOwners");
 		polygonNFTOwnersQuery.equalTo(
 			"token_address",
-			"0x59936a21b97aa3c42d885b9fba3b6a0c562c6f0d"
+			"0x8d88dc0ff21b5da42700dff59d881056d02b17b6"
 		);
 		polygonNFTOwnersQuery.equalTo("token_uri", token_uri);
 		polygonNFTOwnersQuery.equalTo("owner_of", request.user.get("ethAddress"));
+		logger.info(request.user.get("ethAddress"));
 		const polygonNFT = await polygonNFTOwnersQuery.first({
 			useMasterKey: true,
 		});
@@ -349,8 +362,11 @@ Moralis.Cloud.define(
 // Trigger oracle after challenge save if challenge has two players
 Moralis.Cloud.afterSave("Challenge", async (request) => {
 	const challenge = request.object;
+	const logger = Moralis.Cloud.getLogger("AfterSaveChallenge");
+
+	logger.info("Processing After Save Challenge", challenge);
+
 	if (challenge.get("challengeStatus") === 1 && !challenge.get("gameId")) {
-		const Game = Moralis.Object.extend("Game");
 		const newGame = await createNewGame(
 			challenge,
 			challenge.get("player1"),
@@ -361,6 +377,8 @@ Moralis.Cloud.afterSave("Challenge", async (request) => {
 		const config = await Moralis.Config.get({ useMasterKey: true });
 		const apiKey = config.get("apiKey");
 		const serverUrl = config.get("serverURL");
+		logger.info("Requesting oracle for");
+		logger.info(newGame.id);
 
 		const body = {
 			api: apiKey,
@@ -368,10 +386,12 @@ Moralis.Cloud.afterSave("Challenge", async (request) => {
 			b: newGame.get("players").b,
 			w: newGame.get("players").w,
 		};
-		// send http request for end game tx
+		logger.info(JSON.stringify(body));
+
+		// send http request for start game tx
 		const httpResponse = await Moralis.Cloud.httpRequest({
 			method: "POST",
-			url: `${serverUrl}/start`,
+			url: `https://server.shatranj.ga/start`,
 			headers: {
 				"Content-Type": "application/json;charset=utf-8",
 			},
@@ -379,6 +399,8 @@ Moralis.Cloud.afterSave("Challenge", async (request) => {
 		})
 			.then(
 				async function (httpResponse) {
+					logger.info("httpResponse for start game tx");
+					logger.info(JSON.stringify(httpResponse));
 					challenge.set("gameId", newGame.id);
 					challenge.set("challengeStatus", 2);
 					newGame.set("canPlay", true);
@@ -387,6 +409,9 @@ Moralis.Cloud.afterSave("Challenge", async (request) => {
 					await newGame.save(null, { useMasterKey: true });
 				},
 				async function (httpResponse) {
+					logger.error("httpResponse error for start game tx");
+					logger.error(JSON.stringify(httpResponse));
+
 					newGame.set("gameStatus", 9);
 					challenge.set("challengeStatus", 9);
 					await newGame.save(null, { useMasterKey: true });
@@ -403,7 +428,7 @@ Moralis.Cloud.afterSave("Challenge", async (request) => {
 Moralis.Cloud.afterSave("Game", async (request) => {
 	const game = request.object;
 	if (game.get("pgn") && game.get("gameStatus") === 2) {
-		const logger = Moralis.Cloud.getLogger();
+		const logger = Moralis.Cloud.getLogger("AfterSaveGame");
 		const chess = new Chess();
 		chess.load_pgn(game.get("pgn") || "");
 		if (chess.game_over()) {
@@ -473,6 +498,39 @@ Moralis.Cloud.afterSave("EloChange", async (request) => {
 	const user = await userQuery.first({ useMasterKey: true });
 
 	user.set("ELO", Number(event.get("newElo")));
+	const logger = Moralis.Cloud.getLogger("AfterSaveEloChange");
+	logger.info(`${user.get("ethAddress")} ELO changing to ${user.get("ELO")}`);
 
 	await user.save(null, { useMasterKey: true });
+	logger.info(`${user.get("ethAddress")} ELO changed to ${user.get("ELO")}`);
+});
+
+Moralis.Cloud.define("testOracle", async () => {
+	const config = await Moralis.Config.get({ useMasterKey: true });
+	const apiKey = config.get("apiKey");
+	const serverUrl = config.get("serverURL");
+
+	const logger = Moralis.Cloud.getLogger("testOracle");
+	logger.info("testOracle");
+	logger.info(`${serverUrl}/`);
+	const httpResponse = await Moralis.Cloud.httpRequest({
+		method: "GET",
+		url: `${serverUrl}/`,
+		headers: {
+			"Content-Type": "application/json;charset=utf-8",
+		},
+	})
+		.then(
+			async function (httpResponse) {
+				logger.info("httpResponse for test oracle");
+				logger.info(JSON.stringify(httpResponse));
+			},
+			async function (httpResponse) {
+				logger.error("httpResponse error for test oracle");
+				logger.error(JSON.stringify(httpResponse));
+			}
+		)
+		.catch((error) => {
+			throw Error(error);
+		});
 });

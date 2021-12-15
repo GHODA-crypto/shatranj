@@ -46,7 +46,7 @@ function Account() {
 		<>
 			<div style={styles.account} onClick={() => setIsModalVisible(true)}>
 				<p style={{ marginRight: "5px", ...styles.text }}>
-					{getEllipsisTxt(account, 6)}
+					{getEllipsisTxt(user.get("ethAddress"), 6)}
 				</p>
 				<Blockie currentWallet scale={3} />
 			</div>
@@ -77,7 +77,7 @@ function Account() {
 					<div className="elo">ELO Rating: {user?.get("ELO")}</div>
 					<div style={{ marginTop: "10px", padding: "0 10px" }}>
 						<a
-							href={`${getExplorer(chainId)}/address/${account}`}
+							href={`${getExplorer(chainId)}/address/${user.get("ethAddress")}`}
 							target="_blank"
 							rel="noreferrer">
 							<SelectOutlined style={{ marginRight: "5px" }} />

@@ -1,20 +1,25 @@
 import { Modal, Button } from "antd";
 import { useHistory } from "react-router-dom";
-
+import { useState, useContext } from "react";
 import { useMoralisCloudFunction } from "react-moralis";
+import { LiveChessContext } from "../../context/LiveChessContext";
 
-const Modals = ({
-	game,
-	liveGameAttributes,
-	isPlayerWhite,
-	liveChallengeData,
-	joinLiveChess,
-	setPairingParams,
-	cancelChallenge,
-	cancelingChallenge,
-	gameId,
-}) => {
+const Modals = ({ joinLiveChess, setPairingParams }) => {
 	const urlHistory = useHistory();
+	const { liveGameAttributes, userSide, game, gameId, liveChallengeData } =
+		useContext(LiveChessContext);
+	const {
+		fetch: cancelChallenge,
+		data: cancelData,
+		// error: challengeError,
+		isLoading: cancelingChallenge,
+	} = useMoralisCloudFunction(
+		"cancelChallenge",
+		{},
+		{
+			autoFetch: false,
+		}
+	);
 	const {
 		data: claimData,
 		// error: gameError,
@@ -53,7 +58,9 @@ const Modals = ({
 		<>
 			<Modal
 				title="Loading"
-				visible={liveChallengeData?.get("challengeStatus") === 0}
+				visible={
+					liveChallengeData && liveChallengeData.get("challengeStatus") === 0
+				}
 				footer={
 					<Button
 						key="Pairing"
@@ -128,8 +135,8 @@ const Modals = ({
 					<Modal
 						title="Victory"
 						visible={
-							(liveGameAttributes?.outcome === 3 && isPlayerWhite) ||
-							(liveGameAttributes?.outcome === 4 && !isPlayerWhite)
+							(liveGameAttributes?.outcome === 3 && userSide === "w") ||
+							(liveGameAttributes?.outcome === 4 && !userSide === "w")
 						}
 						footer={[
 							<Button key="only Stake" onClick={claimVictory}>
@@ -149,8 +156,8 @@ const Modals = ({
 					<Modal
 						title="Defeat"
 						visible={
-							(liveGameAttributes?.outcome === 3 && !isPlayerWhite) ||
-							(liveGameAttributes?.outcome === 4 && isPlayerWhite)
+							(liveGameAttributes?.outcome === 3 && !userSide === "w") ||
+							(liveGameAttributes?.outcome === 4 && userSide === "w")
 						}
 						footer={[
 							<Button key="toLobby" onClick={() => urlHistory.push("/lobby")}>

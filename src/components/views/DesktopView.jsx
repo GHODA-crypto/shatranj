@@ -1,5 +1,5 @@
-import { useMoralis } from "react-moralis";
-import { useState, useEffect, useRef } from "react";
+import { useMoralis, useMoralisCloudFunction } from "react-moralis";
+import { useState, useEffect, useRef, useContext } from "react";
 import { Layout, Skeleton, Row, Col } from "antd";
 import { FireOutlined } from "@ant-design/icons";
 import { Send, Abort, Draw, Win } from "./svgs";
@@ -7,22 +7,26 @@ import { WhiteCaptured, BlackCaptured, PieceMap } from "./Pieces";
 import { useWindowSize } from "../../hooks/useWindowSize";
 import { useSound } from "use-sound";
 import SocialNotify from "../../assets/chess_audio/SocialNotify.mp3";
+import { LiveChessContext } from "../../context/LiveChessContext";
 
-const DesktopView = ({
-	opSide,
-	children,
-	liveGameAttributes,
-	gameHistory,
-	captured = {},
-	resignGame,
-	claimVictory,
-}) => {
+const DesktopView = ({ children }) => {
 	const [pgnArray, setPgnArray] = useState([[]]);
 	const { width } = useWindowSize();
 	const { user } = useMoralis();
 	const { Sider, Content } = Layout;
-	const { w: capturedW, b: capturedB } = captured;
 	const [playSound] = useSound(SocialNotify);
+	const { liveGameAttributes, userSide, gameHistory, gameId } =
+		useContext(LiveChessContext);
+
+	const { fetch: resignGame } = useMoralisCloudFunction(
+		"resign",
+		{
+			gameId: gameId,
+		},
+		{
+			autoFetch: false,
+		}
+	);
 
 	const pgnCurrentRef = useRef(null);
 
@@ -81,31 +85,6 @@ const DesktopView = ({
 						</button>
 					</div>
 				</div>
-				<div className="btns">
-					<button
-						onClick={() => {
-							claimVictory();
-							playSound();
-						}}>
-						<Win />
-						<span className="text">Claim Win</span>
-					</button>
-					<button>
-						<Draw />
-						<span className="text" style={{ marginTop: "-0.4rem" }}>
-							Draw
-						</span>
-					</button>
-					<button
-						className="danger"
-						onClick={() => {
-							resignGame();
-							playSound();
-						}}>
-						<Abort />
-						<span className="text">Abort</span>
-					</button>
-				</div>
 			</Sider>
 
 			<Content className="chessboard">
@@ -117,21 +96,19 @@ const DesktopView = ({
 					<div className="players op">
 						<div
 							className={
-								opSide === liveGameAttributes?.turn
+								userSide !== liveGameAttributes?.turn
 									? "player-info turn"
 									: "player-info"
 							}>
 							<div className="username">
-								{liveGameAttributes?.players[opSide]}
+								{liveGameAttributes?.players?.[userSide === "w" ? "b" : "w"]}
 							</div>
-							<div className="elo">({liveGameAttributes?.ELO?.[opSide]})</div>
+							<div className="elo">
+								({liveGameAttributes?.ELO?.[userSide === "w" ? "b" : "w"]})
+							</div>
 						</div>
 						<div className="fallen-peice fallen-peice-op">
-							{opSide === "w" ? (
-								<BlackCaptured capturedB={capturedB} />
-							) : (
-								<WhiteCaptured capturedW={capturedW} />
-							)}
+							{userSide === "b" ? <BlackCaptured /> : <WhiteCaptured />}
 						</div>
 					</div>
 				) : (
@@ -154,20 +131,47 @@ const DesktopView = ({
 				<div className="players self">
 					<div
 						className={
-							opSide !== liveGameAttributes?.turn
+							userSide === liveGameAttributes?.turn
 								? "player-info turn"
 								: "player-info"
 						}>
-						<div className="username">{user?.get("ethAddress")}</div>
-						<div className="elo">({user?.get("ELO")})</div>
+						<div className="username">
+							{liveGameAttributes?.players?.[userSide === "w" ? "w" : "b"]}
+						</div>
+						<div className="elo">
+							({liveGameAttributes?.ELO?.[userSide === "w" ? "w" : "b"]})
+						</div>
 					</div>
 					<div className="fallen-peice fallen-peice-self">
-						{opSide === "b" ? (
-							<BlackCaptured capturedB={capturedB} />
-						) : (
-							<WhiteCaptured capturedW={capturedW} />
-						)}
+						{userSide === "w" ? <BlackCaptured /> : <WhiteCaptured />}
 					</div>
+				</div>
+				<div className="btns">
+					<button
+						onClick={() => {
+							// claimVictory();
+							playSound();
+						}}
+						className="win"
+						disabled>
+						<Win />
+						<span className="text">Claim Win</span>
+					</button>
+					<button className="draw">
+						<Draw />
+						<span className="text" style={{ marginTop: "-0.4rem" }}>
+							Draw
+						</span>
+					</button>
+					<button
+						className="abort"
+						onClick={() => {
+							resignGame();
+							playSound();
+						}}>
+						<Abort />
+						<span className="text">Abort</span>
+					</button>
 				</div>
 			</Sider>
 		</Layout>

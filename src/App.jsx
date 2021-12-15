@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
-import { useMoralis } from "react-moralis";
+import { useEffect, useState, useCallback } from "react";
+import { useMoralis, useMoralisCloudFunction } from "react-moralis";
 import { Layout } from "antd";
 import {
 	BrowserRouter as Router,
 	Switch,
 	Route,
 	Redirect,
+	useLocation,
 } from "react-router-dom";
 import { useWindowSize } from "./hooks/useWindowSize";
+import { ReactComponent as LogoImg } from "./assets/logoSvg.svg";
 
 import Account from "./components/Account";
 import Chains from "./components/Chains";
@@ -17,11 +19,10 @@ import MenuItems from "./components/MenuItems";
 import Lobby from "./components/Lobby";
 import LiveChess from "./components/LiveChess/";
 
-import { ReactComponent as LogoArt } from "./assets/logo.svg";
-
 import "./styles/main.scss";
 import "./style.css";
 import "antd/dist/antd.css";
+import { Button, notification } from "antd";
 
 const { Header, Footer } = Layout;
 
@@ -45,7 +46,8 @@ const App = ({ isServerInfo }) => {
 		<Layout style={{ height: "100vh", overflow: "auto" }}>
 			<Router>
 				{isPairing && <Redirect to="/live-chess" />}
-
+				{/* Antd Notification wrapped inside Route*/}
+				<ActiveChallengeNotification setIsPairing={setIsPairing} />
 				{width > 860 ? (
 					<Nav />
 				) : (
@@ -87,7 +89,49 @@ const App = ({ isServerInfo }) => {
 		</Layout>
 	);
 };
+const ActiveChallengeNotification = ({ setIsPairing }) => {
+	const location = useLocation();
+	const openNotification = useCallback(() => {
+		const key = `live-chess-notification`;
+		const btn = (
+			<Button
+				type="primary"
+				size="small"
+				onClick={() => {
+					setIsPairing(true);
+				}}>
+				Live Chess
+			</Button>
+		);
+		notification.warn({
+			message: "Active Challenge Abandoned",
+			description:
+				"You have a live game or pairing process in progress. Please return to live chess to continue.",
+			btn,
+			key,
+			duration: 0,
+			onClose: () => fetch(),
+			placement: "bottomRight",
+		});
+	}, [setIsPairing]);
 
+	const { fetch, data: challenge } = useMoralisCloudFunction(
+		"joinExistingChallenge",
+		{},
+		{
+			autoFetch: true,
+		}
+	);
+	useEffect(() => {
+		if (challenge && !location.pathname.includes("live-chess")) {
+			openNotification();
+		}
+		if (location.pathname.includes("live-chess")) {
+			notification.close(`live-chess-notification`);
+		}
+	}, [challenge, location, openNotification]);
+	return <></>;
+};
 const Nav = () => {
 	return (
 		<Header style={styles.header}>
@@ -179,31 +223,19 @@ const styles = {
 };
 
 export const Logo = () => (
-	<div
+	<a
+		href="https://github.com/GHODA-crypto/shatranj"
+		target="_blank"
+		rel="noopener noreferrer"
 		style={{
 			display: "flex",
+			justifyContent: "center",
 			alignItems: "center",
-			justifyContent: "flex-start",
-			padding: "0.5rem",
-			width: "40ch",
+			cursor: "pointer",
 		}}>
-		<img
-			src="./icons/android-chrome-512x512.png"
-			style={{ width: 45, height: 45 }}
-			alt=""
-		/>
-		<div
-			className="logo-txt"
-			style={{
-				fontSize: "1.75rem",
-				fontWeight: "700",
-				marginTop: "0.35rem",
-				color: "#00150B",
-				userSelect: "none",
-			}}>
-			Shatranj
-		</div>
-	</div>
+		{/* <img src={LogoImg} style={{ width: 45, height: 45 }} alt="" /> */}
+		<LogoImg height={40} width={150} style={{ margin: "auto 0" }} />
+	</a>
 );
 
 export default App;

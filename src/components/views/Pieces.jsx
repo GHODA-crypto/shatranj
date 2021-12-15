@@ -1,3 +1,6 @@
+import { useContext } from "react";
+import { LiveChessContext } from "../../context/LiveChessContext";
+
 import {
 	WhiteKing,
 	WhiteKnight,
@@ -13,64 +16,71 @@ import {
 	BlackPawn,
 } from "./svgs";
 
-export const BlackCaptured = ({ capturedB }) => {
+export const BlackCaptured = () => {
+	const {
+		captured: { b: capturedB },
+	} = useContext(LiveChessContext);
+
 	return (
 		<>
 			<div className="bp peice" id={capturedB.p === 0 ? "none" : ""}>
 				{[...Array(capturedB.p)].map((_, idx) => (
-					<WhitePawn key={idx} />
+					<BlackPawn key={idx} />
 				))}
 			</div>
 			<div className="bb peice" id={capturedB.b === 0 ? "none" : ""}>
 				{[...Array(capturedB.b)].map((_, idx) => (
-					<WhiteBishop key={idx} />
+					<BlackBishop key={idx} />
 				))}
 			</div>
 			<div className="bn peice" id={capturedB.n === 0 ? "none" : ""}>
 				{[...Array(capturedB.n)].map((_, idx) => (
-					<WhiteKnight key={idx} />
+					<BlackKnight key={idx} />
 				))}
 			</div>
 			<div className="br peice" id={capturedB.r === 0 ? "none" : ""}>
 				{[...Array(capturedB.r)].map((_, idx) => (
-					<WhiteRook key={idx} />
+					<BlackRook key={idx} />
 				))}
 			</div>
 			<div className="bq peice" id={capturedB.q === 0 ? "none" : ""}>
 				{[...Array(capturedB.q)].map((_, idx) => (
-					<WhiteQueen key={idx} />
+					<BlackQueen key={idx} />
 				))}
 			</div>
 		</>
 	);
 };
 
-export const WhiteCaptured = ({ capturedW }) => {
+export const WhiteCaptured = () => {
+	const {
+		captured: { w: capturedW },
+	} = useContext(LiveChessContext);
 	return (
 		<>
 			<div className="bp peice" id={capturedW.p === 0 ? "none" : ""}>
 				{[...Array(capturedW.p)].map((_, idx) => (
-					<BlackPawn key={idx} />
+					<WhitePawn key={idx} />
 				))}
 			</div>
 			<div className="bb peice" id={capturedW.b === 0 ? "none" : ""}>
 				{[...Array(capturedW.b)].map((_, idx) => (
-					<BlackBishop key={idx} />
+					<WhiteBishop key={idx} />
 				))}
 			</div>
 			<div className="bn peice" id={capturedW.n === 0 ? "none" : ""}>
 				{[...Array(capturedW.n)].map((_, idx) => (
-					<BlackKnight key={idx} />
+					<WhiteKnight key={idx} />
 				))}
 			</div>
 			<div className="br peice" id={capturedW.r === 0 ? "none" : ""}>
 				{[...Array(capturedW.r)].map((_, idx) => (
-					<BlackRook key={idx} />
+					<WhiteRook key={idx} />
 				))}
 			</div>
 			<div className="bq peice" id={capturedW.q === 0 ? "none" : ""}>
 				{[...Array(capturedW.q)].map((_, idx) => (
-					<BlackQueen key={idx} />
+					<WhiteQueen key={idx} />
 				))}
 			</div>
 		</>

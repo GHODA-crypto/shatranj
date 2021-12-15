@@ -1,11 +1,6 @@
-import { useEffect, useState, useMemo } from "react";
-import {
-	useMoralisQuery,
-	useMoralisCloudFunction,
-	useMoralis,
-} from "react-moralis";
+import { useEffect, useState } from "react";
+import { useMoralisCloudFunction } from "react-moralis";
 import { useWindowSize } from "../../hooks/useWindowSize";
-import useBoardWidth from "../../hooks/useBoardWidth";
 
 import TabView from "../views/TabView";
 import MobileView from "../views/MobileView";
@@ -13,11 +8,8 @@ import DesktopView from "../views/DesktopView";
 
 import "../../styles/game.scss";
 import LiveBoard from "../ChessBoards/Live";
-import Chess from "chess.js";
 import Modals from "./Modals";
-
-const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-const DEFAULT_GAME = new Chess(DEFAULT_FEN);
+import { LiveChessContextProvider } from "../../context/LiveChessContext";
 
 const LiveChess = ({
 	pairingParams,
@@ -25,153 +17,51 @@ const LiveChess = ({
 	setIsPairing,
 	setPairingParams,
 }) => {
-	const [isMobileDrawerVisible, setIsMobileDrawerVisible] = useState(false);
-	const [liveGameAttributes, setLiveGameAttributes] = useState(null);
-	const [game, setGame] = useState(DEFAULT_GAME);
-	const [needNFT, setNeedNFT] = useState(true);
-
-	const { user, isWeb3Enabled } = useMoralis();
-
-	const boardWidth = useBoardWidth();
-
-	const {
-		fetch: joinLiveChess,
-		data: challenge,
-		// error: challengeError,
-		isLoading: joiningLiveChess,
-	} = useMoralisCloudFunction(
+	const { fetch: joinLiveChess } = useMoralisCloudFunction(
 		"joinLiveChess",
-		{
-			gamePreferences: pairingParams,
-		},
-		{
-			autoFetch: false,
-		}
+		{ pairingParams },
+		{ autoFetch: false }
 	);
 
-	useEffect(() => {
-		joinExistingChallenge();
-	}, [user]);
-
-	const { fetch: joinExistingChallenge, data: isLiveChallenge } =
-		useMoralisCloudFunction("joinExistingChallenge", {});
-
-	const {
-		data: [liveChallengeData],
-		// error: gameError,
-		isLoading: isChallengeLoading,
-	} = useMoralisQuery(
-		"Challenge",
-		(query) => query.equalTo("objectId", challenge?.id),
-		[challenge],
-		{
-			autoFetch: true,
-			live: true,
-		}
+	return (
+		<LiveChessContextProvider
+			setIsPairing={setIsPairing}
+			setPairingParams={setPairingParams}
+			isPairing={isPairing}
+			joinLiveChess={joinLiveChess}>
+			<LiveChessWrapper />
+		</LiveChessContextProvider>
 	);
-
-	// useEffect(() => {
-	// 	console.log(liveChallengeData);
-	// }, [liveChallengeData]);
-
-	const {
-		data: [liveGameData],
-		error: gameError,
-		isLoading: isGameLoading,
-	} = useMoralisQuery(
-		"Game",
-		(query) => query.equalTo("challengeId", challenge?.id),
-		[challenge],
-		{
-			autoFetch: true,
-			live: true,
-		}
-	);
-
-	const [gameHistory, setGameHistory] = useState([]);
-
+};
+const LiveChessWrapper = ({
+	setIsPairing,
+	setPairingParams,
+	isPairing,
+	joinLiveChess,
+}) => {
+	const [isMobileDrawerVisible, setIsMobileDrawerVisible] = useState(false);
 	useEffect(() => {
-		setGameHistory(() => {
-			return game.history({ verbose: true });
-		});
-	}, [game]);
-
-	const gameId = useMemo(() => liveGameData?.id, [liveGameData?.id]);
-
-	const captured = useMemo(
-		() =>
-			gameHistory.reduce(
-				function (acc, move) {
-					if ("captured" in move) {
-						const piece = move.captured;
-						const color = move.color === "w" ? "b" : "w";
-						acc[color][piece] += 1;
-						return acc;
-					} else {
-						return acc;
-					}
-				},
-				{
-					w: { n: 0, p: 0, b: 0, r: 0, q: 0 },
-					b: { n: 0, p: 0, b: 0, r: 0, q: 0 },
-				}
-			),
-		[gameHistory]
-	);
-
-	const [liveGameObj, setLiveGameObj] = useState(null);
-
-	useEffect(() => {
-		setLiveGameObj(() => {
-			if (liveGameAttributes?.pgn) {
-				const _chess = new Chess();
-				_chess.load_pgn(liveGameAttributes.pgn);
-				return _chess;
-			} else {
-				return DEFAULT_GAME;
-			}
-		});
-	}, [liveGameAttributes]);
-
-	const isPlayerWhite = liveGameData
-		? liveGameData.get("sides")?.[user?.get("ethAddress")] === "w"
-		: false;
-
-	useEffect(() => {
-		if (isPairing || isLiveChallenge) {
+		if (isPairing) {
 			setIsPairing(false);
 			joinLiveChess();
 		}
-	}, [isPairing, isLiveChallenge]);
-
-	// useEffect(() => {
-	// 	console.log(liveGameData);
-	// }, [liveGameData]);
-
-	useEffect(() => {
-		setLiveGameAttributes(liveGameData?.attributes);
-	}, [liveGameData]);
-
-	useEffect(() => {
-		if (liveGameObj) setGame(liveGameObj);
-	}, [liveGameObj]);
-
-	const {
-		fetch: claimVictory,
-		data: victoryData,
-		// error: claimVictoryError,
-		isLoading: claimingVictory,
-	} = useMoralisCloudFunction(
-		"claimVictory",
-		{
-			needNFT: needNFT,
-			gameId: gameId,
-		},
-		{
-			autoFetch: false,
-		}
+	}, [isPairing]);
+	return (
+		<>
+			<Modals
+				setPairingParams={setPairingParams}
+				joinLiveChess={joinLiveChess}
+			/>
+			<ViewWrapper
+				isMobileDrawerVisible={isMobileDrawerVisible}
+				setIsMobileDrawerVisible={setIsMobileDrawerVisible}>
+				<LiveBoard />
+			</ViewWrapper>
+		</>
 	);
+};
 
+const ViewWrapper = ({ gameId, children, ...rest }) => {
 	const {
 		fetch: resignGame,
 		data: resignData,
@@ -187,128 +77,26 @@ const LiveChess = ({
 		}
 	);
 
-	const {
-		fetch: cancelChallenge,
-		data: cancelData,
-		// error: challengeError,
-		isLoading: cancelingChallenge,
-	} = useMoralisCloudFunction(
-		"cancelChallenge",
-		{},
-		{
-			autoFetch: false,
-		}
-	);
-
-	const {
-		data: [skinData],
-		error: skinError,
-		isLoading: isSkinDataLoading,
-	} = useMoralisQuery(
-		"GameSkin",
-		(query) => query.equalTo("userAddress", user?.get("ethAddress")).limit(1),
-		[user, isWeb3Enabled],
-		{
-			autoFetch: true,
-			live: true,
-		}
-	);
-	const {
-		data: [opponentSkinData],
-		error: opponentSkinError,
-		isLoading: isOpponentSkinDataLoading,
-	} = useMoralisQuery(
-		"GameSkin",
-		(query) =>
-			query
-				.equalTo(
-					"userAddress",
-					liveGameData?.get("players")[isPlayerWhite ? "b" : "w"]
-				)
-				.limit(1),
-		[liveGameData, isWeb3Enabled],
-		{
-			autoFetch: true,
-			live: true,
-		}
-	);
-	const [skins, setSkins] = useState({});
-	useEffect(() => {
-		const skinDataAttributes = skinData?.attributes;
-		const opponentSkinDataAttributes = opponentSkinData?.attributes;
-
-		setSkins(() => {
-			const tempSkins = {};
-
-			for (const key in skinDataAttributes) {
-				if (isPlayerWhite) {
-					if (key.length === 2) {
-						if (key[0] === "w" && skinDataAttributes?.[key])
-							tempSkins[key] = skinDataAttributes[key];
-						else if (opponentSkinDataAttributes?.[key])
-							tempSkins[key] = opponentSkinDataAttributes[key];
-					}
-				} else {
-					if (key.length === 2) {
-						if (key[0] === "b" && skinDataAttributes?.[key])
-							tempSkins[key] = skinDataAttributes[key];
-						else if (opponentSkinDataAttributes?.[key])
-							tempSkins[key] = opponentSkinDataAttributes[key];
-					}
-				}
-			}
-
-			return tempSkins;
-		});
-	}, [skinData, opponentSkinData]);
-
-	return (
-		<>
-			<Modals
-				isPlayerWhite={isPlayerWhite}
-				game={game}
-				gameId={gameId}
-				liveGameAttributes={liveGameAttributes}
-				liveChallengeData={liveChallengeData}
-				setNeedNFT={setNeedNFT}
-				joinLiveChess={joinLiveChess}
-				setPairingParams={setPairingParams}
-				cancelChallenge={cancelChallenge}
-				cancelingChallenge={cancelingChallenge}
-			/>
-
-			<ViewWrapper
-				opSide={isPlayerWhite ? "b" : "w"}
-				isMobileDrawerVisible={isMobileDrawerVisible}
-				setIsMobileDrawerVisible={setIsMobileDrawerVisible}
-				liveGameAttributes={liveGameAttributes}
-				gameHistory={gameHistory}
-				captured={captured}
-				resignGame={resignGame}
-				claimVictory={claimVictory}>
-				<LiveBoard
-					liveGameId={gameId}
-					skinData={skins}
-					user={user}
-					isPlayerWhite={isPlayerWhite}
-					playerSide={isPlayerWhite ? "w" : "b"}
-					boardWidth={boardWidth}
-					gameHistory={gameHistory}
-					game={game}
-					setGame={setGame}
-				/>
-			</ViewWrapper>
-		</>
-	);
-};
-
-const ViewWrapper = ({ children, ...rest }) => {
 	const { width } = useWindowSize();
 
-	if (width < 700) return <MobileView {...rest}>{children}</MobileView>;
+	if (width < 700)
+		return (
+			<MobileView resignGame={resignGame} {...rest}>
+				{children}
+			</MobileView>
+		);
 	else if (width >= 700 && width < 1200)
-		return <TabView {...rest}>{children}</TabView>;
-	else return <DesktopView {...rest}>{children}</DesktopView>;
+		return (
+			<TabView resignGame={resignGame} {...rest}>
+				{children}
+			</TabView>
+		);
+	else
+		return (
+			<DesktopView resignGame={resignGame} {...rest}>
+				{children}
+			</DesktopView>
+		);
 };
 
 export default LiveChess;

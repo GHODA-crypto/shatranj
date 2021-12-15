@@ -1,37 +1,23 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useContext } from "react";
 import { Chessboard } from "react-chessboard";
-import { useMoralis, useMoralisQuery } from "react-moralis";
+import { useMoralis } from "react-moralis";
+import useBoardWidth from "../../hooks/useBoardWidth";
 import useSound from "use-sound";
-import Move from "../../assets/chess_audio/Move.mp3";
-import Capture from "../../assets/chess_audio/Capture.mp3";
-import GenericNotify from "../../assets/chess_audio/GenericNotify.mp3";
-import Berserk from "../../assets/chess_audio/Berserk.mp3";
+
 import ErrorSound from "../../assets/chess_audio/Error.mp3";
-// import { customPieces } from "../../helpers/customPieces";
-// import useCustomPieces from "../../hooks/useCustomPieces";
+import { LiveChessContext } from "../../context/LiveChessContext";
+// import useSkinData from "../../hooks/useSkinData";
 
-const LiveBoard = ({
-	user,
-	boardWidth,
-	liveGameId,
-	playerSide,
-	game,
-	setGame,
-	gameHistory,
-	skinData,
-}) => {
+const LiveBoard = () => {
+	const boardWidth = useBoardWidth();
 	const chessboardRef = useRef();
+	const { gameHistory, game, setGame, gameId, userSide, skins } =
+		useContext(LiveChessContext);
 
-	const [playMove] = useSound(Move);
-	const [playCapture] = useSound(Capture);
-	const [playGenericNotify] = useSound(GenericNotify);
-	const [playBerserk] = useSound(Berserk);
 	const [playError] = useSound(ErrorSound);
 
 	const [historySquareStyles, setHistorySquareStyles] = useState([]);
 	const [checkStyles, setCheckStyles] = useState([]);
-
-	useEffect(() => {}, []);
 
 	useEffect(() => {
 		setHistorySquareStyles(() => {
@@ -57,7 +43,6 @@ const LiveBoard = ({
 
 	useEffect(() => {
 		if (game.in_checkmate() || game.in_check()) {
-			playGenericNotify();
 			if (game.turn() === "w") {
 				setCheckStyles({
 					[kingPositions(game).w]: {
@@ -96,13 +81,9 @@ const LiveBoard = ({
 			to: targetSquare,
 			promotion: "q", // always promote to a queen for example simplicity
 		});
-		setGame(gameCopy);
 		// illegal move
-		if (move === null) {
-			playError();
-			return false;
-		}
-		move.flags === "c" ? playCapture() : playMove();
+		if (move === null) return false;
+		setGame(gameCopy);
 		sendMove(move);
 		return true;
 	}
@@ -155,13 +136,12 @@ const LiveBoard = ({
 			promotion: "q", // always promote to a queen for example simplicity
 		});
 
-		setGame(gameCopy);
-
-		// if invalid, setMoveFrom and getMoveOptions
 		if (move === null) {
 			resetFirstMove(square);
 			return;
 		}
+		setGame(gameCopy);
+		// if invalid, setMoveFrom and getMoveOptions
 		sendMove(move);
 
 		setOptionSquares({});
@@ -172,16 +152,17 @@ const LiveBoard = ({
 			try {
 				await Moralis.Cloud.run("sendMove", {
 					move: move.san,
-					gameId: liveGameId,
+					gameId: gameId,
 				});
 			} catch (e) {
+				playError();
 				safeGameMutate((game) => {
 					game.undo();
 				});
 				chessboardRef.current.clearPremoves();
 			}
 		},
-		[Moralis, liveGameId]
+		[Moralis, gameId]
 	);
 
 	function onSquareRightClick(square) {
@@ -198,19 +179,17 @@ const LiveBoard = ({
 
 	const customPieces = useCallback(
 		(squareWidth) => {
-			// console.log(skinData);
-			const moralisPieceSkinData = {};
-			if (skinData) {
-				Object.keys(skinData).forEach(
-					(p) => (moralisPieceSkinData[p] = skinData[p])
-				);
+			// console.log(skins);
+			const moralisPieceSkins = {};
+			if (skins) {
+				Object.keys(skins).forEach((p) => (moralisPieceSkins[p] = skins[p]));
 			}
 
 			const paths = {
 				...DEFAULT_PIECES_PATHS,
-				...moralisPieceSkinData,
+				...moralisPieceSkins,
 			};
-
+			console.log(paths);
 			const newPieces = {};
 
 			Object.keys(DEFAULT_PIECES_PATHS).forEach((p) => {
@@ -225,15 +204,15 @@ const LiveBoard = ({
 			});
 			return newPieces;
 		},
-		[skinData]
+		[skins]
 	);
 
 	return (
 		<div className="board">
 			<Chessboard
-				arePiecesDraggable={!!user}
-				isDraggablePiece={(piece) => piece.piece[0] === playerSide}
-				boardOrientation={playerSide === "w" ? "white" : "black"}
+				arePiecesDraggable={!!gameId}
+				isDraggablePiece={(piece) => piece.piece[0] === userSide}
+				boardOrientation={userSide === "w" ? "white" : "black"}
 				boardWidth={boardWidth}
 				animationDuration={300}
 				position={game.fen()}

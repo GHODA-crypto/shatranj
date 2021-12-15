@@ -13,6 +13,8 @@ const GameOptionsModal = ({
 	setPairingParams,
 	setIsPairing,
 }) => {
+	const { user } = useMoralis();
+
 	const [gameOptions, setGameOptions] = useState({
 		color: "w",
 		rangeUpper: 100,
@@ -45,13 +47,11 @@ const GameOptionsModal = ({
 	};
 
 	const winSize = useWindowSize();
-	const { user } = useMoralis();
-
-	window.user = user;
 
 	const handleCancel = () => {
 		setIsModalVisible(false);
 	};
+	window.user = user;
 
 	return (
 		<Modal

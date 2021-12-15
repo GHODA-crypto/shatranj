@@ -61,14 +61,16 @@ async function createNewChallenge(user, gamePreferences) {
 
 	newChallenge.set("challengerSide", challengerSide);
 	newChallenge.set("player1ELO", user.get("ELO"));
-	newChallenge.set(
-		"lowerElo",
-		gamePreferences?.lowerElo || user.get("ELO") - 50
-	);
-	newChallenge.set(
-		"upperElo",
-		gamePreferences?.upperElo || user.get("ELO") + 50
-	);
+
+	const upperElo = gamePreferences?.upperElo
+		? Number(user.get("ELO") + Number(gamePreferences?.upperElo))
+		: Number(user.get("ELO")) + 100;
+	const lowerElo = gamePreferences?.lowerElo
+		? Number(user.get("ELO") - Number(gamePreferences?.lowerElo))
+		: Number(user.get("ELO")) - 100;
+
+	newChallenge.set("lowerElo", lowerElo);
+	newChallenge.set("upperElo", upperElo);
 
 	await newChallenge.save(null, { useMasterKey: true });
 	return newChallenge;

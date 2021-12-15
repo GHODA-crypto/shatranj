@@ -1,9 +1,10 @@
-import { useMoralis } from "react-moralis";
-import { useState, useEffect, useRef } from "react";
+import { useMoralis, useMoralisCloudFunction } from "react-moralis";
+import { useState, useEffect, useRef, useContext } from "react";
 import { Layout, Tabs, Row, Col, Skeleton } from "antd";
 import { FireOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import useSound from "use-sound";
 import SocialNotify from "../../assets/chess_audio/SocialNotify.mp3";
+import { LiveChessContext } from "../../context/LiveChessContext";
 
 import { Send, Abort, Draw, Win } from "./svgs";
 import { WhiteCaptured, BlackCaptured, PieceMap } from "./Pieces";
@@ -11,24 +12,25 @@ import { WhiteCaptured, BlackCaptured, PieceMap } from "./Pieces";
 import "../../styles/game.scss";
 import { useWindowSize } from "../../hooks/useWindowSize";
 
-const TabView = ({
-	opSide,
-	children,
-	liveGameAttributes,
-	gameHistory,
-	captured,
-	resignGame,
-	claimVictory,
-}) => {
+const TabView = ({ children }) => {
 	const { width } = useWindowSize();
 	const [pgnArray, setPgnArray] = useState([[]]);
 	const { user } = useMoralis();
 	const { TabPane } = Tabs;
 	const { Content, Sider } = Layout;
 	const [playSound] = useSound(SocialNotify);
+	const { liveGameAttributes, userSide, gameHistory, gameId } =
+		useContext(LiveChessContext);
 
-	const { w: capturedW, b: capturedB } = captured;
-
+	const { fetch: resignGame } = useMoralisCloudFunction(
+		"resign",
+		{
+			gameId: gameId,
+		},
+		{
+			autoFetch: false,
+		}
+	);
 	const pgnCurrentRef = useRef(null);
 
 	const scrollPgnToCurrent = () => {
@@ -93,8 +95,9 @@ const TabView = ({
 
 						<div className="btns">
 							<button
-								className={() => {
-									claimVictory();
+								className="win"
+								onClick={() => {
+									// claimVictory();
 									playSound();
 								}}>
 								<Win />
@@ -130,21 +133,23 @@ const TabView = ({
 							<div className="players op">
 								<div
 									className={
-										opSide === liveGameAttributes?.turn
+										userSide !== liveGameAttributes?.turn
 											? "player-info turn"
 											: "player-info"
 									}>
 									<div className="username">
-										{liveGameAttributes?.players[opSide]}
+										{
+											liveGameAttributes?.players?.[
+												userSide === "w" ? "b" : "w"
+											]
+										}
 									</div>
-									<div className="elo">({liveGameAttributes?.ELO[opSide]})</div>
+									<div className="elo">
+										({liveGameAttributes?.ELO?.[userSide === "w" ? "b" : "w"]})
+									</div>
 								</div>
 								<div className="fallen-peice fallen-peice-op">
-									{opSide === "w" ? (
-										<WhiteCaptured capturedW={capturedW} />
-									) : (
-										<BlackCaptured capturedB={capturedB} />
-									)}
+									{userSide === "b" ? <WhiteCaptured /> : <BlackCaptured />}
 								</div>
 							</div>
 						) : (
@@ -166,19 +171,19 @@ const TabView = ({
 						<div className="players self">
 							<div
 								className={
-									opSide !== liveGameAttributes?.turn
+									userSide === liveGameAttributes?.turn
 										? "player-info turn"
 										: "player-info"
 								}>
-								<div className="username">{user?.get("ethAddress")}</div>
-								<div className="elo">({user?.get("ELO")})</div>
+								<div className="username">
+									{liveGameAttributes?.players?.[userSide === "w" ? "w" : "b"]}
+								</div>
+								<div className="elo">
+									({liveGameAttributes?.ELO?.[userSide === "w" ? "w" : "b"]})
+								</div>
 							</div>
 							<div className="fallen-peice fallen-peice-self">
-								{opSide === "b" ? (
-									<WhiteCaptured capturedW={capturedW} />
-								) : (
-									<BlackCaptured capturedB={capturedB} />
-								)}
+								{userSide === "w" ? <WhiteCaptured /> : <BlackCaptured />}
 							</div>
 						</div>
 					</TabPane>
