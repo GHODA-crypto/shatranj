@@ -6,6 +6,8 @@ import {
 	InfoCircleOutlined,
 	FireFilled,
 } from "@ant-design/icons";
+import useSound from "use-sound";
+import SocialNotify from "../../assets/chess_audio/SocialNotify.mp3";
 
 import { Send, Abort, Draw, Win } from "./svgs";
 import { WhiteCaptured, BlackCaptured, PieceMap } from "./Pieces";
@@ -30,6 +32,7 @@ const MobileView = ({
 	const { Content } = Layout;
 	const { TabPane } = Tabs;
 	const { w: capturedW, b: capturedB } = captured;
+	const [playSound] = useSound(SocialNotify);
 
 	const pgnCurrentRef = useRef(null);
 
@@ -178,7 +181,12 @@ const MobileView = ({
 						</div>
 
 						<div className="btns">
-							<button className="win" onClick={claimVictory}>
+							<button
+								className="win"
+								onClick={() => {
+									claimVictory();
+									playSound();
+								}}>
 								<Win />
 								<span className="text">Claim Win</span>
 							</button>
@@ -188,7 +196,12 @@ const MobileView = ({
 									Draw
 								</span>
 							</button>
-							<button className="abort" onClick={resignGame}>
+							<button
+								className="abort"
+								onClick={() => {
+									resignGame();
+									playSound();
+								}}>
 								<Abort />
 								<span className="text">Abort</span>
 							</button>

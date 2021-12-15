@@ -5,6 +5,8 @@ import { FireOutlined } from "@ant-design/icons";
 import { Send, Abort, Draw, Win } from "./svgs";
 import { WhiteCaptured, BlackCaptured, PieceMap } from "./Pieces";
 import { useWindowSize } from "../../hooks/useWindowSize";
+import { useSound } from "use-sound";
+import SocialNotify from "../../assets/chess_audio/SocialNotify.mp3";
 
 const DesktopView = ({
 	opSide,
@@ -20,6 +22,7 @@ const DesktopView = ({
 	const { user } = useMoralis();
 	const { Sider, Content } = Layout;
 	const { w: capturedW, b: capturedB } = captured;
+	const [playSound] = useSound(SocialNotify);
 
 	const pgnCurrentRef = useRef(null);
 
@@ -79,7 +82,11 @@ const DesktopView = ({
 					</div>
 				</div>
 				<div className="btns">
-					<button onClick={claimVictory}>
+					<button
+						onClick={() => {
+							claimVictory();
+							playSound();
+						}}>
 						<Win />
 						<span className="text">Claim Win</span>
 					</button>
@@ -89,7 +96,12 @@ const DesktopView = ({
 							Draw
 						</span>
 					</button>
-					<button className="danger" onClick={resignGame}>
+					<button
+						className="danger"
+						onClick={() => {
+							resignGame();
+							playSound();
+						}}>
 						<Abort />
 						<span className="text">Abort</span>
 					</button>

@@ -2,6 +2,8 @@ import { useMoralis } from "react-moralis";
 import { useState, useEffect, useRef } from "react";
 import { Layout, Tabs, Row, Col, Skeleton } from "antd";
 import { FireOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import useSound from "use-sound";
+import SocialNotify from "../../assets/chess_audio/SocialNotify.mp3";
 
 import { Send, Abort, Draw, Win } from "./svgs";
 import { WhiteCaptured, BlackCaptured, PieceMap } from "./Pieces";
@@ -23,6 +25,7 @@ const TabView = ({
 	const { user } = useMoralis();
 	const { TabPane } = Tabs;
 	const { Content, Sider } = Layout;
+	const [playSound] = useSound(SocialNotify);
 
 	const { w: capturedW, b: capturedB } = captured;
 
@@ -89,7 +92,11 @@ const TabView = ({
 						</div>
 
 						<div className="btns">
-							<button className={claimVictory}>
+							<button
+								className={() => {
+									claimVictory();
+									playSound();
+								}}>
 								<Win />
 								<span className="text">Claim Win</span>
 							</button>
@@ -99,7 +106,12 @@ const TabView = ({
 									Draw
 								</span>
 							</button>
-							<button className="danger" onClick={resignGame}>
+							<button
+								className="danger"
+								onClick={() => {
+									resignGame();
+									playSound();
+								}}>
 								<Abort />
 								<span className="text">Abort</span>
 							</button>

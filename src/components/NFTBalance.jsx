@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
+import useSound from "use-sound";
 import {
 	useMoralis,
 	useNFTBalances,
 	useMoralisCloudFunction,
 	useMoralisQuery,
 } from "react-moralis";
+import Confirmation from "../assets/chess_audio/Confirmation.mp3";
+import SocialNotify from "../assets/chess_audio/SocialNotify.mp3";
 import { Card, Image, Tooltip, Modal, Input, Skeleton } from "antd";
 import {
 	FileSearchOutlined,
@@ -34,6 +37,8 @@ const styles = {
 };
 
 function NFTBalance() {
+	const [playConfirmation] = useSound(Confirmation);
+	const [playSocialNotify] = useSound(SocialNotify);
 	const { data: NFTBalances } = useNFTBalances();
 	const { Moralis, chainId } = useMoralis();
 	const [visible, setVisibility] = useState(false);
@@ -70,6 +75,7 @@ function NFTBalance() {
 	const handleTransferClick = (nft) => {
 		setNftToSend(nft);
 		setVisibility(true);
+		playSocialNotify();
 	};
 
 	return (
@@ -120,6 +126,7 @@ function NFTBalance() {
 												onClick={() => {
 													setSelectedNFT(nft);
 													setIsNFTMetaModalVisible(true);
+													playSocialNotify();
 												}}
 											/>
 										</Tooltip>,
@@ -174,6 +181,7 @@ const NFTMetaModal = ({
 	nft,
 }) => {
 	const { user, isWeb3Enabled } = useMoralis();
+	const [playConfirmation] = useSound(Confirmation);
 
 	const mintedAt = new Date(nft.metadata.minted_at);
 	window.time = mintedAt;
@@ -303,6 +311,7 @@ const NFTMetaModal = ({
 				onOk={() => {
 					setIsNFTMetaModalVisible(false);
 					showSetConfirm();
+					playConfirmation();
 				}}
 				width={450}
 				confirmLoading={settingPieceSkin}
