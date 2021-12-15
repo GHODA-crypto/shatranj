@@ -13,9 +13,11 @@ import {
 
 import "../../styles/lobby.scss";
 import Confirmation from "../../assets/chess_audio/Confirmation.mp3";
+import SocialNotify from "../../assets/chess_audio/SocialNotify.mp3";
 
 const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 	const [playConfirmation] = useSound(Confirmation);
+	const [playSocialNotify] = useSound(SocialNotify);
 	const { Moralis, isWeb3Enabled, user } = useMoralis();
 	const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -58,6 +60,7 @@ const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 	};
 
 	const showModal = () => {
+		playSocialNotify();
 		setIsModalVisible(true);
 	};
 
