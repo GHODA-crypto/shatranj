@@ -70,9 +70,9 @@ const LiveChess = ({
 		}
 	);
 
-	useEffect(() => {
-		console.log(liveChallengeData);
-	}, [liveChallengeData]);
+	// useEffect(() => {
+	// 	console.log(liveChallengeData);
+	// }, [liveChallengeData]);
 
 	const {
 		data: [liveGameData],
@@ -144,9 +144,9 @@ const LiveChess = ({
 		}
 	}, [isPairing, isLiveChallenge]);
 
-	useEffect(() => {
-		console.log(liveGameData);
-	}, [liveGameData]);
+	// useEffect(() => {
+	// 	console.log(liveGameData);
+	// }, [liveGameData]);
 
 	useEffect(() => {
 		setLiveGameAttributes(liveGameData?.attributes);
