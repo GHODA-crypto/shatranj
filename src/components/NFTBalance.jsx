@@ -11,6 +11,8 @@ import {
 	SendOutlined,
 	ShoppingCartOutlined,
 	SkinOutlined,
+	CheckCircleOutlined,
+	WarningOutlined,
 } from "@ant-design/icons";
 import { getExplorer } from "../helpers/networks";
 import AddressInput from "./AddressInput";
@@ -117,7 +119,6 @@ function NFTBalance() {
 												onClick={() => {
 													setSelectedNFT(nft);
 													setIsNFTMetaModalVisible(true);
-													console.log("nft from inside", nft);
 												}}
 											/>
 										</Tooltip>,
@@ -174,6 +175,7 @@ const NFTMetaModal = ({
 	const { user, isWeb3Enabled } = useMoralis();
 
 	const mintedAt = new Date(nft.metadata.minted_at);
+	window.time = mintedAt;
 	const image = nft.metadata.image.split("/");
 	const piece = nft.metadata.piece.split("/");
 
@@ -234,13 +236,56 @@ const NFTMetaModal = ({
 		return strTime;
 	};
 
-	const success = () => {
-		Modal.success({ content: "Successfully set piece skin" });
-	};
+	const { confirm } = Modal;
 
-	const fail = () => {
-		Modal.error({ content: "Something went wrong. Try Again." });
-	};
+	<WarningOutlined />;
+	function showSetConfirm() {
+		confirm({
+			title: "Do you Want to set this NFT as Piece Skin?",
+			icon: <CheckCircleOutlined />,
+			content: "by clicking yes you will set this NFT as the piece skin",
+			okText: "Yes",
+			okType: "success",
+			cancelText: "No",
+			onOk() {
+				setPieceSkin();
+				isPieceSkinSet ? success() : fail();
+				console.log(pieceSkinError);
+			},
+			onCancel() {
+				console.log("Cancel");
+			},
+		});
+	}
+	function showDeleteConfirm() {
+		confirm({
+			title: "Do you Want to remove this NFT as Piece Skin?",
+			icon: <WarningOutlined />,
+			content: "by clicking yes you will remove this NFT as the piece skin",
+			okText: "Yes",
+			okType: "danger",
+			cancelText: "No",
+			onOk() {
+				removePieceSkin();
+			},
+			onCancel() {
+				console.log("Cancel");
+			},
+		});
+	}
+
+	function success() {
+		Modal.success({
+			content: "The Skin is set successfully.",
+		});
+	}
+
+	function fail() {
+		Modal.error({
+			title: "Something went wrong",
+			content: "Please try again",
+		});
+	}
 
 	return (
 		<>
@@ -251,37 +296,72 @@ const NFTMetaModal = ({
 					setIsNFTMetaModalVisible(false);
 				}}
 				onOk={() => {
-					setPieceSkin();
-					console.log(pieceSkinError);
 					setIsNFTMetaModalVisible(false);
-					isPieceSkinSet ? success() : fail();
+					showSetConfirm();
 				}}
+				width={450}
 				confirmLoading={settingPieceSkin}
 				centered={true}
 				title={nft.metadata.name}>
-				<div className="images" style={{ display: "flex" }}>
+				<div
+					className="images"
+					style={{ display: "flex", justifyContent: "space-between" }}>
+					<div
+						style={{
+							display: "flex",
+							flexDirection: "column",
+							alignItems: "center",
+							justifyContent: "flex-end",
+							marginRight: "0.5rem",
+						}}>
+						<div
+							style={{
+								fontSize: "0.75rem",
+								textAlign: "center",
+								marginBottom: "1rem",
+							}}>
+							NFT was minted on
+							<div style={{ fontWeight: 800, fontSize: "1rem" }}>
+								{mintedAt.toDateString()}
+							</div>
+							<div style={{ fontWeight: 700, fontSize: "1.5rem" }}>
+								{formatAMPM()}
+							</div>
+						</div>
+						<Image
+							style={{ width: "8rem" }}
+							src={`https://ipfs.moralis.io:2053/ipfs/${pieceHash}/${pieceName}`}
+							alt="PieceNFT"
+						/>
+					</div>
 					<img
+						style={{ width: "65%", borderRadius: "0.5rem" }}
 						src={`https://ipfs.moralis.io:2053/ipfs/${imageHash}/${imageName}`}
 						alt="NFT"
 					/>
-					<Image
-						src={`https://ipfs.moralis.io:2053/ipfs/${pieceHash}/${pieceName}`}
-						alt="PieceNFT"
-					/>
 				</div>
-				<div className="info">
-					<div className="name">{nft.metadata.name}</div>
-					<div className="message">
-						You Defeated{" "}
-						<span className="white">{nft.metadata.attributes[0].value}</span> in{" "}
-						<span className="moves">{nft.metadata.attributes[3].value}</span>{" "}
-						moves.
-					</div>
-					<div className="datetime">
-						This NFT was minted on{" "}
-						<span className="date">{mintedAt.toDateString}</span> at{" "}
-						<span className="time">{formatAMPM}</span>
-					</div>
+
+				<div
+					className="message"
+					style={{
+						marginTop: "2rem",
+						width: "100%",
+						textAlign: "center",
+						fontSize: "1.1rem",
+					}}>
+					You Defeated{" "}
+					<span
+						className="white"
+						style={{ fontSize: "1.2rem", fontWeight: 700 }}>
+						{nft.metadata.attributes[0].value.slice(0, 8)}...
+					</span>{" "}
+					in{" "}
+					<span
+						className="moves"
+						style={{ fontSize: "1.2rem", fontWeight: 700 }}>
+						{nft.metadata.attributes[3].value}
+					</span>{" "}
+					moves.
 				</div>
 			</Modal>
 		</>
