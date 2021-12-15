@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
 	useMoralis,
 	useNFTBalances,
@@ -50,7 +50,7 @@ function NFTBalance() {
 			contractAddress: nft.token_address,
 			amount: 1,
 		};
-		console.log(options);
+		// console.log(options);
 
 		setIsPending(true);
 		await Moralis.transfer(options)
@@ -117,7 +117,6 @@ function NFTBalance() {
 												onClick={() => {
 													setSelectedNFT(nft);
 													setIsNFTMetaModalVisible(true);
-													console.log("nft from inside", nft);
 												}}
 											/>
 										</Tooltip>,
@@ -183,7 +182,7 @@ const NFTMetaModal = ({
 	const pieceName = piece[piece.length - 1];
 
 	const {
-		fetch: setPieceSkin,
+		fetch: callUsePieceSkin,
 		data: isPieceSkinSet,
 		error: pieceSkinError,
 		isLoading: settingPieceSkin,
@@ -225,6 +224,14 @@ const NFTMetaModal = ({
 		}
 	);
 
+	useEffect(() => {
+		if (isPieceSkinSet) {
+			console.log(isPieceSkinSet);
+			setIsNFTMetaModalVisible(false);
+			isPieceSkinSet ? success() : fail();
+		}
+	}, [isPieceSkinSet]);
+
 	const formatAMPM = () => {
 		let hours = mintedAt.getHours();
 		const ampm = hours >= 12 ? "PM" : "AM";
@@ -251,10 +258,7 @@ const NFTMetaModal = ({
 					setIsNFTMetaModalVisible(false);
 				}}
 				onOk={() => {
-					setPieceSkin();
-					console.log(pieceSkinError);
-					setIsNFTMetaModalVisible(false);
-					isPieceSkinSet ? success() : fail();
+					callUsePieceSkin();
 				}}
 				confirmLoading={settingPieceSkin}
 				centered={true}
@@ -280,7 +284,7 @@ const NFTMetaModal = ({
 					<div className="datetime">
 						This NFT was minted on{" "}
 						<span className="date">{mintedAt.toDateString}</span> at{" "}
-						<span className="time">{formatAMPM}</span>
+						<span className="time">{formatAMPM()}</span>
 					</div>
 				</div>
 			</Modal>
