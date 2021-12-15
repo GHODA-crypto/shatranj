@@ -165,6 +165,7 @@ Moralis.Cloud.define(
 		const gameId = request.params.gameId;
 		const gameQuery = new Moralis.Query("Game");
 		const challengeQuery = new Moralis.Query("Challenge");
+
 		const game = await gameQuery.get(gameId);
 		const challenge = await challengeQuery.get(game.get("challengeId"));
 
@@ -246,7 +247,6 @@ Moralis.Cloud.define(
 			return { txStatus: "unsuccessful" };
 		} else if (httpResponse.statusCode === 200 && needNFT) {
 			let { ipfs, token_id } = httpResponse.data;
-			game.set("token_uri", ipfs);
 			game.set("nftTokenId", token_id);
 			game.set("gameStatus", 5);
 			logger.info(ipfs);
@@ -298,7 +298,7 @@ Moralis.Cloud.define(
 			}
 
 			const ipfsAddress = token_uri.split("/")[token_uri.split("/").length - 2];
-			const url = `https://ipfs.moralis.io:2053/ipfs/${ipfsAddress}/metadata.json`;
+			const url = token_uri;
 
 			const response = await Moralis.Cloud.httpRequest({
 				method: "GET",
@@ -315,7 +315,7 @@ Moralis.Cloud.define(
 				[data.piece.split("/").length - 1].split(".")[0];
 			gameSkin.set(
 				pieceName,
-				`https://ipfs.moralis.io:2053/ipfs/${pieceIpfs}/${pieceName}.png`
+				`https://gateway.ipfs.io/ipfs/${pieceIpfs}/${pieceName}.png`
 			);
 
 			await gameSkin.save(null, { useMasterKey: true });
