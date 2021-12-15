@@ -9,6 +9,7 @@ import {
 } from "@ant-design/icons";
 import { getExplorer } from "../helpers/networks";
 import AddressInput from "./AddressInput";
+import { NFT_TOKEN_ADDRESS } from "../contracts/address";
 const { Meta } = Card;
 
 const styles = {
@@ -68,8 +69,7 @@ function NFTBalance() {
 				<Skeleton loading={!NFTBalances?.result}>
 					{NFTBalances?.result &&
 						NFTBalances.result.map((nft, index) =>
-							nft.token_address.toLowerCase() !==
-							"0xe472e0e6ee8f74ca7e01e45785d1b335bbbd936a" ? (
+							nft.token_address.toLowerCase() !== NFT_TOKEN_ADDRESS ? (
 								<h1>Cricket Noises</h1>
 							) : (
 								<Card

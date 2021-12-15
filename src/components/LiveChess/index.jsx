@@ -49,8 +49,12 @@ const LiveChess = ({
 		}
 	);
 
-	const { fetch: doesActiveChallengeExist, data: isLiveChallenge } =
-		useMoralisCloudFunction("doesActiveChallengeExist", {});
+	useEffect(() => {
+		joinExistingChallenge();
+	}, [user]);
+
+	const { fetch: joinExistingChallenge, data: isLiveChallenge } =
+		useMoralisCloudFunction("joinExistingChallenge", {});
 
 	const {
 		data: [liveChallengeData],
@@ -65,6 +69,10 @@ const LiveChess = ({
 			live: true,
 		}
 	);
+
+	useEffect(() => {
+		console.log(liveChallengeData);
+	}, [liveChallengeData]);
 
 	const {
 		data: [liveGameData],
@@ -125,15 +133,9 @@ const LiveChess = ({
 		});
 	}, [liveGameAttributes]);
 
-	const isPlayerWhite = useMemo(() => {
-		return liveGameData
-			? liveGameData.get("sides")?.[user?.get("ethAddress")] === "w"
-			: "w";
-	}, [liveGameData, user]);
-
-	useEffect(() => {
-		doesActiveChallengeExist();
-	}, []);
+	const isPlayerWhite = liveGameData
+		? liveGameData.get("sides")?.[user?.get("ethAddress")] === "w"
+		: false;
 
 	useEffect(() => {
 		if (isPairing || isLiveChallenge) {
@@ -141,6 +143,10 @@ const LiveChess = ({
 			joinLiveChess();
 		}
 	}, [isPairing, isLiveChallenge]);
+
+	useEffect(() => {
+		console.log(liveGameData);
+	}, [liveGameData]);
 
 	useEffect(() => {
 		setLiveGameAttributes(liveGameData?.attributes);
@@ -199,6 +205,7 @@ const LiveChess = ({
 			<Modals
 				isPlayerWhite={isPlayerWhite}
 				game={game}
+				gameId={gameId}
 				liveGameAttributes={liveGameAttributes}
 				liveChallengeData={liveChallengeData}
 				setNeedNFT={setNeedNFT}
@@ -207,6 +214,7 @@ const LiveChess = ({
 				cancelChallenge={cancelChallenge}
 				cancelingChallenge={cancelingChallenge}
 			/>
+
 			<ViewWrapper
 				opSide={isPlayerWhite ? "b" : "w"}
 				isMobileDrawerVisible={isMobileDrawerVisible}

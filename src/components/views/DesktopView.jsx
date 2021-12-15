@@ -11,7 +11,7 @@ const DesktopView = ({
 	children,
 	liveGameAttributes,
 	gameHistory,
-	captured,
+	captured = {},
 	resignGame,
 	claimVictory,
 }) => {
@@ -112,7 +112,7 @@ const DesktopView = ({
 							<div className="username">
 								{liveGameAttributes?.players[opSide]}
 							</div>
-							<div className="elo">({liveGameAttributes?.ELO[opSide]})</div>
+							<div className="elo">({liveGameAttributes?.ELO?.[opSide]})</div>
 						</div>
 						<div className="fallen-peice fallen-peice-op">
 							{opSide === "w" ? (
