@@ -35,6 +35,8 @@ These NFTs are depiction of all the sacrifices made by the players and records t
 6. Claim your prize.
 7. Wait for some time for the NFTs to appear on the page. (IPFS takes some time to load the data)
 
+https://user-images.githubusercontent.com/54071350/146597796-cdc7fc32-150b-42e6-bd89-88dece1cd20a.mp4
+
 ---
 
 ## Geek Stuff Ahead
