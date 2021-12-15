@@ -72,11 +72,8 @@ const Modals = ({
 			<Modal
 				title="Transfering Funds"
 				visible={isClaimingPrize}
-				footer={[
-					<button type="primary" onClick={() => urlHistory.push("/lobby")}>
-						Go to Lobby
-					</button>,
-				]}
+				okText="Go to Lobby"
+				onOk={() => urlHistory.push("/lobby")}
 				closable={false}>
 				<h2>
 					Congrats! Your Prize Pool is being processed. Tansfer will happeen
@@ -87,11 +84,8 @@ const Modals = ({
 			<Modal
 				title="Minting"
 				visible={isClaimingPrizeWithNFT}
-				footer={[
-					<button onClick={() => urlHistory.push("/lobby")}>
-						Go to Lobby
-					</button>,
-				]}
+				okText="Go to Lobby"
+				onOk={() => urlHistory.push("/lobby")}
 				closable={false}>
 				<h2>
 					Congrats! Your Prize Pool is being processed 💸 and your NFT is on its

@@ -186,8 +186,9 @@ const LiveBoard = ({
 		};
 
 		const newPieces = {};
+
 		Object.keys(DEFAULT_PIECES_PATHS).forEach((p) => {
-			newPieces[p] = ({ squareWidth }) => {
+			newPieces[p] = () => {
 				return (
 					<img
 						style={{ width: squareWidth, height: squareWidth }}
@@ -216,7 +217,7 @@ const LiveBoard = ({
 				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
 				customLightSquareStyle={{ backgroundColor: "#f9ffe4" }}
 				// customDropSquareStyle={{ backgroundColor: "#ecc92c" }}
-				customPieces={customPieces(boardWidth / 8 - 20)}
+				customPieces={() => customPieces(boardWidth / 8 - 20)}
 				customBoardStyle={{
 					borderRadius: "4px",
 					boxShadow: "0 0px 15px rgba(0, 0, 0, 0.25)",
