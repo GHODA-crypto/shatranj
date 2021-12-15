@@ -6,6 +6,7 @@ import Move from "../../assets/chess_audio/Move.mp3";
 import Capture from "../../assets/chess_audio/Capture.mp3";
 import GenericNotify from "../../assets/chess_audio/GenericNotify.mp3";
 import Berserk from "../../assets/chess_audio/Berserk.mp3";
+import ErrorSound from "../../assets/chess_audio/Error.mp3";
 // import { customPieces } from "../../helpers/customPieces";
 // import useCustomPieces from "../../hooks/useCustomPieces";
 
@@ -24,6 +25,7 @@ const LiveBoard = ({
 	const [playCapture] = useSound(Capture);
 	const [playGenericNotify] = useSound(GenericNotify);
 	const [playBerserk] = useSound(Berserk);
+	const [playError] = useSound(ErrorSound);
 
 	const [historySquareStyles, setHistorySquareStyles] = useState([]);
 	const [checkStyles, setCheckStyles] = useState([]);
@@ -54,6 +56,7 @@ const LiveBoard = ({
 
 	useEffect(() => {
 		if (game.in_checkmate() || game.in_check()) {
+			playGenericNotify();
 			if (game.turn() === "w") {
 				setCheckStyles({
 					[kingPositions(game).w]: {
@@ -94,7 +97,11 @@ const LiveBoard = ({
 		});
 		setGame(gameCopy);
 		// illegal move
-		if (move === null) return false;
+		if (move === null) {
+			playError();
+			return false;
+		}
+		move.flags === "c" ? playCapture() : playMove();
 		sendMove(move);
 		return true;
 	}
@@ -172,7 +179,6 @@ const LiveBoard = ({
 				});
 				chessboardRef.current.clearPremoves();
 			}
-			playMove();
 		},
 		[Moralis, liveGameId]
 	);
@@ -245,7 +251,6 @@ const LiveBoard = ({
 				animationDuration={300}
 				position={game.fen()}
 				onSquareClick={onSquareClick}
-				// onSquareRightClick={onSquareRightClick}
 				onSquareRightClick={onSquareRightClick}
 				onPieceDrop={onDrop}
 				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
