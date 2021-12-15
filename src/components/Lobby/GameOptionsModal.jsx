@@ -27,6 +27,8 @@ const GameOptionsModal = ({
 	const winSize = useWindowSize();
 	const { user } = useMoralis();
 
+	window.user = user;
+
 	const handleCancel = () => {
 		setIsModalVisible(false);
 	};

@@ -76,10 +76,10 @@ const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 		confirm({
 			title: "Are you sure you want to start a game?",
 			icon: <CheckCircleOutlined />,
-			content: "by starting the game you bet 10 GHODA in the pool.",
+			content: "By starting the game you bet 10 GHODA in the pool.",
 			okText: "Start Game",
-			okType: "success",
-			cancelText: "Cancel",
+			okType: "primary",
+			cancelText: "Close",
 			onOk() {
 				quickMatch();
 			},
