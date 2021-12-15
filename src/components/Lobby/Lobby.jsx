@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { notification, Modal } from "antd";
 import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
+import useSound from "use-sound";
 
 import { CheckCircleOutlined } from "@ant-design/icons";
 import GameOptionsModal from "./GameOptionsModal";
@@ -11,8 +12,10 @@ import {
 } from "../../contracts/address";
 
 import "../../styles/lobby.scss";
+import Confirmation from "../../assets/chess_audio/Confirmation.mp3";
 
 const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
+	const [playConfirmation] = useSound(Confirmation);
 	const { Moralis, isWeb3Enabled, user } = useMoralis();
 	const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -108,7 +111,12 @@ const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 			/>
 
 			<section className="play">
-				<button className="join-game-btn" onClick={showGameConfirm}>
+				<button
+					className="join-game-btn"
+					onClick={() => {
+						showGameConfirm();
+						playConfirmation();
+					}}>
 					🚀
 					<span className="btn-text">Quick Match</span>
 				</button>

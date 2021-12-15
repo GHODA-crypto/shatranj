@@ -1,6 +1,11 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { Chessboard } from "react-chessboard";
 import { useMoralis, useMoralisQuery } from "react-moralis";
+import useSound from "use-sound";
+import Move from "../../assets/chess_audio/Move.mp3";
+import Capture from "../../assets/chess_audio/Capture.mp3";
+import GenericNotify from "../../assets/chess_audio/GenericNotify.mp3";
+import Berserk from "../../assets/chess_audio/Berserk.mp3";
 // import { customPieces } from "../../helpers/customPieces";
 // import useCustomPieces from "../../hooks/useCustomPieces";
 
@@ -14,6 +19,11 @@ const LiveBoard = ({
 	gameHistory,
 }) => {
 	const chessboardRef = useRef();
+
+	const [playMove] = useSound(Move);
+	const [playCapture] = useSound(Capture);
+	const [playGenericNotify] = useSound(GenericNotify);
+	const [playBerserk] = useSound(Berserk);
 
 	const [historySquareStyles, setHistorySquareStyles] = useState([]);
 	const [checkStyles, setCheckStyles] = useState([]);
@@ -162,6 +172,7 @@ const LiveBoard = ({
 				});
 				chessboardRef.current.clearPremoves();
 			}
+			playMove();
 		},
 		[Moralis, liveGameId]
 	);
