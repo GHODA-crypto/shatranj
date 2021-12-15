@@ -59,11 +59,12 @@ const Lobby = ({ setIsPairing }) => {
 	};
 
 	const handleCreateGame = () => {
-		if (Moralis.Units.FromWei(stakedBalance) < 10) {
-			openStakeErrorNotification();
-			return;
-		}
-		!user ? openErrorNotification() : showModal();
+		// if (Moralis.Units.FromWei(stakedBalance) < 10) {
+		// 	openStakeErrorNotification();
+		// 	return;
+		// }
+		// !user ? openErrorNotification() : showModal();
+		showModal();
 	};
 
 	const showModal = () => {
