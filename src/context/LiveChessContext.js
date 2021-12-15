@@ -118,10 +118,10 @@ const LiveChessContextProvider = ({ isPairing, children }) => {
 	}, [gameHistory]);
 
 	useEffect(() => {
-		console.log("Safe game Mutate Livegame Object");
-		safeGameMutate((livegame) => {
-			livegame.load_pgn(liveGameData?.attributes?.pgn || "");
-		});
+		console.log("Updating Chess Object");
+		const _chess = new Chess();
+		_chess.load_pgn(liveGameData?.attributes?.pgn || "");
+		setLiveGameObj(_chess);
 	}, [liveGameData]);
 
 	useEffect(() => {
