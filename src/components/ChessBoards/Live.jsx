@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { Chessboard } from "react-chessboard";
-import { useMoralis } from "react-moralis";
+import { useMoralis, useMoralisQuery } from "react-moralis";
 // import { customPieces } from "../../helpers/customPieces";
 // import useCustomPieces from "../../hooks/useCustomPieces";
 
@@ -15,10 +15,10 @@ const LiveBoard = ({
 }) => {
 	const chessboardRef = useRef();
 
-	// const Pieces = useCustomPieces(boardWidth / 8 - 10);
-
 	const [historySquareStyles, setHistorySquareStyles] = useState([]);
 	const [checkStyles, setCheckStyles] = useState([]);
+
+	useEffect(() => {}, []);
 
 	useEffect(() => {
 		setHistorySquareStyles(() => {
@@ -62,8 +62,7 @@ const LiveBoard = ({
 		}
 	}, [game]);
 
-	const { Moralis } = useMoralis();
-
+	const { Moralis, isWeb3Enabled } = useMoralis();
 	const [rightClickedSquares, setRightClickedSquares] = useState({});
 	const [optionSquares, setOptionSquares] = useState({});
 	const [moveFrom, setMoveFrom] = useState("");
@@ -179,11 +178,38 @@ const LiveBoard = ({
 		});
 	}
 
+	const {
+		data: [skinData],
+		error: skinError,
+		isLoading: isSkinDataLoading,
+	} = useMoralisQuery(
+		"GameSkin",
+		(query) => query.equalTo("userAddress", user?.get("ethAddress")).limit(1),
+		[user, isWeb3Enabled],
+		{
+			autoFetch: true,
+			live: true,
+		}
+	);
+
 	const customPieces = useCallback((squareWidth) => {
+		const moralisPieceSkinData = {};
+		if (skinData) {
+			Object.keys(DEFAULT_PIECES_PATHS).forEach(
+				(p) => skinData?.get(p) && (moralisPieceSkinData[p] = skinData?.get(p))
+			);
+		}
+
+		console.log("SkinData", skinData);
+		console.log("SkinError", skinError);
+		console.log("moralisSkin Data", moralisPieceSkinData);
+
 		const paths = {
 			...DEFAULT_PIECES_PATHS,
-			wR: "https://cdn.discordapp.com/attachments/911999534752755736/920380881586245692/pieceSkin.png",
+			...moralisPieceSkinData,
 		};
+
+		console.log("PATHS After", paths);
 
 		const newPieces = {};
 
@@ -210,6 +236,7 @@ const LiveBoard = ({
 				animationDuration={300}
 				position={game.fen()}
 				onSquareClick={onSquareClick}
+				// onSquareRightClick={onSquareRightClick}
 				onSquareRightClick={onSquareRightClick}
 				onPieceDrop={onDrop}
 				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}

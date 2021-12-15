@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { notification, Modal } from "antd";
 import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
 
+import { CheckCircleOutlined } from "@ant-design/icons";
 import GameOptionsModal from "./GameOptionsModal";
 import { erc20Abi } from "../../contracts/erc20Abi";
 import {
@@ -69,6 +70,25 @@ const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 		setIsPairing(true);
 	};
 
+	const { confirm } = Modal;
+
+	function showGameConfirm() {
+		confirm({
+			title: "Are you sure you want to start a game?",
+			icon: <CheckCircleOutlined />,
+			content: "by starting the game you bet 10 GHODA in the pool.",
+			okText: "Start Game",
+			okType: "success",
+			cancelText: "Cancel",
+			onOk() {
+				quickMatch();
+			},
+			onCancel() {
+				console.log("Cancel");
+			},
+		});
+	}
+
 	return (
 		<div className="lobby">
 			<Modal
@@ -88,7 +108,7 @@ const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 			/>
 
 			<section className="play">
-				<button className="join-game-btn" onClick={quickMatch}>
+				<button className="join-game-btn" onClick={showGameConfirm}>
 					🚀
 					<span className="btn-text">Quick Match</span>
 				</button>

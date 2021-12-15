@@ -9,7 +9,7 @@ import { Card, Image, Tooltip, Modal, Input, Skeleton } from "antd";
 import {
 	FileSearchOutlined,
 	SendOutlined,
-	ShoppingCartOutlined,
+	GiftOutlined,
 	SkinOutlined,
 	CheckCircleOutlined,
 	WarningOutlined,
@@ -29,6 +29,7 @@ const styles = {
 		maxWidth: "1000px",
 		width: "100%",
 		gap: "10px",
+		borderRadius: "0.5rem",
 	},
 };
 
@@ -101,12 +102,12 @@ function NFTBalance() {
 										<Tooltip title="Transfer NFT">
 											<SendOutlined onClick={() => handleTransferClick(nft)} />
 										</Tooltip>,
-										<Tooltip title="Sell On OpenSea">
-											<ShoppingCartOutlined
+										<Tooltip title="View On OpenSea">
+											<GiftOutlined
 												onClick={() =>
 													window
 														.open(
-															`https://testnets.opensea.io/assets/mumbai/${nft.token_address}/${nft.token_id}/sell`,
+															`https://testnets.opensea.io/assets/mumbai/${nft.token_address}/${nft.token_id}/`,
 															"_blank"
 														)
 														.focus()
@@ -205,7 +206,7 @@ const NFTMetaModal = ({
 		isLoading: isSkinDataLoading,
 	} = useMoralisQuery(
 		"GameSkin",
-		(query) => query.equalTo("userEthAddress", user?.get("ethAddress")),
+		(query) => query.equalTo("userAddress", user?.get("ethAddress")),
 		[user, isWeb3Enabled],
 		{
 			autoFetch: true,
@@ -344,19 +345,27 @@ const NFTMetaModal = ({
 						alt="NFT"
 					/>
 				</div>
-				<div className="info">
-					<div className="name">{nft.metadata.name}</div>
-					<div className="message">
-						You Defeated{" "}
-						<span className="white">{nft.metadata.attributes[0].value}</span> in{" "}
-						<span className="moves">{nft.metadata.attributes[3].value}</span>{" "}
-						moves.
-					</div>
-					<div className="datetime">
-						This NFT was minted on{" "}
-						<span className="date">{mintedAt.toDateString}</span> at{" "}
-						<span className="time">{formatAMPM()}</span>
-					</div>
+				<div
+					className="message"
+					style={{
+						marginTop: "2rem",
+						width: "100%",
+						textAlign: "center",
+						fontSize: "1.1rem",
+					}}>
+					You Defeated{" "}
+					<span
+						className="white"
+						style={{ fontSize: "1.2rem", fontWeight: 700 }}>
+						{nft.metadata.attributes[0].value.slice(0, 8)}...
+					</span>{" "}
+					in{" "}
+					<span
+						className="moves"
+						style={{ fontSize: "1.2rem", fontWeight: 700 }}>
+						{nft.metadata.attributes[3].value}
+					</span>{" "}
+					moves.
 				</div>
 			</Modal>
 		</>

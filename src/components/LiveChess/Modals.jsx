@@ -55,7 +55,12 @@ const Modals = ({
 				title="Loading"
 				visible={liveChallengeData?.get("challengeStatus") === 0}
 				footer={
-					<Button key="only Stake" onClick={cancelChallenge}>
+					<Button
+						key="Pairing"
+						onClick={() => {
+							cancelChallenge();
+							urlHistory.push("/lobby");
+						}}>
 						Cancel Challenge
 					</Button>
 				}
@@ -63,7 +68,7 @@ const Modals = ({
 				<h2>🔍 Finding you a match...</h2>
 			</Modal>
 			<Modal
-				title="Loading"
+				title="Waiting"
 				visible={liveChallengeData?.get("challengeStatus") === 1}
 				footer={null}
 				closable={false}>
@@ -137,7 +142,7 @@ const Modals = ({
 								Claim Pool + Mint NFT
 							</Button>,
 						]}
-						width={window.getComputedStyle(document.body).fontSize * 25}>
+						width={450}>
 						<h1>🎊 You Won the Game 🎊</h1>
 						<h3>{liveGameAttributes?.outcome === 3 ? "1 - 0" : "0 - 1"}</h3>
 					</Modal>
@@ -158,7 +163,7 @@ const Modals = ({
 								Quick Match
 							</Button>,
 						]}
-						width={window.getComputedStyle(document.body).fontSize * 25}>
+						width={450}>
 						<h1>🫂 You Lost the Game 🫂</h1>
 						<h3>{liveGameAttributes?.outcome === 3 ? "1 - 0" : "0 - 1"}</h3>
 					</Modal>
@@ -173,7 +178,7 @@ const Modals = ({
 								Quick Match
 							</Button>,
 						]}
-						width={window.getComputedStyle(document.body).fontSize * 25}>
+						width={450}>
 						<h1>Game Drawn 😅</h1>
 						<h3>1/2 - 1/2</h3>
 					</Modal>
