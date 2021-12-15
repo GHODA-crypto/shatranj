@@ -192,39 +192,37 @@ const LiveBoard = ({
 		}
 	);
 
-	const customPieces = useCallback((squareWidth) => {
-		const moralisPieceSkinData = {};
-		if (skinData) {
-			Object.keys(DEFAULT_PIECES_PATHS).forEach(
-				(p) => skinData?.get(p) && (moralisPieceSkinData[p] = skinData?.get(p))
-			);
-		}
+	const customPieces = useCallback(
+		(squareWidth) => {
+			const moralisPieceSkinData = {};
+			if (skinData) {
+				Object.keys(DEFAULT_PIECES_PATHS).forEach(
+					(p) =>
+						skinData?.get(p) && (moralisPieceSkinData[p] = skinData?.get(p))
+				);
+			}
 
-		console.log("SkinData", skinData);
-		console.log("SkinError", skinError);
-		console.log("moralisSkin Data", moralisPieceSkinData);
+			const paths = {
+				...DEFAULT_PIECES_PATHS,
+				...moralisPieceSkinData,
+			};
 
-		const paths = {
-			...DEFAULT_PIECES_PATHS,
-			...moralisPieceSkinData,
-		};
+			const newPieces = {};
 
-		console.log("PATHS After", paths);
-
-		const newPieces = {};
-
-		Object.keys(DEFAULT_PIECES_PATHS).forEach((p) => {
-			newPieces[p] = () => (
-				<img
-					style={{ width: squareWidth, height: squareWidth }}
-					src={paths[p]}
-					alt={p}
-					className="chess-piece"
-				/>
-			);
-		});
-		return newPieces;
-	}, []);
+			Object.keys(DEFAULT_PIECES_PATHS).forEach((p) => {
+				newPieces[p] = () => (
+					<img
+						style={{ width: squareWidth, height: squareWidth }}
+						src={paths[p]}
+						alt={p}
+						className="chess-piece"
+					/>
+				);
+			});
+			return newPieces;
+		},
+		[skinData]
+	);
 
 	return (
 		<div className="board">
