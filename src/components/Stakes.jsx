@@ -1,36 +1,28 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { Modal, notification, Tooltip } from "antd";
 import {
 	useWeb3ExecuteFunction,
 	useMoralis,
 	useMoralisQuery,
 } from "react-moralis";
-import { Modal } from "antd";
-import { gameAbi, ERC20Abi } from "../contracts/abi";
-import { notification, Tooltip } from "antd";
+
+import { erc20Abi } from "../contracts/erc20Abi";
+import { gameAbi } from "../contracts/gameAbi";
 import { useWindowSize } from "../hooks/useWindowSize";
 import { numDisplayFormatter } from "../helpers/numDisplayFormatter";
+import {
+	SGHODA_TOKEN_ADDRESS,
+	GHODA_TOKEN_ADDRESS,
+} from "../contracts/address";
 
 import "../styles/stakes.scss";
-
-const SGHODA_TOKEN_ADDRESS =
-	"0xAb8b8813AD811Fe2f94002647C6A47dDD4b8F477".toLowerCase();
-const GHODA_TOKEN_ADDRESS =
-	"0x48a6c3feF5Bc5394f7FF32c4AE3c461A5bD58100".toLowerCase();
 
 const Stakes = () => {
 	const [stakeAmount, setStakeAmount] = useState(0);
 	const [unstakeAmountInput, setUnstakeAmountInput] = useState(0);
+
 	const { user, Moralis, isWeb3Enabled } = useMoralis();
 	const winSize = useWindowSize();
-
-	const openNoStakeErrorNotification = () => {
-		notification["error"]({
-			message: "No Tokens Staked",
-			description:
-				"You have not staked any tokens. Please stake some tokens to unstake tokens.",
-			placement: "bottomRight",
-		});
-	};
 
 	const {
 		data: tokenBalance,
@@ -38,7 +30,7 @@ const Stakes = () => {
 		fetch: fetchTokenBalance,
 		isFetching: isTokenBalanceLoading,
 	} = useWeb3ExecuteFunction({
-		abi: ERC20Abi,
+		abi: erc20Abi,
 		contractAddress: GHODA_TOKEN_ADDRESS,
 		functionName: "balanceOf",
 		params: {
@@ -52,7 +44,7 @@ const Stakes = () => {
 		fetch: fetchStakedBalance,
 		isFetching: isStakedBalanceLoading,
 	} = useWeb3ExecuteFunction({
-		abi: ERC20Abi,
+		abi: erc20Abi,
 		contractAddress: SGHODA_TOKEN_ADDRESS,
 		functionName: "balanceOf",
 		params: {
@@ -66,7 +58,7 @@ const Stakes = () => {
 		fetch: getApprovalFromUser,
 		isFetching: isApproving,
 	} = useWeb3ExecuteFunction({
-		abi: ERC20Abi,
+		abi: erc20Abi,
 		contractAddress: GHODA_TOKEN_ADDRESS,
 		functionName: "approve",
 		params: {
@@ -81,7 +73,7 @@ const Stakes = () => {
 		fetch: getAllowanceForUser,
 		isFetching: isAllowanceFetching,
 	} = useWeb3ExecuteFunction({
-		abi: ERC20Abi,
+		abi: erc20Abi,
 		contractAddress: GHODA_TOKEN_ADDRESS,
 		functionName: "allowance",
 		params: {
@@ -89,10 +81,7 @@ const Stakes = () => {
 			spender: SGHODA_TOKEN_ADDRESS,
 		},
 	});
-	const allowedAmountToSpend = useMemo(
-		() => Moralis.Units.FromWei(allowanceData || 0),
-		[allowanceData]
-	);
+
 	const {
 		error: stakeError,
 		fetch: stakeTokens,
@@ -119,14 +108,16 @@ const Stakes = () => {
 		},
 	});
 
-	useEffect(() => {
-		isWeb3Enabled && user && getAllowanceForUser();
-	}, [isWeb3Enabled, user]);
+	const allowedAmountToSpend = useMemo(
+		() => Moralis.Units.FromWei(allowanceData || 0),
+		[allowanceData]
+	);
 
 	useEffect(() => {
 		fetchTokenBalance();
 		fetchStakedBalance();
-	}, []);
+		isWeb3Enabled && user && getAllowanceForUser();
+	}, [isWeb3Enabled, user]);
 
 	return (
 		<div className="Stakes" style={{ marginTop: "3rem" }}>

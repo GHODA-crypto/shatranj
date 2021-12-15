@@ -1,13 +1,22 @@
-import React, { useState } from "react";
-import { useMoralis, useNFTBalances } from "react-moralis";
+import React, { useState, useEffect } from "react";
+import {
+	useMoralis,
+	useNFTBalances,
+	useMoralisCloudFunction,
+	useMoralisQuery,
+} from "react-moralis";
 import { Card, Image, Tooltip, Modal, Input, Skeleton } from "antd";
 import {
 	FileSearchOutlined,
 	SendOutlined,
-	ShoppingCartOutlined,
+	GiftOutlined,
+	SkinOutlined,
+	CheckCircleOutlined,
+	WarningOutlined,
 } from "@ant-design/icons";
 import { getExplorer } from "../helpers/networks";
 import AddressInput from "./AddressInput";
+import { NFT_TOKEN_ADDRESS } from "../contracts/address";
 const { Meta } = Card;
 
 const styles = {
@@ -20,6 +29,7 @@ const styles = {
 		maxWidth: "1000px",
 		width: "100%",
 		gap: "10px",
+		borderRadius: "0.5rem",
 	},
 };
 
@@ -28,9 +38,12 @@ function NFTBalance() {
 	const { Moralis, chainId } = useMoralis();
 	const [visible, setVisibility] = useState(false);
 	const [receiverToSend, setReceiver] = useState(null);
-	// const [amountToSend, setAmount] = useState(null);
 	const [nftToSend, setNftToSend] = useState(null);
 	const [isPending, setIsPending] = useState(false);
+	const [isNFTMetaModalVisible, setIsNFTMetaModalVisible] = useState(false);
+	const [selectedNFT, setSelectedNFT] = useState(null);
+
+	// window.nft = NFTBalances;
 
 	async function transfer(nft, receiver) {
 		const options = {
@@ -40,7 +53,7 @@ function NFTBalance() {
 			contractAddress: nft.token_address,
 			amount: 1,
 		};
-		console.log(options);
+		// console.log(options);
 
 		setIsPending(true);
 		await Moralis.transfer(options)
@@ -59,50 +72,62 @@ function NFTBalance() {
 		setVisibility(true);
 	};
 
-	// const handleChange = (e) => {
-	// 	setAmount(e.target.value);
-	// };
-	console.log(NFTBalances);
 	return (
 		<>
 			<div style={styles.NFTs}>
 				<Skeleton loading={!NFTBalances?.result}>
-					{NFTBalances?.result &&
+					{!NFTBalances?.result ? (
+						<h1>No NFTs found</h1>
+					) : (
 						NFTBalances.result.map((nft, index) =>
-							nft.token_address.toLowerCase() !=
-							"0xe472e0e6ee8f74ca7e01e45785d1b335bbbd936a" ? null : (
+							nft.token_address.toLowerCase() !== NFT_TOKEN_ADDRESS ? null : (
 								<Card
 									hoverable
+									// loading
 									actions={[
 										<Tooltip title="View On Blockexplorer">
 											<FileSearchOutlined
-												onClick={() =>
+												onClick={() => {
 													window.open(
 														`${getExplorer(chainId)}address/${
 															nft.token_address
 														}`,
 														"_blank"
-													)
-												}
+													);
+
+													// console.log(nft.metadata.image);
+												}}
 											/>
 										</Tooltip>,
 										<Tooltip title="Transfer NFT">
 											<SendOutlined onClick={() => handleTransferClick(nft)} />
 										</Tooltip>,
-										<Tooltip title="Sell On OpenSea">
-											<ShoppingCartOutlined
+										<Tooltip title="View On OpenSea">
+											<GiftOutlined
 												onClick={() =>
 													window
 														.open(
-															`https://testnets.opensea.io/assets/mumbai/${nft.token_address}/${nft.token_id}/sell`,
+															`https://testnets.opensea.io/assets/mumbai/${nft.token_address}/${nft.token_id}/`,
 															"_blank"
 														)
 														.focus()
 												}
 											/>
 										</Tooltip>,
+
+										<Tooltip title="Use as Piece Skin">
+											<SkinOutlined
+												onClick={() => {
+													setSelectedNFT(nft);
+													setIsNFTMetaModalVisible(true);
+												}}
+											/>
+										</Tooltip>,
 									]}
-									style={{ width: 300, border: "2px solid #e7eaf3" }}
+									style={{
+										width: 300,
+										border: "2px solid #e7eaf3",
+									}}
 									cover={
 										<Image
 											preview={false}
@@ -113,10 +138,14 @@ function NFTBalance() {
 										/>
 									}
 									key={index}>
-									<Meta title={nft.name} description={nft.token_address} />
+									<Meta
+										title={nft.metadata.name}
+										description={nft.token_address}
+									/>
 								</Card>
 							)
-						)}
+						)
+					)}
 				</Skeleton>
 			</div>
 			<Modal
@@ -128,8 +157,219 @@ function NFTBalance() {
 				okText="Send">
 				<AddressInput autoFocus placeholder="Receiver" onChange={setReceiver} />
 			</Modal>
+			{isNFTMetaModalVisible && (
+				<NFTMetaModal
+					isNFTMetaModalVisible={isNFTMetaModalVisible}
+					setIsNFTMetaModalVisible={setIsNFTMetaModalVisible}
+					nft={selectedNFT}
+				/>
+			)}
 		</>
 	);
 }
+
+const NFTMetaModal = ({
+	isNFTMetaModalVisible,
+	setIsNFTMetaModalVisible,
+	nft,
+}) => {
+	const { user, isWeb3Enabled } = useMoralis();
+
+	const mintedAt = new Date(nft.metadata.minted_at);
+	window.time = mintedAt;
+	const image = nft.metadata.image.split("/");
+	const piece = nft.metadata.piece.split("/");
+
+	const imageHash = image[image.length - 2];
+	const imageName = image[image.length - 1];
+	const pieceHash = piece[piece.length - 2];
+	const pieceName = piece[piece.length - 1];
+
+	const {
+		fetch: setPieceSkin,
+		data: isPieceSkinSet,
+		error: pieceSkinError,
+		isLoading: settingPieceSkin,
+	} = useMoralisCloudFunction(
+		"usePieceSkin",
+		{
+			token_uri: nft.token_uri,
+		},
+		{
+			autoFetch: false,
+		}
+	);
+
+	const {
+		data: [SkinData],
+		// error: gameError,
+		isLoading: isSkinDataLoading,
+	} = useMoralisQuery(
+		"GameSkin",
+		(query) => query.equalTo("userAddress", user?.get("ethAddress")),
+		[user, isWeb3Enabled],
+		{
+			autoFetch: true,
+			live: true,
+		}
+	);
+
+	const {
+		fetch: removePieceSkin,
+		data: isPieceSkinRemoved,
+		isLoading: removingPieceSkin,
+	} = useMoralisCloudFunction(
+		"removePieceSkin",
+		{
+			token_uri: nft.token_uri,
+		},
+		{
+			autoFetch: false,
+		}
+	);
+
+	useEffect(() => {
+		if (isPieceSkinSet) {
+			setIsNFTMetaModalVisible(false);
+			isPieceSkinSet ? success() : fail();
+		}
+	}, [isPieceSkinSet]);
+
+	const formatAMPM = () => {
+		let hours = mintedAt.getHours();
+		const ampm = hours >= 12 ? "PM" : "AM";
+		hours = hours % 12;
+		hours = hours ? hours : 12;
+		const strTime = hours + ampm;
+		return strTime;
+	};
+
+	const { confirm } = Modal;
+
+	function showSetConfirm() {
+		confirm({
+			title: "Do you Want to set this NFT as Piece Skin?",
+			icon: <CheckCircleOutlined />,
+			content: "by clicking yes you will set this NFT as the piece skin",
+			okText: "Yes",
+			okType: "success",
+			cancelText: "No",
+			onOk() {
+				setPieceSkin();
+			},
+			onCancel() {
+				console.log("Cancel");
+			},
+		});
+	}
+	function showDeleteConfirm() {
+		confirm({
+			title: "Do you Want to remove this NFT as Piece Skin?",
+			icon: <WarningOutlined />,
+			content: "by clicking yes you will remove this NFT as the piece skin",
+			okText: "Yes",
+			okType: "danger",
+			cancelText: "No",
+			onOk() {
+				removePieceSkin();
+			},
+			onCancel() {
+				console.log("Cancel");
+			},
+		});
+	}
+
+	function success() {
+		Modal.success({
+			content: "The Skin is set successfully.",
+		});
+	}
+
+	function fail() {
+		Modal.error({
+			title: "Something went wrong",
+			content: "Please try again",
+		});
+	}
+
+	return (
+		<>
+			<Modal
+				visible={isNFTMetaModalVisible}
+				okText="Use this NFT as Piece Skin"
+				onCancel={() => {
+					setIsNFTMetaModalVisible(false);
+				}}
+				onOk={() => {
+					setIsNFTMetaModalVisible(false);
+					showSetConfirm();
+				}}
+				width={450}
+				confirmLoading={settingPieceSkin}
+				centered={true}
+				title={nft.metadata.name}>
+				<div
+					className="images"
+					style={{ display: "flex", justifyContent: "space-between" }}>
+					<div
+						style={{
+							display: "flex",
+							flexDirection: "column",
+							alignItems: "center",
+							justifyContent: "flex-end",
+							marginRight: "0.5rem",
+						}}>
+						<div
+							style={{
+								fontSize: "0.75rem",
+								textAlign: "center",
+								marginBottom: "1rem",
+							}}>
+							NFT was minted on
+							<div style={{ fontWeight: 800, fontSize: "1rem" }}>
+								{mintedAt.toDateString()}
+							</div>
+							<div style={{ fontWeight: 700, fontSize: "1.5rem" }}>
+								{formatAMPM()}
+							</div>
+						</div>
+						<Image
+							style={{ width: "8rem" }}
+							src={`https://ipfs.moralis.io:2053/ipfs/${pieceHash}/${pieceName}`}
+							alt="PieceNFT"
+						/>
+					</div>
+					<img
+						style={{ width: "65%", borderRadius: "0.5rem" }}
+						src={`https://ipfs.moralis.io:2053/ipfs/${imageHash}/${imageName}`}
+						alt="NFT"
+					/>
+				</div>
+				<div
+					className="message"
+					style={{
+						marginTop: "2rem",
+						width: "100%",
+						textAlign: "center",
+						fontSize: "1.1rem",
+					}}>
+					You Defeated{" "}
+					<span
+						className="white"
+						style={{ fontSize: "1.2rem", fontWeight: 700 }}>
+						{nft.metadata.attributes[0].value.slice(0, 8)}...
+					</span>{" "}
+					in{" "}
+					<span
+						className="moves"
+						style={{ fontSize: "1.2rem", fontWeight: 700 }}>
+						{nft.metadata.attributes[3].value}
+					</span>{" "}
+					moves.
+				</div>
+			</Modal>
+		</>
+	);
+};
 
 export default NFTBalance;

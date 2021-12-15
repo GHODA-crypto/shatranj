@@ -1,10 +1,14 @@
-import { useRef, useState, useEffect, useMemo, useCallback, memo } from "react";
-import Chess from "chess.js";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { Chessboard } from "react-chessboard";
-import { useMoralisCloudFunction, useMoralis } from "react-moralis";
-import { customPieces } from "./customPieces";
-
-const ChessboardMemo = memo(Chessboard);
+import { useMoralis, useMoralisQuery } from "react-moralis";
+import useSound from "use-sound";
+import Move from "../../assets/chess_audio/Move.mp3";
+import Capture from "../../assets/chess_audio/Capture.mp3";
+import GenericNotify from "../../assets/chess_audio/GenericNotify.mp3";
+import Berserk from "../../assets/chess_audio/Berserk.mp3";
+import ErrorSound from "../../assets/chess_audio/Error.mp3";
+// import { customPieces } from "../../helpers/customPieces";
+// import useCustomPieces from "../../hooks/useCustomPieces";
 
 const LiveBoard = ({
 	user,
@@ -17,30 +21,62 @@ const LiveBoard = ({
 }) => {
 	const chessboardRef = useRef();
 
-	const historySquareStyles = useMemo(() => {
-		return gameHistory
-			? {
-					[gameHistory[gameHistory.length - 2]?.from]: {
-						backgroundColor: "rgba(255, 255, 0, 0.3)",
-					},
-					[gameHistory[gameHistory.length - 2]?.to]: {
-						backgroundColor: "rgba(255, 255, 0, 0.5)",
-					},
+	const [playMove] = useSound(Move);
+	const [playCapture] = useSound(Capture);
+	const [playGenericNotify] = useSound(GenericNotify);
+	const [playBerserk] = useSound(Berserk);
+	const [playError] = useSound(ErrorSound);
 
-					[gameHistory[gameHistory.length - 1]?.from]: {
-						backgroundColor: "rgba(0, 89, 255, 0.3)",
-					},
-					[gameHistory[gameHistory.length - 1]?.to]: {
-						backgroundColor: "rgba(0, 89, 255, 0.5)",
-					},
-			  }
-			: {};
+	const [historySquareStyles, setHistorySquareStyles] = useState([]);
+	const [checkStyles, setCheckStyles] = useState([]);
+
+	useEffect(() => {}, []);
+
+	useEffect(() => {
+		setHistorySquareStyles(() => {
+			return gameHistory
+				? {
+						[gameHistory[gameHistory.length - 2]?.from]: {
+							backgroundColor: "rgba(255, 255, 0, 0.3)",
+						},
+						[gameHistory[gameHistory.length - 2]?.to]: {
+							backgroundColor: "rgba(255, 255, 0, 0.5)",
+						},
+
+						[gameHistory[gameHistory.length - 1]?.from]: {
+							backgroundColor: "rgba(0, 89, 255, 0.3)",
+						},
+						[gameHistory[gameHistory.length - 1]?.to]: {
+							backgroundColor: "rgba(0, 89, 255, 0.5)",
+						},
+				  }
+				: {};
+		});
 	}, [gameHistory]);
 
-	const { Moralis } = useMoralis();
+	useEffect(() => {
+		if (game.in_checkmate() || game.in_check()) {
+			playGenericNotify();
+			if (game.turn() === "w") {
+				setCheckStyles({
+					[kingPositions(game).w]: {
+						backgroundColor: "rgba(255, 0, 0, 0.6)",
+					},
+				});
+			} else {
+				setCheckStyles({
+					[kingPositions(game).b]: {
+						backgroundColor: "rgba(255, 0, 0, 0.6)",
+					},
+				});
+			}
+		} else {
+			setCheckStyles({});
+		}
+	}, [game]);
 
+	const { Moralis, isWeb3Enabled } = useMoralis();
 	const [rightClickedSquares, setRightClickedSquares] = useState({});
-	const [moveSquares, setMoveSquares] = useState({});
 	const [optionSquares, setOptionSquares] = useState({});
 	const [moveFrom, setMoveFrom] = useState("");
 
@@ -61,7 +97,11 @@ const LiveBoard = ({
 		});
 		setGame(gameCopy);
 		// illegal move
-		if (move === null) return false;
+		if (move === null) {
+			playError();
+			return false;
+		}
+		move.flags === "c" ? playCapture() : playMove();
 		sendMove(move);
 		return true;
 	}
@@ -138,7 +178,6 @@ const LiveBoard = ({
 					game.undo();
 				});
 				chessboardRef.current.clearPremoves();
-				setMoveSquares({});
 			}
 		},
 		[Moralis, liveGameId]
@@ -156,11 +195,55 @@ const LiveBoard = ({
 		});
 	}
 
-	const custom = customPieces();
+	const {
+		data: [skinData],
+		error: skinError,
+		isLoading: isSkinDataLoading,
+	} = useMoralisQuery(
+		"GameSkin",
+		(query) => query.equalTo("userAddress", user?.get("ethAddress")).limit(1),
+		[user, isWeb3Enabled],
+		{
+			autoFetch: true,
+			live: true,
+		}
+	);
+
+	const customPieces = useCallback(
+		(squareWidth) => {
+			const moralisPieceSkinData = {};
+			if (skinData) {
+				Object.keys(DEFAULT_PIECES_PATHS).forEach(
+					(p) =>
+						skinData?.get(p) && (moralisPieceSkinData[p] = skinData?.get(p))
+				);
+			}
+
+			const paths = {
+				...DEFAULT_PIECES_PATHS,
+				...moralisPieceSkinData,
+			};
+
+			const newPieces = {};
+
+			Object.keys(DEFAULT_PIECES_PATHS).forEach((p) => {
+				newPieces[p] = () => (
+					<img
+						style={{ width: squareWidth, height: squareWidth }}
+						src={paths[p]}
+						alt={p}
+						className="chess-piece"
+					/>
+				);
+			});
+			return newPieces;
+		},
+		[skinData]
+	);
 
 	return (
 		<div className="board">
-			<ChessboardMemo
+			<Chessboard
 				arePiecesDraggable={!!user}
 				isDraggablePiece={(piece) => piece.piece[0] === playerSide}
 				boardOrientation={playerSide === "w" ? "white" : "black"}
@@ -172,20 +255,58 @@ const LiveBoard = ({
 				onPieceDrop={onDrop}
 				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
 				customLightSquareStyle={{ backgroundColor: "#f9ffe4" }}
-				// customPieces={custom} // {"wP": jsx}
+				// customDropSquareStyle={{ backgroundColor: "#ecc92c" }}
+				customPieces={customPieces(boardWidth / 8 - 20)}
 				customBoardStyle={{
 					borderRadius: "4px",
 					boxShadow: "0 0px 15px rgba(0, 0, 0, 0.25)",
 				}}
 				customSquareStyles={{
-					...moveSquares,
-					...optionSquares,
-					...rightClickedSquares,
+					display: "flex",
+					justifyContent: "center",
+					alignItems: "center",
 					...historySquareStyles,
+					...rightClickedSquares,
+					...optionSquares,
+					...checkStyles,
 				}}
 				ref={chessboardRef}
 			/>
 		</div>
 	);
 };
+
+const kingPositions = (game) => {
+	const a = []
+		.concat(...game.board())
+		.map((p, index) => {
+			if (p !== null && p.type === "k") {
+				return { index, color: p.color };
+			}
+			return {};
+		})
+		.filter((o) => o?.index)
+		.map((king) => {
+			const row = "abcdefgh"[king.index % 8];
+			const column = Math.ceil((64 - king.index) / 8);
+			return { c: king.color, i: row + column };
+		});
+	return { [a[0].c]: a[0].i, [a[1].c]: a[1].i };
+};
+
+const DEFAULT_PIECES_PATHS = {
+	wP: "./assets/chess_pieces_png/wP.png",
+	wN: "./assets/chess_pieces_png/wN.png",
+	wB: "./assets/chess_pieces_png/wB.png",
+	wR: "./assets/chess_pieces_png/wR.png",
+	wQ: "./assets/chess_pieces_png/wQ.png",
+	wK: "./assets/chess_pieces_png/wK.png",
+	bP: "./assets/chess_pieces_png/bP.png",
+	bN: "./assets/chess_pieces_png/bN.png",
+	bB: "./assets/chess_pieces_png/bB.png",
+	bR: "./assets/chess_pieces_png/bR.png",
+	bQ: "./assets/chess_pieces_png/bQ.png",
+	bK: "./assets/chess_pieces_png/bK.png",
+};
+
 export default LiveBoard;

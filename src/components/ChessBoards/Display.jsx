@@ -25,7 +25,7 @@ const DisplayBoard = ({ boardWidth }) => {
 				position={game.fen()}
 				customDarkSquareStyle={{ backgroundColor: "#6ABB72" }}
 				customLightSquareStyle={{ backgroundColor: "#D3FFD8" }}
-				// customPieces={customPiecesieces()}
+				customPieces={customPieces()}
 				customBoardStyle={{
 					borderRadius: "4px",
 					boxShadow: "0 0px 15px rgba(0, 0, 0, 0.25)",

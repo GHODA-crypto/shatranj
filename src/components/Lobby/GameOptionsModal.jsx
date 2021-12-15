@@ -1,19 +1,33 @@
+import { useState } from "react";
 import { Modal, Radio, InputNumber } from "antd";
 import { ReactComponent as WKing } from "../../assets/chess_svgs/k_w.svg";
 import { ReactComponent as BKing } from "../../assets/chess_svgs/k_b.svg";
 import { useWindowSize } from "../../hooks/useWindowSize";
+import { useMoralis, useMoralisCloudFunction } from "react-moralis";
 
 const GameOptionsModal = ({
 	isModalVisible,
 	setIsModalVisible,
-	gameOptions,
-	setGameOptions,
+	pairingParams,
+	setPairingParams,
+	setIsPairing,
 }) => {
+	const [gameOptions, setGameOptions] = useState({
+		color: "w",
+		rangeUpper: 100,
+		rangeLower: 100,
+	});
+
 	const handleOk = () => {
+		setPairingParams(gameOptions);
+		setIsPairing(true);
 		setIsModalVisible(false);
 	};
 
 	const winSize = useWindowSize();
+	const { user } = useMoralis();
+
+	window.user = user;
 
 	const handleCancel = () => {
 		setIsModalVisible(false);
@@ -66,7 +80,7 @@ const GameOptionsModal = ({
 					}}
 					className="wb"
 					value="w">
-					<WKing style={{ marginTop: "0.5rem" }} />
+					<WKing style={{ marginTop: "0.5rem", width: 30, height: 30 }} />
 				</Radio.Button>
 				<Radio.Button
 					label="Choose Sides"
@@ -80,7 +94,7 @@ const GameOptionsModal = ({
 					}}
 					className="wb"
 					value="b">
-					<BKing style={{ marginTop: "0.5rem" }} />
+					<BKing style={{ marginTop: "0.5rem", width: 30, height: 30 }} />
 				</Radio.Button>
 			</Radio.Group>
 			<div
@@ -103,7 +117,7 @@ const GameOptionsModal = ({
 						textAlign: "center",
 						marginBottom: "1rem",
 					}}>
-					Rating Range
+					ELO Rating Range
 				</span>
 				<div
 					className="rating-input"
@@ -114,15 +128,6 @@ const GameOptionsModal = ({
 						justifyContent: "center",
 						alignItems: "center",
 					}}>
-					<span
-						className="label inc"
-						style={{
-							fontSize: "1.5rem",
-							fontWeight: 600,
-							marginRight: "0.25rem",
-						}}>
-						+
-					</span>
 					<InputNumber
 						size="large"
 						min={1}
@@ -132,6 +137,27 @@ const GameOptionsModal = ({
 							setGameOptions({ ...gameOptions, rangeUpper: val });
 						}}
 					/>
+					<span
+						className="label inc"
+						style={{
+							fontSize: "1.5rem",
+							fontWeight: 600,
+							marginLeft: "0.25rem",
+							marginRight: "1rem",
+						}}>
+						+
+					</span>
+					<span
+						style={{
+							fontSize: "1.5rem",
+							fontWeight: 800,
+							padding: "0 0.5rem",
+							color: "white",
+							backgroundColor: "rgba(0,0,0,0.85)",
+							borderRadius: "0.5rem",
+						}}>
+						{user?.get("ELO")}
+					</span>
 					<span
 						className="label dec"
 						style={{

@@ -1,23 +1,28 @@
 @import "var";
 
 .game-desktop {
-	margin-top: 2rem;
 	width: 100vw;
+	height: calc(100vh - 60px); // vh - (nav height)
+	min-height: 42rem;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	.chat-room {
-		box-shadow: 0px 0px 12px 2px rgba($accent, 0.25);
 		background-color: $light;
+		width: 100%;
 		height: 100%;
-		//min-height -> calc
+		padding: 1.2rem;
+		box-shadow: 0px 0px 12px 2px rgba($accent, 0.25);
+		z-index: 1;
+		// min-height: 48rem;
 		display: flex;
 		flex-direction: column;
 		align-items: left;
-		justify-content: space-between;
+		justify-content: space-around;
+		// overflow-y: auto;
 
 		.prize-pool {
-			margin-top: 5%;
+			margin-top: 1rem;
 			height: 20%;
 			//min-height
 			.label {
@@ -137,45 +142,55 @@
 	}
 
 	.chessboard {
-		// background-color: green;
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		margin-top: 1rem;
+		.chess-piece {
+			position: relative;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+		}
 	}
 	.game-info {
-		box-shadow: 0px 0px 12px 2px rgba($accent, 0.25);
 		background-color: $light;
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
+		width: 100%;
 		height: 100%;
+		padding: 1.2rem;
+		box-shadow: 0px 0px 12px 2px rgba($accent, 0.25);
+		z-index: 1;
+
 		.ant-layout-sider-children {
 			.ant-skeleton {
-				margin-bottom: 3rem;
+				margin-bottom: 2rem;
 			}
 		}
+
 		.pgn {
 			width: 100%;
-			height: 50%;
-			border-radius: 1rem;
-			overflow: auto;
+			height: 40%;
 			padding: 1rem;
-			.cell {
-				background-color: red;
-				text-align: center;
-				font-size: 1rem;
-				margin: 0.25rem;
-				padding: 0.5rem 0;
-				border-radius: 0.5rem;
-			}
-			.cell-1 {
-				background: rgba($dark, 0.8);
-				color: $light;
-			}
-			.cell-2 {
-				background: rgba($accent, 0.3);
-				color: $dark;
-				font-weight: 600;
+			overflow: auto;
+			.row {
+				display: grid;
+				grid-template-columns: 1fr 2fr 2fr;
+				.cell {
+					text-align: center;
+					font-size: 1rem;
+					margin: 0.25rem;
+					padding: 0.5rem 0;
+					border-radius: 0.5rem;
+				}
+				.cell-1 {
+					background: rgba($dark, 0.8);
+					color: $light;
+				}
+				.cell-2 {
+					background: rgba($accent, 0.3);
+					color: $dark;
+					font-weight: 600;
+				}
 			}
 		}
 		.players {
@@ -187,6 +202,8 @@
 			height: 25%;
 			padding: 0 0.5rem;
 			.player-info {
+				padding: 1rem;
+				border-radius: 0.5rem;
 				width: 100%;
 				display: flex;
 				align-items: flex-end;
@@ -205,10 +222,15 @@
 					margin-bottom: 0.35rem;
 				}
 			}
+
+			.turn {
+				background-color: rgba($accent, 0.25);
+			}
 			.fallen-peice-self {
 				margin-top: 0.5rem;
 			}
 			.fallen-peice {
+				padding: 0.75rem;
 				display: flex;
 				width: 100%;
 				svg {
@@ -226,19 +248,21 @@
 						margin-right: -0.75rem;
 					}
 				}
+				#none {
+					display: none;
+				}
 			}
 		}
 	}
 }
 
 .game-tablet {
-	margin-top: 2rem;
 	width: 100vw;
+	height: calc(100vh - 60px);
 	display: flex;
 	justify-content: space-around;
 	align-items: center;
 	.chessboard {
-		// background-color: green;
 		height: 100%;
 		display: flex;
 		flex-direction: column;
@@ -265,6 +289,7 @@
 		justify-content: space-between;
 
 		.tabs-container {
+			padding: 1.2rem;
 			width: 100%;
 			height: 100%;
 			display: flex;
@@ -281,26 +306,28 @@
 						height: 100%;
 						.pgn {
 							width: 100%;
-							height: 50%;
-							border-radius: 1rem;
-							overflow: auto;
+							height: 40%;
 							padding: 1rem;
-							.cell {
-								background-color: red;
-								text-align: center;
-								font-size: 1rem;
-								margin: 0.25rem;
-								padding: 0.5rem 0;
-								border-radius: 0.5rem;
-							}
-							.cell-1 {
-								background: rgba($dark, 0.8);
-								color: $light;
-							}
-							.cell-2 {
-								background: rgba($accent, 0.3);
-								color: $dark;
-								font-weight: 600;
+							overflow: auto;
+							.row {
+								display: grid;
+								grid-template-columns: 1fr 2fr 2fr;
+								.cell {
+									text-align: center;
+									font-size: 1rem;
+									margin: 0.25rem;
+									padding: 0.5rem 0;
+									border-radius: 0.5rem;
+								}
+								.cell-1 {
+									background: rgba($dark, 0.8);
+									color: $light;
+								}
+								.cell-2 {
+									background: rgba($accent, 0.3);
+									color: $dark;
+									font-weight: 600;
+								}
 							}
 						}
 						.players {
@@ -312,6 +339,8 @@
 							height: 25%;
 							padding: 0 0.5rem;
 							.player-info {
+								padding: 1rem;
+								border-radius: 0.5rem;
 								width: 100%;
 								display: flex;
 								align-items: flex-end;
@@ -330,6 +359,35 @@
 									margin-bottom: 0.35rem;
 								}
 							}
+							.turn {
+								background-color: rgba($accent, 0.25);
+							}
+							.fallen-peice-self {
+								margin-top: 0.5rem;
+							}
+							.fallen-peice {
+								padding: 0.75rem;
+								display: flex;
+								width: 100%;
+								svg {
+									width: 20px;
+									height: 20px;
+									display: flex;
+									justify-content: center;
+									align-items: center;
+									margin-right: 0.25rem;
+								}
+								.peice {
+									display: flex;
+									margin-right: 1rem;
+									& > * {
+										margin-right: -0.75rem;
+									}
+								}
+								#none {
+									display: none;
+								}
+							}
 						}
 					}
 
@@ -339,26 +397,27 @@
 						display: flex;
 						flex-direction: column;
 						align-items: left;
-						justify-content: space-between;
+						justify-content: space-around;
 						.prize-pool {
+							margin-top: 1rem;
 							height: 20%;
 							//min-height
 							.label {
-								font-size: 1.2rem;
+								font-size: 1.5rem;
 								color: $dark;
 							}
 							.prize {
 								display: flex;
 								align-items: center;
 								margin-top: -1rem;
-								font-size: 3rem;
+								font-size: 4rem;
 								font-weight: 700;
 								color: darken($accent, 15%);
 								.amount {
 									margin-left: 0.5rem;
 								}
 								.ghd {
-									font-size: 1.5rem;
+									font-size: 2rem;
 									padding: 0 0.5rem;
 									border-radius: 0.6rem;
 									background-color: darken($accent, 15%);
@@ -368,18 +427,18 @@
 						}
 
 						.chat {
-							height: 60%;
+							height: 50%;
 							width: 100%;
 							background-color: rgba(darken($light, 40%), 0.3);
 							border-radius: 0.5rem;
 							.chat-text {
-								height: 85%;
+								height: 90%;
 								width: 100%;
 								overflow-y: auto;
 								overflow-x: hidden;
 							}
 							.chat-input {
-								height: 15%;
+								height: 10%;
 								width: 100%;
 								display: flex;
 								align-items: center;
@@ -465,17 +524,19 @@
 }
 
 .game-mobile {
-	margin-top: 4rem;
 	width: 100vw;
+	height: calc(100vh - 60px);
 	display: flex;
-	justify-content: center;
+	justify-content: space-around;
 	align-items: center;
 	.chessboard {
 		// background-color: green;
+		width: 85%;
 		height: 100%;
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
+		align-items: center;
 
 		#gameBoard {
 			display: flex;
@@ -487,14 +548,14 @@
 			display: flex;
 			flex-direction: column;
 			justify-content: center;
-			align-items: flex-start;
 			width: 100%;
 			height: 25%;
-			padding: 0 0.5rem;
 			.player-info {
-				width: 100%;
+				padding: 0.75rem;
+				border-radius: 0.5rem;
+				width: 60%;
 				display: flex;
-				align-items: flex-end;
+				flex-direction: column;
 				.username {
 					color: darken($accent, 15%);
 					font-size: 1.5rem;
@@ -506,8 +567,33 @@
 					color: $dark;
 					font-size: 0.8rem;
 					font-weight: 500;
-					margin-left: 1.5rem;
-					margin-bottom: 0.35rem;
+				}
+			}
+			.turn {
+				background-color: rgba($accent, 0.25);
+			}
+
+			.fallen-peice {
+				padding: 0.75rem;
+				display: flex;
+				width: 100%;
+				svg {
+					width: 20px;
+					height: 20px;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					margin-right: 0.25rem;
+				}
+				.peice {
+					display: flex;
+					margin-right: 1rem;
+					& > * {
+						margin-right: -0.75rem;
+					}
+				}
+				#none {
+					display: none;
 				}
 			}
 		}
@@ -552,24 +638,27 @@
 									.pgn {
 										width: 100%;
 										height: 80%;
-										border-radius: 1rem;
-										overflow: auto;
 										padding: 1rem;
-										.cell {
-											text-align: center;
-											font-size: 1rem;
-											margin: 0.25rem;
-											padding: 0.5rem 0;
-											border-radius: 0.5rem;
-										}
-										.cell-1 {
-											background: rgba($light, 0.8);
-											color: $dark;
-										}
-										.cell-2 {
-											background: rgba($accent, 0.8);
-											color: $light;
-											font-weight: 600;
+										overflow: auto;
+										.row {
+											display: grid;
+											grid-template-columns: 1fr 2fr 2fr;
+											.cell {
+												text-align: center;
+												font-size: 1rem;
+												margin: 0.25rem;
+												padding: 0.5rem 0;
+												border-radius: 0.5rem;
+											}
+											.cell-1 {
+												background: rgba($light, 0.8);
+												color: $dark;
+											}
+											.cell-2 {
+												background: rgba($accent, 0.9);
+												color: $light;
+												font-weight: 600;
+											}
 										}
 									}
 								}

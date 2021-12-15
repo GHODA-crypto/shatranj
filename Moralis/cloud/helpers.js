@@ -1,16 +1,6 @@
-function hello() {
-	// console.log("Hello World!");
-	return "Hello World!";
-}
-
 async function checkExistingChallenges(userEthAddress) {
 	const Challenge = Moralis.Object.extend("Challenge");
 	let pipeline = [
-		{
-			match: {
-				challengeStatus: { $ne: 3 },
-			},
-		},
 		{
 			match: {
 				$expr: {
@@ -21,11 +11,42 @@ async function checkExistingChallenges(userEthAddress) {
 				},
 			},
 		},
+		{
+			match: {
+				$expr: {
+					$or: [
+						{ $eq: ["$challengeStatus", 0] },
+						{ $eq: ["$challengeStatus", 1] },
+						{ $eq: ["$challengeStatus", 2] },
+					],
+				},
+			},
+		},
 	];
 
 	const challengesQuery = new Moralis.Query(Challenge);
+	const challengeQuery = new Moralis.Query(Challenge);
+
 	const existingChallenges = await challengesQuery.aggregate(pipeline);
-	return existingChallenges;
+	const logger = Moralis.Cloud.getLogger();
+	if (existingChallenges?.length > 0) {
+		return challengeQuery.get(existingChallenges[0]?.objectId);
+	} else {
+		const Game = Moralis.Object.extend("Game");
+		const gameQuery = new Moralis.Query(Game);
+
+		gameQuery.equalTo("winner", userEthAddress);
+		gameQuery.equalTo("gameStatus", 4);
+
+		const [game] = await gameQuery.find();
+		if (game) {
+			logger.info("Existing game found");
+			logger.info(game);
+			const challenge = await challengeQuery.get(game.get("challengeId"));
+			return challenge;
+		}
+	}
+	// logger.info("No existing challenges found");
 }
 
 // Create a new challenge
@@ -56,7 +77,6 @@ async function createNewChallenge(user, gamePreferences) {
 async function createNewGame(challenge, player1, player2) {
 	const Game = Moralis.Object.extend("Game");
 	const game = new Game();
-
 	game.set("challengeId", challenge.id);
 	// decide player sides
 	let player1Side = "";
@@ -92,7 +112,35 @@ async function createNewGame(challenge, player1, player2) {
 	game.set("outcome", 0);
 	game.set("fen", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 	game.set("pgn", " ");
+	game.set("canPlay", false);
 
 	await game.save(null, { useMasterKey: true });
 	return game;
+}
+
+function getScoreChange(eloW, eloB, outcome) {
+	const difference = eloW - eloB;
+	const reverse = difference > 0; // note if difference was positive
+	const diff = Math.abs(difference); // take absolute to lookup in positive table
+	// Score change lookup table
+	let scoreChange = 10;
+
+	if (diff > 636) scoreChange = 20;
+	else if (diff > 436) scoreChange = 19;
+	else if (diff > 338) scoreChange = 18;
+	else if (diff > 269) scoreChange = 17;
+	else if (diff > 214) scoreChange = 16;
+	else if (diff > 168) scoreChange = 15;
+	else if (diff > 126) scoreChange = 14;
+	else if (diff > 88) scoreChange = 13;
+	else if (diff > 52) scoreChange = 12;
+	else if (diff > 17) scoreChange = 11;
+	// Depending on result (win/draw/lose), calculate score changes
+	if (outcome === 3) {
+		return reverse ? 20 - scoreChange : scoreChange;
+	} else if (outcome === 4) {
+		return reverse ? -scoreChange : scoreChange - 20;
+	} else {
+		return reverse ? 10 - scoreChange : scoreChange - 10;
+	}
 }
