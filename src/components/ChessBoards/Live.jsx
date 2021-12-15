@@ -17,6 +17,7 @@ const LiveBoard = ({
 	game,
 	setGame,
 	gameHistory,
+	skinData,
 }) => {
 	const chessboardRef = useRef();
 
@@ -72,7 +73,7 @@ const LiveBoard = ({
 		}
 	}, [game]);
 
-	const { Moralis, isWeb3Enabled } = useMoralis();
+	const { Moralis } = useMoralis();
 	const [rightClickedSquares, setRightClickedSquares] = useState({});
 	const [optionSquares, setOptionSquares] = useState({});
 	const [moveFrom, setMoveFrom] = useState("");
@@ -189,27 +190,13 @@ const LiveBoard = ({
 		});
 	}
 
-	const {
-		data: [skinData],
-		error: skinError,
-		isLoading: isSkinDataLoading,
-	} = useMoralisQuery(
-		"GameSkin",
-		(query) => query.equalTo("userAddress", user?.get("ethAddress")).limit(1),
-		[user, isWeb3Enabled],
-		{
-			autoFetch: true,
-			live: true,
-		}
-	);
-
 	const customPieces = useCallback(
 		(squareWidth) => {
+			// console.log(skinData);
 			const moralisPieceSkinData = {};
 			if (skinData) {
-				Object.keys(DEFAULT_PIECES_PATHS).forEach(
-					(p) =>
-						skinData?.get(p) && (moralisPieceSkinData[p] = skinData?.get(p))
+				Object.keys(skinData).forEach(
+					(p) => (moralisPieceSkinData[p] = skinData[p])
 				);
 			}
 

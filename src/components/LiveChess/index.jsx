@@ -30,7 +30,7 @@ const LiveChess = ({
 	const [game, setGame] = useState(DEFAULT_GAME);
 	const [needNFT, setNeedNFT] = useState(true);
 
-	const { user, isInitialized } = useMoralis();
+	const { user, isWeb3Enabled } = useMoralis();
 
 	const boardWidth = useBoardWidth();
 
@@ -200,6 +200,68 @@ const LiveChess = ({
 		}
 	);
 
+	const {
+		data: [skinData],
+		error: skinError,
+		isLoading: isSkinDataLoading,
+	} = useMoralisQuery(
+		"GameSkin",
+		(query) => query.equalTo("userAddress", user?.get("ethAddress")).limit(1),
+		[user, isWeb3Enabled],
+		{
+			autoFetch: true,
+			live: true,
+		}
+	);
+	const {
+		data: [opponentSkinData],
+		error: opponentSkinError,
+		isLoading: isOpponentSkinDataLoading,
+	} = useMoralisQuery(
+		"GameSkin",
+		(query) =>
+			query
+				.equalTo(
+					"userAddress",
+					liveGameData?.get("players")[isPlayerWhite ? "b" : "w"]
+				)
+				.limit(1),
+		[liveGameData, isWeb3Enabled],
+		{
+			autoFetch: true,
+			live: true,
+		}
+	);
+	const [skins, setSkins] = useState({});
+	useEffect(() => {
+		const skinDataAttributes = skinData?.attributes;
+		const opponentSkinDataAttributes = opponentSkinData?.attributes;
+
+		setSkins(() => {
+			const tempSkins = {};
+
+			for (const key in skinDataAttributes) {
+				if (isPlayerWhite) {
+					if (key.length === 2) {
+						if (key[0] === "w" && skinDataAttributes?.[key])
+							tempSkins[key] = skinDataAttributes[key];
+						else if (opponentSkinDataAttributes?.[key])
+							tempSkins[key] = opponentSkinDataAttributes[key];
+					}
+				} else {
+					if (key.length === 2) {
+						if (key[0] === "b" && skinDataAttributes?.[key])
+							tempSkins[key] = skinDataAttributes[key];
+						else if (opponentSkinDataAttributes?.[key])
+							tempSkins[key] = opponentSkinDataAttributes[key];
+					}
+				}
+			}
+
+			return tempSkins;
+		});
+	}, [skinData, opponentSkinData]);
+
 	return (
 		<>
 			<Modals
@@ -226,6 +288,7 @@ const LiveChess = ({
 				claimVictory={claimVictory}>
 				<LiveBoard
 					liveGameId={gameId}
+					skinData={skins}
 					user={user}
 					isPlayerWhite={isPlayerWhite}
 					playerSide={isPlayerWhite ? "w" : "b"}
