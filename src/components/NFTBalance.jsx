@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import { useMoralis, useNFTBalances } from "react-moralis";
+import {
+	useMoralis,
+	useNFTBalances,
+	useMoralisCloudFunction,
+	useMoralisQuery,
+} from "react-moralis";
 import { Card, Image, Tooltip, Modal, Input, Skeleton } from "antd";
 import {
 	FileSearchOutlined,
@@ -33,8 +38,9 @@ function NFTBalance() {
 	const [nftToSend, setNftToSend] = useState(null);
 	const [isPending, setIsPending] = useState(false);
 	const [isNFTMetaModalVisible, setIsNFTMetaModalVisible] = useState(false);
+	const [selectedNFT, setSelectedNFT] = useState(null);
 
-	window.nft = NFTBalances;
+	// window.nft = NFTBalances;
 
 	async function transfer(nft, receiver) {
 		const options = {
@@ -67,24 +73,27 @@ function NFTBalance() {
 		<>
 			<div style={styles.NFTs}>
 				<Skeleton loading={!NFTBalances?.result}>
-					{NFTBalances?.result &&
+					{!NFTBalances?.result ? (
+						<h1>No NFTs found</h1>
+					) : (
 						NFTBalances.result.map((nft, index) =>
-							nft.token_address.toLowerCase() !== NFT_TOKEN_ADDRESS ? (
-								<h1>Cricket Noises</h1>
-							) : (
+							nft.token_address.toLowerCase() !== NFT_TOKEN_ADDRESS ? null : (
 								<Card
 									hoverable
+									// loading
 									actions={[
 										<Tooltip title="View On Blockexplorer">
 											<FileSearchOutlined
-												onClick={() =>
+												onClick={() => {
 													window.open(
 														`${getExplorer(chainId)}address/${
 															nft.token_address
 														}`,
 														"_blank"
-													)
-												}
+													);
+
+													// console.log(nft.metadata.image);
+												}}
 											/>
 										</Tooltip>,
 										<Tooltip title="Transfer NFT">
@@ -102,6 +111,16 @@ function NFTBalance() {
 												}
 											/>
 										</Tooltip>,
+
+										<Tooltip title="Use as Piece Skin">
+											<SkinOutlined
+												onClick={() => {
+													setSelectedNFT(nft);
+													setIsNFTMetaModalVisible(true);
+													console.log("nft from inside", nft);
+												}}
+											/>
+										</Tooltip>,
 									]}
 									style={{
 										width: 300,
@@ -117,10 +136,14 @@ function NFTBalance() {
 										/>
 									}
 									key={index}>
-									<Meta title={nft.name} description={nft.token_address} />
+									<Meta
+										title={nft.metadata.name}
+										description={nft.token_address}
+									/>
 								</Card>
 							)
-						)}
+						)
+					)}
 				</Skeleton>
 			</div>
 			<Modal
@@ -132,16 +155,75 @@ function NFTBalance() {
 				okText="Send">
 				<AddressInput autoFocus placeholder="Receiver" onChange={setReceiver} />
 			</Modal>
+			{isNFTMetaModalVisible && (
+				<NFTMetaModal
+					isNFTMetaModalVisible={isNFTMetaModalVisible}
+					setIsNFTMetaModalVisible={setIsNFTMetaModalVisible}
+					nft={selectedNFT}
+				/>
+			)}
 		</>
 	);
 }
 
 const NFTMetaModal = ({
 	isNFTMetaModalVisible,
-	setNFTMetaModalVisible,
+	setIsNFTMetaModalVisible,
 	nft,
 }) => {
-	const mintedAt = new Date(nft.minted_at);
+	const { user, isWeb3Enabled } = useMoralis();
+
+	const mintedAt = new Date(nft.metadata.minted_at);
+	const image = nft.metadata.image.split("/");
+	const piece = nft.metadata.piece.split("/");
+
+	const imageHash = image[image.length - 2];
+	const imageName = image[image.length - 1];
+	const pieceHash = piece[piece.length - 2];
+	const pieceName = piece[piece.length - 1];
+
+	const {
+		fetch: setPieceSkin,
+		data: isPieceSkinSet,
+		error: pieceSkinError,
+		isLoading: settingPieceSkin,
+	} = useMoralisCloudFunction(
+		"usePieceSkin",
+		{
+			token_uri: nft.token_uri,
+		},
+		{
+			autoFetch: false,
+		}
+	);
+
+	const {
+		data: [SkinData],
+		// error: gameError,
+		isLoading: isSkinDataLoading,
+	} = useMoralisQuery(
+		"GameSkin",
+		(query) => query.equalTo("userEthAddress", user?.get("ethAddress")),
+		[user, isWeb3Enabled],
+		{
+			autoFetch: true,
+			live: true,
+		}
+	);
+
+	const {
+		fetch: removePieceSkin,
+		data: isPieceSkinRemoved,
+		isLoading: removingPieceSkin,
+	} = useMoralisCloudFunction(
+		"removePieceSkin",
+		{
+			token_uri: nft.token_uri,
+		},
+		{
+			autoFetch: false,
+		}
+	);
 
 	const formatAMPM = () => {
 		let hours = mintedAt.getHours();
@@ -152,38 +234,57 @@ const NFTMetaModal = ({
 		return strTime;
 	};
 
-	const handleThemeChange = () => {};
+	const success = () => {
+		Modal.success({ content: "Successfully set piece skin" });
+	};
+
+	const fail = () => {
+		Modal.error({ content: "Something went wrong. Try Again." });
+	};
 
 	return (
-		<Modal
-			visible={isNFTMetaModalVisible}
-			okText="Use this NFT as Piece Skin"
-			onCancel={() => {
-				setNFTMetaModalVisible(false);
-			}}
-			onOk={handleThemeChange}
-			centered={true}
-			title={nft.token_address}>
-			<div className="images">
-				<img src={nft?.metadata?.image} alt="NFT" />
-				<img src={nft?.metadata?.piece} alt="PieceNFT" />
-			</div>
-			<div className="info">
-				<div className="name">{nft?.metadata?.name}</div>
-				<div className="message">
-					You Defeated{" "}
-					<span className="white">{nft?.metadata?.attributes[0]?.value}</span>{" "}
-					in{" "}
-					<span className="moves">{nft?.metadata?.attributes[3]?.value}</span>{" "}
-					moves.
+		<>
+			<Modal
+				visible={isNFTMetaModalVisible}
+				okText="Use this NFT as Piece Skin"
+				onCancel={() => {
+					setIsNFTMetaModalVisible(false);
+				}}
+				onOk={() => {
+					setPieceSkin();
+					console.log(pieceSkinError);
+					setIsNFTMetaModalVisible(false);
+					isPieceSkinSet ? success() : fail();
+				}}
+				confirmLoading={settingPieceSkin}
+				centered={true}
+				title={nft.metadata.name}>
+				<div className="images" style={{ display: "flex" }}>
+					<img
+						src={`https://ipfs.moralis.io:2053/ipfs/${imageHash}/${imageName}`}
+						alt="NFT"
+					/>
+					<Image
+						src={`https://ipfs.moralis.io:2053/ipfs/${pieceHash}/${pieceName}`}
+						alt="PieceNFT"
+					/>
 				</div>
-				<div className="datetime">
-					This NFT was minted on{" "}
-					<span className="date">{mintedAt.toDateString}</span> at{" "}
-					<span className="time">{formatAMPM}</span>
+				<div className="info">
+					<div className="name">{nft.metadata.name}</div>
+					<div className="message">
+						You Defeated{" "}
+						<span className="white">{nft.metadata.attributes[0].value}</span> in{" "}
+						<span className="moves">{nft.metadata.attributes[3].value}</span>{" "}
+						moves.
+					</div>
+					<div className="datetime">
+						This NFT was minted on{" "}
+						<span className="date">{mintedAt.toDateString}</span> at{" "}
+						<span className="time">{formatAMPM}</span>
+					</div>
 				</div>
-			</div>
-		</Modal>
+			</Modal>
+		</>
 	);
 };
 
