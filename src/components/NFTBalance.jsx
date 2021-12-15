@@ -139,7 +139,7 @@ function NFTBalance() {
 									}
 									key={index}>
 									<Meta
-										title={nft.metadata.name}
+										title={nft.metadata?.name}
 										description={nft.token_address}
 									/>
 								</Card>
