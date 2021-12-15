@@ -16,21 +16,6 @@ const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 
 	const {
-		data: allowanceData,
-		error: allowanceError,
-		fetch: getAllowanceForUser,
-		isFetching: isAllowanceFetching,
-	} = useWeb3ExecuteFunction({
-		abi: erc20Abi,
-		contractAddress: GHODA_TOKEN_ADDRESS,
-		functionName: "allowance",
-		params: {
-			owner: user?.get("ethAddress"),
-			spender: SGHODA_TOKEN_ADDRESS,
-		},
-	});
-
-	const {
 		data: stakedBalance,
 		error: stakedBalanceError,
 		fetch: fetchStakedBalance,
@@ -43,6 +28,14 @@ const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 			account: user?.get("ethAddress"),
 		},
 	});
+
+	useEffect(() => {
+		console.log(stakedBalance, stakedBalanceError);
+	}, [stakedBalance]);
+
+	useEffect(() => {
+		fetchStakedBalance();
+	}, [fetchStakedBalance, isWeb3Enabled, user]);
 
 	const handlePlayWithFriend = () => {
 		if (Moralis.Units.FromWei(stakedBalance) < 10) {
@@ -75,14 +68,6 @@ const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 		}
 		setIsPairing(true);
 	};
-
-	useEffect(() => {
-		isWeb3Enabled && user && getAllowanceForUser();
-	}, [getAllowanceForUser, isWeb3Enabled, user]);
-
-	useEffect(() => {
-		fetchStakedBalance();
-	}, [isWeb3Enabled, user]);
 
 	return (
 		<div className="lobby">
