@@ -17,19 +17,16 @@ const LiveChess = ({
 	setIsPairing,
 	setPairingParams,
 }) => {
-	const { fetch: joinLiveChess } = useMoralisCloudFunction(
-		"joinLiveChess",
-		{ pairingParams },
-		{ autoFetch: false }
-	);
-
+	useEffect(() => {
+		return setIsPairing(false);
+	}, []);
 	return (
-		<LiveChessContextProvider
-			setIsPairing={setIsPairing}
-			setPairingParams={setPairingParams}
-			isPairing={isPairing}
-			joinLiveChess={joinLiveChess}>
-			<LiveChessWrapper />
+		<LiveChessContextProvider isPairing={isPairing}>
+			<LiveChessWrapper
+				pairingParams={pairingParams}
+				setIsPairing={setIsPairing}
+				setPairingParams={setPairingParams}
+			/>
 		</LiveChessContextProvider>
 	);
 };
@@ -37,12 +34,18 @@ const LiveChessWrapper = ({
 	setIsPairing,
 	setPairingParams,
 	isPairing,
-	joinLiveChess,
+	pairingParams,
 }) => {
 	const [isMobileDrawerVisible, setIsMobileDrawerVisible] = useState(false);
+	const { fetch: joinLiveChess } = useMoralisCloudFunction(
+		"joinLiveChess",
+		{ pairingParams },
+		{ autoFetch: false }
+	);
 	useEffect(() => {
 		if (isPairing) {
 			setIsPairing(false);
+			console.log("joining live chess");
 			joinLiveChess();
 		}
 	}, [isPairing]);

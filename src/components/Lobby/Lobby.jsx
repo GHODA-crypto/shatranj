@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { notification, Modal } from "antd";
-import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
+import {
+	useMoralis,
+	useWeb3ExecuteFunction,
+	useMoralisCloudFunction,
+} from "react-moralis";
 import useSound from "use-sound";
 
 import { CheckCircleOutlined } from "@ant-design/icons";
@@ -34,6 +38,11 @@ const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 			account: user?.get("ethAddress"),
 		},
 	});
+	const { fetch: joinLiveChess } = useMoralisCloudFunction(
+		"joinLiveChess",
+		{ pairingParams },
+		{ autoFetch: false }
+	);
 
 	useEffect(() => {
 		console.log(stakedBalance, stakedBalanceError);
@@ -73,6 +82,7 @@ const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 			openErrorNotification();
 			return;
 		}
+		joinLiveChess({ pairingParams });
 		setIsPairing(true);
 	};
 
@@ -111,6 +121,7 @@ const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 				pairingParams={pairingParams}
 				setPairingParams={setPairingParams}
 				setIsPairing={setIsPairing}
+				joinLiveChess={joinLiveChess}
 			/>
 
 			<section className="play">

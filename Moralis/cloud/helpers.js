@@ -33,16 +33,28 @@ async function checkExistingChallenges(userEthAddress) {
 		return challengeQuery.get(existingChallenges[0]?.objectId);
 	} else {
 		const Game = Moralis.Object.extend("Game");
-		const gameQuery = new Moralis.Query(Game);
 
-		gameQuery.equalTo("winner", userEthAddress);
-		gameQuery.equalTo("gameStatus", 4);
+		let gamePipeline = [
+			{
+				match: {
+					winner: userEthAddress,
+				},
+			},
+			{
+				match: {
+					$expr: {
+						$or: [{ $eq: ["$gameStatus", 3] }, { $eq: ["$gameStatus", 4] }],
+					},
+				},
+			},
+		];
 
-		const [game] = await gameQuery.find();
+		const gameQuery = new Moralis.Query("Game");
+		const [game] = await gameQuery.aggregate(gamePipeline);
 		if (game) {
 			logger.info("Existing game found");
 			logger.info(game);
-			const challenge = await challengeQuery.get(game.get("challengeId"));
+			const challenge = await challengeQuery.get(game.challengeId);
 			return challenge;
 		}
 	}

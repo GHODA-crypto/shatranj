@@ -12,6 +12,7 @@ const GameOptionsModal = ({
 	pairingParams,
 	setPairingParams,
 	setIsPairing,
+	joinLiveChess,
 }) => {
 	const { user } = useMoralis();
 
@@ -32,6 +33,7 @@ const GameOptionsModal = ({
 			okType: "primary",
 			cancelText: "Close",
 			onOk() {
+				joinLiveChess({ pairingParams });
 				setIsPairing(true);
 			},
 			onCancel() {

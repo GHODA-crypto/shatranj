@@ -178,7 +178,7 @@ Moralis.Cloud.define(
 		game.set("winner", game.get("players")[opponentSide]);
 
 		challenge.set("challengeStatus", 3);
-		game.set("gameStatus", 3);
+		game.set("gameStatus", 4);
 
 		challenge.save(null, { useMasterKey: true });
 		game.save(null, { useMasterKey: true });

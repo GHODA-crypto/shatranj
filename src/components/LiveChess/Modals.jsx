@@ -8,6 +8,7 @@ const Modals = ({ joinLiveChess, setPairingParams }) => {
 	const urlHistory = useHistory();
 	const { liveGameAttributes, userSide, game, gameId, liveChallengeData } =
 		useContext(LiveChessContext);
+
 	const {
 		fetch: cancelChallenge,
 		data: cancelData,
@@ -136,7 +137,7 @@ const Modals = ({ joinLiveChess, setPairingParams }) => {
 						title="Victory"
 						visible={
 							(liveGameAttributes?.outcome === 3 && userSide === "w") ||
-							(liveGameAttributes?.outcome === 4 && !userSide === "w")
+							(liveGameAttributes?.outcome === 4 && userSide === "b")
 						}
 						footer={[
 							<Button key="only Stake" onClick={claimVictory}>
@@ -156,7 +157,7 @@ const Modals = ({ joinLiveChess, setPairingParams }) => {
 					<Modal
 						title="Defeat"
 						visible={
-							(liveGameAttributes?.outcome === 3 && !userSide === "w") ||
+							(liveGameAttributes?.outcome === 3 && userSide === "b") ||
 							(liveGameAttributes?.outcome === 4 && userSide === "w")
 						}
 						footer={[

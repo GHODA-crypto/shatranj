@@ -36,50 +36,16 @@ const LiveChessContextProvider = ({ isPairing, children }) => {
 	const [playGenericNotify] = useSound(GenericNotify, { volume: 0.5 });
 	const { user } = useMoralis();
 
-	const { fetch: getLiveChallenge, data: liveChallenge } =
-		useMoralisCloudFunction(
-			"joinExistingChallenge",
-			{},
-			{
-				autoFetch: false,
-			}
-		);
-
-	useEffect(() => {
-		if (user) {
-			console.log("fetching live challenges");
-			getLiveChallenge();
-		}
-	}, [user, isPairing]);
-
 	const {
-		// fetch: getChallenge,
-		data: [liveChallengeData],
-		// error: gameError,
-		isLoading: isChallengeLoading,
-	} = useMoralisQuery(
-		"Challenge",
-		(query) => query.equalTo("objectId", liveChallenge?.id),
-		[liveChallenge?.id],
-		{
-			autoFetch: true,
-			live: true,
-		}
-	);
-
-	const {
-		fetch: getGameData,
-		data: [liveGameData],
-		error: gameError,
-		isLoading: isGameLoading,
-	} = useMoralisQuery(
-		"Game",
-		(query) => query.equalTo("challengeId", liveChallenge?.id),
-		[liveChallenge?.id],
-		{
-			live: true,
-		}
-	);
+		liveChallenge,
+		liveChallengeData,
+		liveGameData,
+		gameError,
+		isChallengeLoading,
+		isGameLoading,
+		getGameData,
+		getLiveChallenge,
+	} = useGameQueries(user, isPairing);
 	useEffect(() => {
 		getGameData();
 	}, [liveChallenge?.id]);
@@ -88,7 +54,6 @@ const LiveChessContextProvider = ({ isPairing, children }) => {
 	const [gameHistory, setGameHistory] = useState([]);
 
 	const gameId = useMemo(() => liveGameData?.id, [liveGameData?.id]);
-	const [userAddress, setUserAddress] = useState(null);
 	const [opponentAddress, setOpponentAddress] = useState(null);
 
 	const [liveGameObj, setLiveGameObj] = useState(DEFAULT_GAME);
@@ -102,7 +67,6 @@ const LiveChessContextProvider = ({ isPairing, children }) => {
 		[liveGameAttributes.sides, user]
 	);
 	useEffect(() => {
-		setUserAddress(user?.get("ethAddress"));
 		setOpponentAddress(liveGameData?.get("players")[isPlayerWhite ? "b" : "w"]);
 		// console.log("live game data changed");
 		if (liveGameData?.attributes) {
@@ -151,9 +115,16 @@ const LiveChessContextProvider = ({ isPairing, children }) => {
 	useEffect(() => {
 		// console.log("setting live game object");
 		safeGameMutate((livegame) => {
-			livegame.load_pgn(liveGameAttributes?.pgn || "");
+			livegame.load_pgn(liveGameData?.attributes?.pgn || "");
 		});
-	}, [liveGameAttributes]);
+		// console.log("live game data changes, loading new state");
+		// if (liveGameData)
+		// 	setLiveGameObj(() => {
+		// 		const _chess = new Chess();
+		// 		_chess.load_pgn(liveGameData?.attributes?.pgn || "");
+		// 		return _chess;
+		// 	});
+	}, [liveGameData]);
 
 	useEffect(() => {
 		if (liveGameObj.history().length !== gameHistory.length) {
@@ -175,13 +146,17 @@ const LiveChessContextProvider = ({ isPairing, children }) => {
 		}
 	}, [gameHistory]);
 
-	const skins = useSkinData(userAddress, opponentAddress, isPlayerWhite);
+	const skins = useSkinData(
+		user?.get("ethAddress"),
+		opponentAddress,
+		isPlayerWhite
+	);
 
 	return (
 		<LiveChessContext.Provider
 			value={{
-				liveChallengeData,
-				userAddress,
+				liveChallengeData: liveChallenge || liveChallengeData,
+				userAddress: user?.get("ethAddress"),
 				opponentAddress,
 				userSide: liveGameAttributes?.sides?.[user?.get("ethAddress")],
 				game: liveGameObj,
@@ -201,5 +176,71 @@ const LiveChessContextProvider = ({ isPairing, children }) => {
 		</LiveChessContext.Provider>
 	);
 };
+const useGameQueries = (user, isPairing) => {
+	const {
+		fetch: getLiveChallenge,
+		data: liveChallenge,
+		error: liveChallegneError,
+		isLoading: isLiveChallengeLoading,
+	} = useMoralisCloudFunction(
+		"joinExistingChallenge",
+		{},
+		{
+			autoFetch: true,
+		}
+	);
 
+	useEffect(() => {
+		if (user) {
+			getLiveChallenge();
+		}
+	}, [user, isPairing]);
+
+	const {
+		// fetch: getChallenge,
+		data: [liveChallengeData],
+		error: challengeError,
+		isLoading: isChallengeLoading,
+	} = useMoralisQuery(
+		"Challenge",
+		(query) => query.equalTo("objectId", liveChallenge?.id),
+		[liveChallenge?.id],
+		{
+			autoFetch: true,
+			live: true,
+			// onLiveUpdate: (entity, all) => {
+			// 	console.log("liveChallengeDataUpdated");
+			// 	return all.map((e) => (e.id === entity.id ? entity : e));
+			// },
+		}
+	);
+	const {
+		fetch: getGameData,
+		data: [liveGameData],
+		error: gameError,
+		isLoading: isGameLoading,
+	} = useMoralisQuery(
+		"Game",
+		(query) => query.equalTo("challengeId", liveChallenge?.id),
+		[liveChallenge?.id],
+		{
+			live: true,
+			// onLiveUpdate: (entity, all) => {
+			// 	console.log("liveGameDataUpdated");
+			// 	return all.map((e) => (e.id === entity.id ? entity : e));
+			// },
+		}
+	);
+
+	return {
+		liveChallenge,
+		liveChallengeData,
+		liveGameData,
+		gameError,
+		isChallengeLoading,
+		isGameLoading,
+		getGameData,
+		getLiveChallenge,
+	};
+};
 export { LiveChessContext, LiveChessContextProvider };

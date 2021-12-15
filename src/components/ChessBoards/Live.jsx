@@ -189,7 +189,7 @@ const LiveBoard = () => {
 				...DEFAULT_PIECES_PATHS,
 				...moralisPieceSkins,
 			};
-			console.log(paths);
+			// console.log(paths);
 			const newPieces = {};
 
 			Object.keys(DEFAULT_PIECES_PATHS).forEach((p) => {

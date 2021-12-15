@@ -26,15 +26,22 @@ const useSkinData = (userAddress, opponentAddress, isPlayerWhite) => {
 	);
 	const [skins, setSkins] = useState({});
 	useEffect(() => {
-		const skinDataAttributes = skinData?.attributes || {};
-		const opponentSkinDataAttributes = opponentSkinData?.attributes || {};
+		const skinDataAttributes = skinData?.attributes;
+		const opponentSkinDataAttributes = opponentSkinData?.attributes;
+
+		const userSkinPieces = skinData?.attributes
+			? Object.keys(skinDataAttributes).filter((key) => key.length === 2)
+			: [];
+		const opponentSkinPieces = opponentSkinData?.attributes
+			? Object.keys(opponentSkinData?.attributes).filter(
+					(key) => key.length === 2
+			  )
+			: [];
 
 		setSkins(() => {
 			const tempSkins = {};
 
-			for (const key of Object.keys(skinDataAttributes).filter(
-				(key) => key.length === 2
-			)) {
+			for (const key of userSkinPieces) {
 				if (isPlayerWhite) {
 					if (key[0] === "w" && skinDataAttributes?.[key])
 						tempSkins[key] = skinDataAttributes[key];
@@ -43,9 +50,7 @@ const useSkinData = (userAddress, opponentAddress, isPlayerWhite) => {
 						tempSkins[key] = skinDataAttributes[key];
 				}
 			}
-			for (const key in Object.keys(opponentSkinDataAttributes).filter(
-				(key) => key.length === 2
-			)) {
+			for (const key of opponentSkinPieces) {
 				if (!isPlayerWhite) {
 					if (key[0] === "w" && opponentSkinDataAttributes?.[key])
 						tempSkins[key] = opponentSkinDataAttributes[key];
