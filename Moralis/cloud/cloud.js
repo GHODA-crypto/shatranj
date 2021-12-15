@@ -169,10 +169,15 @@ Moralis.Cloud.define(
 		const challenge = await challengeQuery.get(game.get("challengeId"));
 
 		const userSide = game.get("players")[request.user.get("ethAddress")];
+		const opponentSide = userSide === "w" ? "b" : "w";
+
 		game.set("outcome", userSide === "w" ? 4 : 3);
 		game.set("turn", "n");
+		game.set("canPlay", false);
+		game.set("winner", game.get("players")[opponentSide]);
 
 		challenge.set("challengeStatus", 3);
+		game.set("gameStatus", 3);
 
 		challenge.save(null, { useMasterKey: true });
 		game.save(null, { useMasterKey: true });
@@ -199,6 +204,8 @@ Moralis.Cloud.define(
 Moralis.Cloud.define(
 	"claimVictory",
 	async (request) => {
+		const logger = Moralis.Cloud.getLogger();
+
 		const { gameId, needNFT } = request.params;
 
 		const gameQuery = new Moralis.Query("Game");
@@ -242,23 +249,26 @@ Moralis.Cloud.define(
 			game.set("token_uri", ipfs);
 			game.set("nftTokenId", token_id);
 			game.set("gameStatus", 5);
-
-			game.save(null, { useMasterKey: true });
+			logger.info(ipfs);
+			await game.save(null, { useMasterKey: true });
 
 			return { txStatus: "successful", ipfs, token_id };
 		} else if (httpResponse.statusCode === 200) {
 			game.set("gameStatus", 5);
 			game.save(null, { useMasterKey: true });
 
+			await game.save(null, { useMasterKey: true });
 			return { txStatus: "successful" };
 		}
-		throw Error(
-			"Something went wrong. Unknown status code " + httpResponse.statusCode
-		);
+		if (httpResponse.statusCode === 400) {
+			return { txStatus: "bad request" };
+		}
+		return { txStatus: "unsuccessful", httpResponse };
 	},
 	validateClaimVictory
 );
 
+// Use piece Skin
 Moralis.Cloud.define(
 	"usePieceSkin",
 	async (request) => {
@@ -322,6 +332,7 @@ Moralis.Cloud.define(
 		},
 	}
 );
+// Remove Piece Skin
 Moralis.Cloud.define(
 	"removePieceSkin",
 	async (request) => {
