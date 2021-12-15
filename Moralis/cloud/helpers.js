@@ -29,8 +29,6 @@ async function checkExistingChallenges(userEthAddress) {
 
 	const existingChallenges = await challengesQuery.aggregate(pipeline);
 	const logger = Moralis.Cloud.getLogger();
-	logger.info(existingChallenges?.length);
-
 	if (existingChallenges?.length > 0) {
 		return challengeQuery.get(existingChallenges[0]?.objectId);
 	} else {
@@ -48,7 +46,7 @@ async function checkExistingChallenges(userEthAddress) {
 			return challenge;
 		}
 	}
-	logger.info("No existing challenges found");
+	// logger.info("No existing challenges found");
 }
 
 // Create a new challenge

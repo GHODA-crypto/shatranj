@@ -25,7 +25,7 @@ Moralis.Cloud.define(
 		challengeQuery.equalTo("challengeStatus", 0);
 		const challenge = await challengeQuery.first();
 		if (!challenge) throw Error("No unpaired challenge to cancel");
-		await challenge.destroy();
+		await challenge.destroy({ useMasterKey: true });
 		return true;
 	},
 	{
@@ -60,7 +60,7 @@ Moralis.Cloud.define(
 			{
 				match: {
 					$expr: {
-						$or: [
+						$and: [
 							{ $ne: ["$player1", user.get("ethAddress")] },
 							{ $ne: ["$player2", user.get("ethAddress")] },
 						],
@@ -76,15 +76,25 @@ Moralis.Cloud.define(
 			},
 			{
 				match: {
-					upperElo: {
-						$lte: params.gamePreferences?.upperElo
-							? params.gamePreferences?.upperElo
-							: user.get("ELO") + 50,
-					},
-					lowerElo: {
-						$gte: params.gamePreferences?.lowerElo
-							? params.gamePreferences?.lowerElo
-							: user.get("ELO") - 50,
+					$expr: {
+						$and: [
+							{
+								$lte: [
+									"$player1ELO",
+									params.gamePreferences?.upperElo
+										? params.gamePreferences?.upperElo
+										: user.get("ELO") + 50,
+								],
+							},
+							{
+								$gte: [
+									"$player1ELO",
+									params.gamePreferences?.lowerElo
+										? params.gamePreferences?.lowerElo
+										: user.get("ELO") - 50,
+								],
+							},
+						],
 					},
 				},
 			},
@@ -94,7 +104,9 @@ Moralis.Cloud.define(
 		const challenges = await challengeQuery.aggregate(pipeline);
 
 		const logger = Moralis.Cloud.getLogger();
+		logger.info("challenges");
 		logger.info(challenges);
+		logger.info(pipeline);
 		if (challenges.length > 0) {
 			// Join an existing challenge
 			const challenge = await challengeQuery.get(challenges[0].objectId);
@@ -227,7 +239,7 @@ Moralis.Cloud.define(
 			return { txStatus: "unsuccessful" };
 		} else if (httpResponse.statusCode === 200 && needNFT) {
 			let { ipfs, token_id } = httpResponse.data;
-			game.set("nftIpfs", ipfs);
+			game.set("token_uri", ipfs);
 			game.set("nftTokenId", token_id);
 			game.set("gameStatus", 5);
 
@@ -245,6 +257,91 @@ Moralis.Cloud.define(
 		);
 	},
 	validateClaimVictory
+);
+
+Moralis.Cloud.define(
+	"usePieceSkin",
+	async (request) => {
+		const { token_uri } = request.params;
+
+		const polygonNFTOwnersQuery = new Moralis.Query("PolygonNFTOwners");
+		polygonNFTOwnersQuery.equalTo(
+			"token_address",
+			"0x59936a21b97aa3c42d885b9fba3b6a0c562c6f0d"
+		);
+		polygonNFTOwnersQuery.equalTo("token_uri", token_uri);
+		polygonNFTOwnersQuery.equalTo("owner_of", request.user.get("ethAddress"));
+		const polygonNFT = await polygonNFTOwnersQuery.first({
+			useMasterKey: true,
+		});
+
+		if (polygonNFT) {
+			const GameSkin = Moralis.Object.extend("GameSkin");
+
+			const gameSkinQuery = new Moralis.Query("GameSkin");
+			gameSkinQuery.equalTo("userAddress", request.user.get("ethAddress"));
+
+			let gameSkin = await gameSkinQuery.first();
+			if (!gameSkin) {
+				gameSkin = new GameSkin();
+				gameSkin.set("userAddress", request.user.get("ethAddress"));
+			}
+
+			const ipfsAddress = token_uri.split("/")[token_uri.split("/").length - 2];
+			const url = `https://ipfs.moralis.io:2053/ipfs/${ipfsAddress}/metadata.json`;
+
+			const response = await Moralis.Cloud.httpRequest({
+				method: "GET",
+				url: url,
+				headers: {
+					"Content-Type": "application/json;charset=utf-8",
+				},
+			});
+			const { data } = response;
+
+			const pieceIpfs = data.piece.split("/")[data.piece.split("/").length - 2];
+			const pieceName = data.piece
+				.split("/")
+				[data.piece.split("/").length - 1].split(".")[0];
+			gameSkin.set(
+				pieceName,
+				`https://ipfs.moralis.io:2053/ipfs/${pieceIpfs}/${pieceName}.png`
+			);
+
+			await gameSkin.save(null, { useMasterKey: true });
+			return true;
+		}
+		throw Error("You don't own this piece");
+	},
+	{
+		requireUser: true,
+		fields: {
+			token_uri: {
+				required: true,
+			},
+		},
+	}
+);
+Moralis.Cloud.define(
+	"removePieceSkin",
+	async (request) => {
+		const GameSkin = new Moralis.Query("GameSkin");
+		const gameSkinQuery = new Moralis.Query("GameSkin");
+		gameSkinQuery.equalTo("userAddress", request.user.get("ethAddress"));
+
+		const gameSkin = await GameSkin.first();
+		gameSkin.set([request.params.piece], null);
+		gameSkin.save(null, { useMasterKey: true });
+	},
+	{
+		requireUser: true,
+		fields: {
+			piece: {
+				required: true,
+				type: "string",
+			},
+		},
+	}
 );
 
 // After Effects && Triggers
@@ -285,11 +382,14 @@ Moralis.Cloud.afterSave("Challenge", async (request) => {
 					challenge.set("gameId", newGame.id);
 					challenge.set("challengeStatus", 2);
 					newGame.set("canPlay", true);
+					newGame.set("gameStatus", 2);
 					await challenge.save(null, { useMasterKey: true });
 					await newGame.save(null, { useMasterKey: true });
 				},
 				async function (httpResponse) {
+					newGame.set("gameStatus", 9);
 					challenge.set("challengeStatus", 9);
+					await newGame.save(null, { useMasterKey: true });
 					await challenge.save(null, { useMasterKey: true });
 				}
 			)
@@ -302,12 +402,7 @@ Moralis.Cloud.afterSave("Challenge", async (request) => {
 // Perform game updates for wins, losses, draws, etc.
 Moralis.Cloud.afterSave("Game", async (request) => {
 	const game = request.object;
-	if (
-		game.get("pgn") &&
-		game.get("gameStatus") !== 4 &&
-		game.get("gameStatus") !== 5 &&
-		!game.get("gameStatus")
-	) {
+	if (game.get("pgn") && game.get("gameStatus") === 2) {
 		const logger = Moralis.Cloud.getLogger();
 		const chess = new Chess();
 		chess.load_pgn(game.get("pgn") || "");
@@ -329,6 +424,8 @@ Moralis.Cloud.afterSave("Game", async (request) => {
 
 			challenge.set("challengeStatus", 3);
 			game.set("outcome", outcome);
+			game.set("canPlay", false);
+			game.set("gameStatus", 4);
 			game.set(
 				"winner",
 				outcome === 3
@@ -340,50 +437,42 @@ Moralis.Cloud.afterSave("Game", async (request) => {
 
 			game.save(null, { useMasterKey: true });
 			challenge.save(null, { useMasterKey: true });
-
-			// Change ELOs
-			const whitePlayerQuery = new Moralis.Query(Moralis.User);
-			const blackPlayerQuery = new Moralis.Query(Moralis.User);
-
-			const white = await whitePlayerQuery
-				.equalTo("ethAddress", game.get("players").w)
-				.first({ useMasterKey: true });
-			const black = await blackPlayerQuery
-				.equalTo("ethAddress", game.get("players").b)
-				.first({ useMasterKey: true });
-
-			const scoreChange = getScoreChange(
-				white.get("ELO"),
-				black.get("ELO"),
-				outcome
-			);
-
-			white.set("ELO", white.get("ELO") + scoreChange);
-			black.set("ELO", black.get("ELO") - scoreChange);
-
-			await white.save(null, { useMasterKey: true });
-			await black.save(null, { useMasterKey: true });
 		}
+	}
+	if (game.get("gameStatus") === 3) {
+		// Change ELOs
+		const whitePlayerQuery = new Moralis.Query(Moralis.User);
+		const blackPlayerQuery = new Moralis.Query(Moralis.User);
+
+		const white = await whitePlayerQuery
+			.equalTo("ethAddress", game.get("players").w)
+			.first({ useMasterKey: true });
+		const black = await blackPlayerQuery
+			.equalTo("ethAddress", game.get("players").b)
+			.first({ useMasterKey: true });
+
+		const scoreChange = getScoreChange(
+			white.get("ELO"),
+			black.get("ELO"),
+			game.get("outcome")
+		);
+
+		white.set("ELO", white.get("ELO") + scoreChange);
+		black.set("ELO", black.get("ELO") - scoreChange);
+
+		await white.save(null, { useMasterKey: true });
+		await black.save(null, { useMasterKey: true });
 	}
 });
 
-// Update ELO after event received
-Moralis.Cloud.afterSave("GameEnd", async (request) => {
+Moralis.Cloud.afterSave("EloChangeEvent", async (request) => {
 	const event = request.object;
-	const Game = Moralis.Object.extend("Game");
-	const gameQuery = new Moralis.Query("Game");
-	const game = await gameQuery.get(event.get("gameId"));
-
-	const { w, b } = game.get("players");
 
 	const userQuery = new Moralis.Query("User");
+	userQuery.equalTo("ethAddress", event.get("player"));
+	const user = await userQuery.first({ useMasterKey: true });
 
-	const whiteP = await userQuery.get(w);
-	const blackP = await userQuery.get(b);
+	user.set("ELO", Number(event.get("newElo")));
 
-	whiteP.set("ELO", event.get("eloW"));
-	blackP.set("ELO", event.get("eloB"));
-
-	await whiteP.save(null, { useMasterKey: true });
-	await blackP.save(null, { useMasterKey: true });
+	await user.save(null, { useMasterKey: true });
 });
