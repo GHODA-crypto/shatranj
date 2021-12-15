@@ -185,12 +185,18 @@ export const Logo = () => (
 			alignItems: "center",
 			justifyContent: "space-around",
 			padding: "0.5rem",
+			width: "15rem",
 		}}>
-		<LogoArt />
+		<img
+			src="./icons/android-chrome-512x512.png"
+			style={{ width: 45, height: 45 }}
+			alt=""
+		/>
 		<div
 			className="logo-txt"
 			style={{
-				fontSize: "2.25em",
+				fontSize: "2rem",
+				width: "auto",
 				fontWeight: "700",
 				marginTop: "0.35rem",
 				color: "#00150B",
