@@ -183,9 +183,9 @@ export const Logo = () => (
 		style={{
 			display: "flex",
 			alignItems: "center",
-			justifyContent: "space-around",
+			justifyContent: "flex-start",
 			padding: "0.5rem",
-			width: "15rem",
+			width: "40ch",
 		}}>
 		<img
 			src="./icons/android-chrome-512x512.png"
@@ -195,8 +195,7 @@ export const Logo = () => (
 		<div
 			className="logo-txt"
 			style={{
-				fontSize: "2rem",
-				width: "auto",
+				fontSize: "1.75rem",
 				fontWeight: "700",
 				marginTop: "0.35rem",
 				color: "#00150B",
