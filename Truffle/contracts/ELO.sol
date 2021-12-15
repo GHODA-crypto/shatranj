@@ -72,7 +72,7 @@ contract Elo is Ownable {
 		if (outcome == 3) {
 			return (reverse ? 20 - scoreChange : scoreChange);
 		} else if (outcome == 4) {
-			return (reverse ? scoreChange - 20 : -scoreChange);
+			return (reverse ? -scoreChange : scoreChange - 20);
 		} else {
 			return (reverse ? 10 - scoreChange : scoreChange - 10);
 		}

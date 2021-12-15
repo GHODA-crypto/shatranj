@@ -38,13 +38,13 @@ contract ChessGame is ERC20, Ownable {
 	event StakedBalance(address indexed player, uint256 amount);
 
 	event GameStarted(
-		string indexed gameId,
+		string gameId,
 		address indexed white,
 		address indexed black
 	);
 
 	event GameEnded(
-		string indexed gameId,
+		string gameId,
 		address indexed white,
 		address indexed black,
 		uint8 outcome,
