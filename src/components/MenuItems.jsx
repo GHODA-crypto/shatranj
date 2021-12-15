@@ -1,9 +1,11 @@
 import { useLocation } from "react-router";
 import { Menu } from "antd";
 import { NavLink } from "react-router-dom";
+import { useWindowSize } from "../hooks/useWindowSize";
 
 function MenuItems() {
 	const { pathname } = useLocation();
+	const { width } = useWindowSize();
 
 	return (
 		<Menu
@@ -11,7 +13,7 @@ function MenuItems() {
 			mode="horizontal"
 			style={{
 				display: "flex",
-				fontSize: "17px",
+				fontSize: width > 860 ? "18px" : "22px",
 				fontWeight: "500",
 				width: "100%",
 				justifyContent: "center",

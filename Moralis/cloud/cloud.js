@@ -169,7 +169,7 @@ Moralis.Cloud.define(
 		const game = await gameQuery.get(gameId);
 		const challenge = await challengeQuery.get(game.get("challengeId"));
 
-		const userSide = game.get("players")[request.user.get("ethAddress")];
+		const userSide = game.get("sides")[request.user.get("ethAddress")];
 		const opponentSide = userSide === "w" ? "b" : "w";
 
 		game.set("outcome", userSide === "w" ? 4 : 3);

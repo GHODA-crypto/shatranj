@@ -127,7 +127,10 @@ const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 					🛠️
 					<span className="btn-text">Create Game</span>
 				</button>
-				<button className="play-with-friend-btn" onClick={handlePlayWithFriend}>
+				<button
+					disabled
+					className="play-with-friend-btn"
+					onClick={handlePlayWithFriend}>
 					🤝
 					<span className="btn-text">Play with friend</span>
 				</button>

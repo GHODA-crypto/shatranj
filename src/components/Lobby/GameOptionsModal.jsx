@@ -4,6 +4,7 @@ import { ReactComponent as WKing } from "../../assets/chess_svgs/k_w.svg";
 import { ReactComponent as BKing } from "../../assets/chess_svgs/k_b.svg";
 import { useWindowSize } from "../../hooks/useWindowSize";
 import { useMoralis, useMoralisCloudFunction } from "react-moralis";
+import { CheckCircleOutlined } from "@ant-design/icons";
 
 const GameOptionsModal = ({
 	isModalVisible,
@@ -18,10 +19,29 @@ const GameOptionsModal = ({
 		rangeLower: 100,
 	});
 
+	const { confirm } = Modal;
+
+	function showGameConfirm() {
+		confirm({
+			title: "Are you sure you want to start a game?",
+			icon: <CheckCircleOutlined />,
+			content: "By starting the game you bet 10 GHODA in the pool.",
+			okText: "Start Game",
+			okType: "primary",
+			cancelText: "Close",
+			onOk() {
+				setIsPairing(true);
+			},
+			onCancel() {
+				console.log("Cancel");
+			},
+		});
+	}
+
 	const handleOk = () => {
 		setPairingParams(gameOptions);
-		setIsPairing(true);
 		setIsModalVisible(false);
+		showGameConfirm();
 	};
 
 	const winSize = useWindowSize();

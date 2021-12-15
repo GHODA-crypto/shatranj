@@ -1,10 +1,9 @@
 @import "var";
 
 .lobby {
-	margin: 2rem 0;
 	color: $dark;
 	width: 100vw;
-	height: 80vh;
+	height: calc(100vh - 60px);
 	user-select: none;
 
 	.play {

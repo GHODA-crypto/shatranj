@@ -8,7 +8,7 @@ import {
 } from "react-moralis";
 import Confirmation from "../assets/chess_audio/Confirmation.mp3";
 import SocialNotify from "../assets/chess_audio/SocialNotify.mp3";
-import { Card, Image, Tooltip, Modal, Input, Skeleton } from "antd";
+import { Card, Image, Tooltip, Modal, message, Skeleton } from "antd";
 import {
 	FileSearchOutlined,
 	SendOutlined,
@@ -184,7 +184,6 @@ const NFTMetaModal = ({
 	const [playConfirmation] = useSound(Confirmation);
 
 	const mintedAt = new Date(nft.metadata.minted_at);
-	window.time = mintedAt;
 	const image = nft.metadata.image.split("/");
 	const piece = nft.metadata.piece.split("/");
 
@@ -236,10 +235,22 @@ const NFTMetaModal = ({
 		}
 	);
 
+	function success() {
+		Modal.success({
+			title: "The Skin is set successfully.",
+		});
+	}
+
+	function fail() {
+		Modal.error({
+			title: "Something went wrong",
+			content: "Please try again",
+		});
+	}
+
 	useEffect(() => {
 		if (isPieceSkinSet) {
 			setIsNFTMetaModalVisible(false);
-			isPieceSkinSet ? success() : fail();
 		}
 	}, [isPieceSkinSet]);
 
@@ -264,6 +275,7 @@ const NFTMetaModal = ({
 			cancelText: "No",
 			onOk() {
 				setPieceSkin();
+				success();
 			},
 			onCancel() {
 				console.log("Cancel");
@@ -284,19 +296,6 @@ const NFTMetaModal = ({
 			onCancel() {
 				console.log("Cancel");
 			},
-		});
-	}
-
-	function success() {
-		Modal.success({
-			content: "The Skin is set successfully.",
-		});
-	}
-
-	function fail() {
-		Modal.error({
-			title: "Something went wrong",
-			content: "Please try again",
 		});
 	}
 

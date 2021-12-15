@@ -3,6 +3,7 @@ import { Menu, Dropdown, Button } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import { PolygonLogo, ETHLogo } from "./Logos";
 import { useChain } from "react-moralis";
+import { useWindowSize } from "../../hooks/useWindowSize";
 
 const styles = {
 	item: {
@@ -46,6 +47,7 @@ const menuItems = [
 function Chains() {
 	const { switchNetwork, chainId, chain } = useChain();
 	const [selected, setSelected] = useState({});
+	const { width } = useWindowSize();
 
 	// console.log("chain", chain);
 
@@ -80,7 +82,9 @@ function Chains() {
 					style={{ ...styles.button, ...styles.item }}>
 					{chain?.chainId === "0x13881" ? (
 						<>
-							<span style={{ marginLeft: "5px" }}>{selected?.value}</span>
+							<span style={{ marginLeft: width > 500 ? "5px" : 0 }}>
+								{width > 500 ? selected?.value : null}
+							</span>
 							<DownOutlined />
 						</>
 					) : (

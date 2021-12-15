@@ -7,6 +7,7 @@ import {
 	Route,
 	Redirect,
 } from "react-router-dom";
+import { useWindowSize } from "./hooks/useWindowSize";
 
 import Account from "./components/Account";
 import Chains from "./components/Chains";
@@ -22,7 +23,7 @@ import "./styles/main.scss";
 import "./style.css";
 import "antd/dist/antd.css";
 
-const { Header } = Layout;
+const { Header, Footer } = Layout;
 
 const App = ({ isServerInfo }) => {
 	const {
@@ -32,7 +33,7 @@ const App = ({ isServerInfo }) => {
 		isWeb3EnableLoading,
 		user,
 	} = useMoralis();
-
+	const { width } = useWindowSize();
 	const [isPairing, setIsPairing] = useState(false);
 	const [pairingParams, setPairingParams] = useState({});
 
@@ -45,7 +46,14 @@ const App = ({ isServerInfo }) => {
 			<Router>
 				{isPairing && <Redirect to="/live-chess" />}
 
-				<Nav />
+				{width > 860 ? (
+					<Nav />
+				) : (
+					<>
+						<NavSmTop />
+						<NavSmBtm />
+					</>
+				)}
 				<div style={styles.content}>
 					<Switch>
 						<Route exact path="/lobby">
@@ -93,6 +101,25 @@ const Nav = () => {
 	);
 };
 
+const NavSmTop = () => {
+	return (
+		<Header style={styles.header}>
+			<Logo />
+			<div style={styles.headerRight}>
+				<Chains />
+				<Account />
+			</div>
+		</Header>
+	);
+};
+const NavSmBtm = () => {
+	return (
+		<Footer style={styles.footer}>
+			<MenuItems />
+		</Footer>
+	);
+};
+
 function PrivateRoute({ user, children, ...rest }) {
 	return (
 		<Route
@@ -132,6 +159,22 @@ const styles = {
 		alignItems: "center",
 		fontSize: "15px",
 		fontWeight: "600",
+	},
+	footer: {
+		position: "fixed",
+		zIndex: 9999,
+		width: "100%",
+		background: "#fff",
+		display: "flex",
+		justifyContent: "space-around",
+		alignItems: "center",
+		fontFamily: "Poppins, sans-serif",
+		borderTop: "2px solid rgba(0, 0, 0, 0.06)",
+		padding: "0 10px",
+		boxShadow: "0 1px 10px rgb(151 164 175 / 10%)",
+		userSelect: "none",
+		bottom: 0,
+		height: "5rem",
 	},
 };
 
