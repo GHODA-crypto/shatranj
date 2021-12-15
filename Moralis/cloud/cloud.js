@@ -79,20 +79,10 @@ Moralis.Cloud.define(
 					$expr: {
 						$and: [
 							{
-								$lte: [
-									"$player1ELO",
-									params.gamePreferences?.upperElo
-										? params.gamePreferences?.upperElo
-										: user.get("ELO") + 50,
-								],
+								$lte: ["$player1ELO", user.get("ELO") + 50],
 							},
 							{
-								$gte: [
-									"$player1ELO",
-									params.gamePreferences?.lowerElo
-										? params.gamePreferences?.lowerElo
-										: user.get("ELO") - 50,
-								],
+								$gte: ["$player1ELO", user.get("ELO") - 50],
 							},
 						],
 					},
@@ -297,7 +287,6 @@ Moralis.Cloud.define(
 				gameSkin.set("userAddress", request.user.get("ethAddress"));
 			}
 
-			const ipfsAddress = token_uri.split("/")[token_uri.split("/").length - 2];
 			const url = token_uri;
 
 			const response = await Moralis.Cloud.httpRequest({
@@ -450,7 +439,7 @@ Moralis.Cloud.afterSave("Game", async (request) => {
 			challenge.save(null, { useMasterKey: true });
 		}
 	}
-	if (game.get("gameStatus") === 3) {
+	if (game.get("gameStatus") === 4) {
 		// Change ELOs
 		const whitePlayerQuery = new Moralis.Query(Moralis.User);
 		const blackPlayerQuery = new Moralis.Query(Moralis.User);
@@ -476,7 +465,7 @@ Moralis.Cloud.afterSave("Game", async (request) => {
 	}
 });
 
-Moralis.Cloud.afterSave("EloChangeEvent", async (request) => {
+Moralis.Cloud.afterSave("EloChange", async (request) => {
 	const event = request.object;
 
 	const userQuery = new Moralis.Query("User");
