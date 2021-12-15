@@ -1,26 +1,10 @@
 export const gameAbi = [
 	{
 		inputs: [
-			{
-				internalType: "address",
-				name: "_chessToken",
-				type: "address",
-			},
-			{
-				internalType: "address",
-				name: "_chessNFT",
-				type: "address",
-			},
-			{
-				internalType: "address",
-				name: "_elo",
-				type: "address",
-			},
-			{
-				internalType: "address",
-				name: "serverAddress",
-				type: "address",
-			},
+			{ internalType: "address", name: "_chessToken", type: "address" },
+			{ internalType: "address", name: "_chessNFT", type: "address" },
+			{ internalType: "address", name: "_elo", type: "address" },
+			{ internalType: "address", name: "serverAddress", type: "address" },
 		],
 		stateMutability: "nonpayable",
 		type: "constructor",
@@ -54,7 +38,7 @@ export const gameAbi = [
 		anonymous: false,
 		inputs: [
 			{
-				indexed: true,
+				indexed: false,
 				internalType: "string",
 				name: "gameId",
 				type: "string",
@@ -71,12 +55,7 @@ export const gameAbi = [
 				name: "black",
 				type: "address",
 			},
-			{
-				indexed: false,
-				internalType: "uint8",
-				name: "outcome",
-				type: "uint8",
-			},
+			{ indexed: false, internalType: "uint8", name: "outcome", type: "uint8" },
 			{
 				indexed: false,
 				internalType: "uint256",
@@ -97,7 +76,7 @@ export const gameAbi = [
 		anonymous: false,
 		inputs: [
 			{
-				indexed: true,
+				indexed: false,
 				internalType: "string",
 				name: "gameId",
 				type: "string",
@@ -159,18 +138,8 @@ export const gameAbi = [
 	{
 		anonymous: false,
 		inputs: [
-			{
-				indexed: true,
-				internalType: "address",
-				name: "from",
-				type: "address",
-			},
-			{
-				indexed: true,
-				internalType: "address",
-				name: "to",
-				type: "address",
-			},
+			{ indexed: true, internalType: "address", name: "from", type: "address" },
+			{ indexed: true, internalType: "address", name: "to", type: "address" },
 			{
 				indexed: false,
 				internalType: "uint256",
@@ -183,118 +152,54 @@ export const gameAbi = [
 	},
 	{
 		inputs: [
-			{
-				internalType: "address",
-				name: "owner",
-				type: "address",
-			},
-			{
-				internalType: "address",
-				name: "spender",
-				type: "address",
-			},
+			{ internalType: "address", name: "owner", type: "address" },
+			{ internalType: "address", name: "spender", type: "address" },
 		],
 		name: "allowance",
-		outputs: [
-			{
-				internalType: "uint256",
-				name: "",
-				type: "uint256",
-			},
-		],
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
 		stateMutability: "view",
 		type: "function",
 	},
 	{
 		inputs: [
-			{
-				internalType: "address",
-				name: "spender",
-				type: "address",
-			},
-			{
-				internalType: "uint256",
-				name: "amount",
-				type: "uint256",
-			},
+			{ internalType: "address", name: "spender", type: "address" },
+			{ internalType: "uint256", name: "amount", type: "uint256" },
 		],
 		name: "approve",
-		outputs: [
-			{
-				internalType: "bool",
-				name: "",
-				type: "bool",
-			},
-		],
+		outputs: [{ internalType: "bool", name: "", type: "bool" }],
 		stateMutability: "nonpayable",
 		type: "function",
 	},
 	{
-		inputs: [
-			{
-				internalType: "address",
-				name: "account",
-				type: "address",
-			},
-		],
+		inputs: [{ internalType: "address", name: "account", type: "address" }],
 		name: "balanceOf",
-		outputs: [
-			{
-				internalType: "uint256",
-				name: "",
-				type: "uint256",
-			},
-		],
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
 		stateMutability: "view",
 		type: "function",
 	},
 	{
-		inputs: [
-			{
-				internalType: "uint256",
-				name: "_bet",
-				type: "uint256",
-			},
-		],
+		inputs: [{ internalType: "uint256", name: "_bet", type: "uint256" }],
 		name: "changeBet",
 		outputs: [],
 		stateMutability: "nonpayable",
 		type: "function",
 	},
 	{
-		inputs: [
-			{
-				internalType: "uint256",
-				name: "_fee",
-				type: "uint256",
-			},
-		],
+		inputs: [{ internalType: "uint256", name: "_fee", type: "uint256" }],
 		name: "changeFee",
 		outputs: [],
 		stateMutability: "nonpayable",
 		type: "function",
 	},
 	{
-		inputs: [
-			{
-				internalType: "uint256",
-				name: "_fee",
-				type: "uint256",
-			},
-		],
+		inputs: [{ internalType: "uint256", name: "_fee", type: "uint256" }],
 		name: "changeNFTFee",
 		outputs: [],
 		stateMutability: "nonpayable",
 		type: "function",
 	},
 	{
-		inputs: [
-			{
-				internalType: "address",
-				name: "newMaster",
-				type: "address",
-			},
-		],
+		inputs: [{ internalType: "address", name: "newMaster", type: "address" }],
 		name: "changeServer",
 		outputs: [],
 		stateMutability: "nonpayable",
@@ -304,11 +209,7 @@ export const gameAbi = [
 		inputs: [],
 		name: "chessNFT",
 		outputs: [
-			{
-				internalType: "contract IChessNFT",
-				name: "",
-				type: "address",
-			},
+			{ internalType: "contract IChessNFT", name: "", type: "address" },
 		],
 		stateMutability: "view",
 		type: "function",
@@ -316,13 +217,7 @@ export const gameAbi = [
 	{
 		inputs: [],
 		name: "chessToken",
-		outputs: [
-			{
-				internalType: "contract IERC20",
-				name: "",
-				type: "address",
-			},
-		],
+		outputs: [{ internalType: "contract IERC20", name: "", type: "address" }],
 		stateMutability: "view",
 		type: "function",
 	},
@@ -336,153 +231,69 @@ export const gameAbi = [
 	{
 		inputs: [],
 		name: "decimals",
-		outputs: [
-			{
-				internalType: "uint8",
-				name: "",
-				type: "uint8",
-			},
-		],
+		outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
 		stateMutability: "view",
 		type: "function",
 	},
 	{
 		inputs: [
-			{
-				internalType: "address",
-				name: "spender",
-				type: "address",
-			},
-			{
-				internalType: "uint256",
-				name: "subtractedValue",
-				type: "uint256",
-			},
+			{ internalType: "address", name: "spender", type: "address" },
+			{ internalType: "uint256", name: "subtractedValue", type: "uint256" },
 		],
 		name: "decreaseAllowance",
-		outputs: [
-			{
-				internalType: "bool",
-				name: "",
-				type: "bool",
-			},
-		],
+		outputs: [{ internalType: "bool", name: "", type: "bool" }],
 		stateMutability: "nonpayable",
 		type: "function",
 	},
 	{
 		inputs: [],
 		name: "elo",
-		outputs: [
-			{
-				internalType: "contract IElo",
-				name: "",
-				type: "address",
-			},
-		],
+		outputs: [{ internalType: "contract IElo", name: "", type: "address" }],
 		stateMutability: "view",
 		type: "function",
 	},
 	{
 		inputs: [
-			{
-				internalType: "string",
-				name: "_gameId",
-				type: "string",
-			},
-			{
-				internalType: "uint8",
-				name: "_outcome",
-				type: "uint8",
-			},
-			{
-				internalType: "string",
-				name: "_ipfsHash",
-				type: "string",
-			},
+			{ internalType: "string", name: "_gameId", type: "string" },
+			{ internalType: "uint8", name: "_outcome", type: "uint8" },
+			{ internalType: "string", name: "_ipfsHash", type: "string" },
 		],
 		name: "endGame",
-		outputs: [
-			{
-				internalType: "uint256",
-				name: "nftId",
-				type: "uint256",
-			},
-		],
+		outputs: [{ internalType: "uint256", name: "nftId", type: "uint256" }],
 		stateMutability: "nonpayable",
 		type: "function",
 	},
 	{
 		inputs: [],
 		name: "getBetAmount",
-		outputs: [
-			{
-				internalType: "uint256",
-				name: "",
-				type: "uint256",
-			},
-		],
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
 		stateMutability: "view",
 		type: "function",
 	},
 	{
 		inputs: [],
 		name: "getCollectedFees",
-		outputs: [
-			{
-				internalType: "uint256",
-				name: "",
-				type: "uint256",
-			},
-		],
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
 		stateMutability: "view",
 		type: "function",
 	},
 	{
 		inputs: [],
 		name: "getFeeAmount",
-		outputs: [
-			{
-				internalType: "uint256",
-				name: "",
-				type: "uint256",
-			},
-		],
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
 		stateMutability: "view",
 		type: "function",
 	},
 	{
-		inputs: [
-			{
-				internalType: "string",
-				name: "_gameId",
-				type: "string",
-			},
-		],
+		inputs: [{ internalType: "string", name: "_gameId", type: "string" }],
 		name: "getGame",
 		outputs: [
 			{
 				components: [
-					{
-						internalType: "address",
-						name: "white",
-						type: "address",
-					},
-					{
-						internalType: "address",
-						name: "black",
-						type: "address",
-					},
-					{
-						internalType: "uint8",
-						name: "outcome",
-						type: "uint8",
-					},
-					{
-						internalType: "uint256",
-						name: "nft",
-						type: "uint256",
-					},
+					{ internalType: "address", name: "white", type: "address" },
+					{ internalType: "address", name: "black", type: "address" },
+					{ internalType: "uint8", name: "outcome", type: "uint8" },
+					{ internalType: "uint256", name: "nft", type: "uint256" },
 				],
 				internalType: "struct ChessGame.Game",
 				name: "game",
@@ -495,63 +306,31 @@ export const gameAbi = [
 	{
 		inputs: [],
 		name: "getNFTfeeAmount",
-		outputs: [
-			{
-				internalType: "uint256",
-				name: "",
-				type: "uint256",
-			},
-		],
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
 		stateMutability: "view",
 		type: "function",
 	},
 	{
 		inputs: [
-			{
-				internalType: "address",
-				name: "spender",
-				type: "address",
-			},
-			{
-				internalType: "uint256",
-				name: "addedValue",
-				type: "uint256",
-			},
+			{ internalType: "address", name: "spender", type: "address" },
+			{ internalType: "uint256", name: "addedValue", type: "uint256" },
 		],
 		name: "increaseAllowance",
-		outputs: [
-			{
-				internalType: "bool",
-				name: "",
-				type: "bool",
-			},
-		],
+		outputs: [{ internalType: "bool", name: "", type: "bool" }],
 		stateMutability: "nonpayable",
 		type: "function",
 	},
 	{
 		inputs: [],
 		name: "name",
-		outputs: [
-			{
-				internalType: "string",
-				name: "",
-				type: "string",
-			},
-		],
+		outputs: [{ internalType: "string", name: "", type: "string" }],
 		stateMutability: "view",
 		type: "function",
 	},
 	{
 		inputs: [],
 		name: "owner",
-		outputs: [
-			{
-				internalType: "address",
-				name: "",
-				type: "address",
-			},
-		],
+		outputs: [{ internalType: "address", name: "", type: "address" }],
 		stateMutability: "view",
 		type: "function",
 	},
@@ -563,13 +342,7 @@ export const gameAbi = [
 		type: "function",
 	},
 	{
-		inputs: [
-			{
-				internalType: "uint256",
-				name: "_amount",
-				type: "uint256",
-			},
-		],
+		inputs: [{ internalType: "uint256", name: "_amount", type: "uint256" }],
 		name: "stake",
 		outputs: [],
 		stateMutability: "nonpayable",
@@ -577,21 +350,9 @@ export const gameAbi = [
 	},
 	{
 		inputs: [
-			{
-				internalType: "string",
-				name: "_gameId",
-				type: "string",
-			},
-			{
-				internalType: "address",
-				name: "_white",
-				type: "address",
-			},
-			{
-				internalType: "address",
-				name: "_black",
-				type: "address",
-			},
+			{ internalType: "string", name: "_gameId", type: "string" },
+			{ internalType: "address", name: "_white", type: "address" },
+			{ internalType: "address", name: "_black", type: "address" },
 		],
 		name: "startGame",
 		outputs: [],
@@ -601,103 +362,47 @@ export const gameAbi = [
 	{
 		inputs: [],
 		name: "symbol",
-		outputs: [
-			{
-				internalType: "string",
-				name: "",
-				type: "string",
-			},
-		],
+		outputs: [{ internalType: "string", name: "", type: "string" }],
 		stateMutability: "view",
 		type: "function",
 	},
 	{
 		inputs: [],
 		name: "totalSupply",
-		outputs: [
-			{
-				internalType: "uint256",
-				name: "",
-				type: "uint256",
-			},
-		],
+		outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
 		stateMutability: "view",
 		type: "function",
 	},
 	{
 		inputs: [
-			{
-				internalType: "address",
-				name: "recipient",
-				type: "address",
-			},
-			{
-				internalType: "uint256",
-				name: "amount",
-				type: "uint256",
-			},
+			{ internalType: "address", name: "recipient", type: "address" },
+			{ internalType: "uint256", name: "amount", type: "uint256" },
 		],
 		name: "transfer",
-		outputs: [
-			{
-				internalType: "bool",
-				name: "",
-				type: "bool",
-			},
-		],
+		outputs: [{ internalType: "bool", name: "", type: "bool" }],
 		stateMutability: "nonpayable",
 		type: "function",
 	},
 	{
 		inputs: [
-			{
-				internalType: "address",
-				name: "sender",
-				type: "address",
-			},
-			{
-				internalType: "address",
-				name: "recipient",
-				type: "address",
-			},
-			{
-				internalType: "uint256",
-				name: "amount",
-				type: "uint256",
-			},
+			{ internalType: "address", name: "sender", type: "address" },
+			{ internalType: "address", name: "recipient", type: "address" },
+			{ internalType: "uint256", name: "amount", type: "uint256" },
 		],
 		name: "transferFrom",
-		outputs: [
-			{
-				internalType: "bool",
-				name: "",
-				type: "bool",
-			},
-		],
+		outputs: [{ internalType: "bool", name: "", type: "bool" }],
 		stateMutability: "nonpayable",
 		type: "function",
 	},
 	{
-		inputs: [
-			{
-				internalType: "address",
-				name: "newOwner",
-				type: "address",
-			},
-		],
+		inputs: [{ internalType: "address", name: "newOwner", type: "address" }],
 		name: "transferOwnership",
 		outputs: [],
 		stateMutability: "nonpayable",
 		type: "function",
 	},
 	{
-		inputs: [
-			{
-				internalType: "uint256",
-				name: "_amount",
-				type: "uint256",
-			},
-		],
+		inputs: [{ internalType: "uint256", name: "_amount", type: "uint256" }],
 		name: "unstake",
 		outputs: [],
 		stateMutability: "nonpayable",

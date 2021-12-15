@@ -50,6 +50,7 @@
 		}
 
 		.chat {
+			opacity: 0.6;
 			height: 50%;
 			width: 100%;
 			background-color: rgba(darken($light, 40%), 0.3);
@@ -253,6 +254,57 @@
 				}
 			}
 		}
+		.btns {
+										display: flex;
+										justify-content: space-between;
+										align-items: center;
+										width: 100%;
+										height: 25%;
+										button {
+											height: 4rem;
+											width: 30%;
+											display: flex;
+											flex-direction: column;
+											justify-content: center;
+											align-items: center;
+											padding: 0.3rem;
+											cursor: pointer;
+											border: none;
+											border-radius: 0.5rem;
+											background-color: $accent;
+
+											.text {
+												display: none;
+												margin-top: 0.1rem;
+												font-size: 0.8rem;
+												font-weight: 700;
+												transition: display 0.2s ease-in-out;
+											}
+											&:hover {
+												.text {
+													display: block;
+												}
+											}
+										}
+										.win,
+										.draw {
+											color: $dark;
+											svg {
+												fill: $dark;
+												path {
+													fill: $dark;
+													stroke: $dark;
+												}
+											}
+										}
+										.abort {
+											background-color: rgb(255, 64, 64);
+											color: $light;
+											svg {
+												fill: $light !important;
+											}
+										}
+									}
 	}
 }
 
@@ -389,7 +441,59 @@
 								}
 							}
 						}
+						.btns {
+										display: flex;
+										justify-content: space-between;
+										align-items: center;
+										width: 100%;
+										height: 25%;
+										button {
+											height: 4rem;
+											width: 30%;
+											display: flex;
+											flex-direction: column;
+											justify-content: center;
+											align-items: center;
+											padding: 0.3rem;
+											cursor: pointer;
+											border: none;
+											border-radius: 0.5rem;
+											background-color: $accent;
+
+											.text {
+												display: none;
+												margin-top: 0.1rem;
+												font-size: 0.8rem;
+												font-weight: 700;
+												transition: display 0.2s ease-in-out;
+											}
+											&:hover {
+												.text {
+													display: block;
+												}
+											}
+										}
+										.win,
+										.draw {
+											color: $dark;
+											svg {
+												fill: $dark;
+												path {
+													fill: $dark;
+													stroke: $dark;
+												}
+											}
+										}
+										.abort {
+											background-color: rgb(255, 64, 64);
+											color: $light;
+											svg {
+												fill: $light !important;
+											}
+										}
+									}
 					}
+				
 
 					.chat-room {
 						height: 100%;
@@ -427,6 +531,7 @@
 						}
 
 						.chat {
+							opacity: 0.6;
 							height: 50%;
 							width: 100%;
 							background-color: rgba(darken($light, 40%), 0.3);
@@ -637,7 +742,7 @@
 									height: 100%;
 									.pgn {
 										width: 100%;
-										height: 80%;
+										height: 65%;
 										padding: 1rem;
 										overflow: auto;
 										.row {
@@ -658,91 +763,6 @@
 												background: rgba($accent, 0.9);
 												color: $light;
 												font-weight: 600;
-											}
-										}
-									}
-								}
-
-								.chat-room {
-									height: 100%;
-									//min-height -> calc
-									display: flex;
-									flex-direction: column;
-									align-items: left;
-									justify-content: space-between;
-									.prize-pool {
-										height: 20%;
-										//min-height
-										.label {
-											font-size: 1.2rem;
-											color: $light;
-										}
-										.prize {
-											display: flex;
-											align-items: center;
-											margin-top: -1rem;
-											font-size: 3rem;
-											font-weight: 700;
-											color: $accent;
-											.amount {
-												margin-left: 0.5rem;
-											}
-											.ghd {
-												font-size: 1.5rem;
-												padding: 0 0.5rem;
-												border-radius: 0.6rem;
-												background-color: $accent;
-												color: $light;
-											}
-										}
-									}
-
-									.chat {
-										height: 60%;
-										width: 100%;
-										background-color: rgba(lighten($dark, 50%), 0.3);
-										border-radius: 0.5rem;
-										.chat-text {
-											height: 88%;
-											width: 100%;
-											overflow-y: auto;
-											overflow-x: hidden;
-										}
-										.chat-input {
-											height: 12%;
-											width: 100%;
-											display: flex;
-											align-items: center;
-											input {
-												font-size: 1rem;
-												width: 85%;
-												height: 100%;
-												border: none;
-												border-radius: 0 0 0 0.5rem;
-												padding: 0.75rem 1rem;
-												color: $light;
-												background-color: lighten($dark, 10%);
-												box-shadow: 0px -4px 8px 0 rgba($accent, 0.25);
-												&:focus {
-													outline: none;
-												}
-											}
-											button {
-												width: 15%;
-												height: 100%;
-												background-color: $accent;
-												border: none;
-												border-radius: 0 0 0.5rem 0;
-												box-shadow: 0px -4px 8px 0 rgba($accent, 0.25);
-												display: flex;
-												justify-content: center;
-												cursor: pointer;
-												align-items: center;
-												svg {
-													margin-left: -0.25rem;
-													margin-bottom: -0.25rem;
-													fill: $light;
-												}
 											}
 										}
 									}
@@ -794,6 +814,92 @@
 											color: $light;
 											svg {
 												fill: $light !important;
+											}
+										}
+									}
+								}
+
+								.chat-room {
+									height: 100%;
+									//min-height -> calc
+									display: flex;
+									flex-direction: column;
+									align-items: left;
+									justify-content: space-between;
+									.prize-pool {
+										height: 20%;
+										//min-height
+										.label {
+											font-size: 1.2rem;
+											color: $light;
+										}
+										.prize {
+											display: flex;
+											align-items: center;
+											margin-top: -1rem;
+											font-size: 3rem;
+											font-weight: 700;
+											color: $accent;
+											.amount {
+												margin-left: 0.5rem;
+											}
+											.ghd {
+												font-size: 1.5rem;
+												padding: 0 0.5rem;
+												border-radius: 0.6rem;
+												background-color: $accent;
+												color: $light;
+											}
+										}
+									}
+
+									.chat {
+										opacity: 0.6;
+										height: 60%;
+										width: 100%;
+										background-color: rgba(lighten($dark, 50%), 0.3);
+										border-radius: 0.5rem;
+										.chat-text {
+											height: 88%;
+											width: 100%;
+											overflow-y: auto;
+											overflow-x: hidden;
+										}
+										.chat-input {
+											height: 12%;
+											width: 100%;
+											display: flex;
+											align-items: center;
+											input {
+												font-size: 1rem;
+												width: 85%;
+												height: 100%;
+												border: none;
+												border-radius: 0 0 0 0.5rem;
+												padding: 0.75rem 1rem;
+												color: $light;
+												background-color: lighten($dark, 10%);
+												box-shadow: 0px -4px 8px 0 rgba($accent, 0.25);
+												&:focus {
+													outline: none;
+												}
+											}
+											button {
+												width: 15%;
+												height: 100%;
+												background-color: $accent;
+												border: none;
+												border-radius: 0 0 0.5rem 0;
+												box-shadow: 0px -4px 8px 0 rgba($accent, 0.25);
+												display: flex;
+												justify-content: center;
+												cursor: pointer;
+												align-items: center;
+												svg {
+													margin-left: -0.25rem;
+													margin-bottom: -0.25rem;
+													fill: $light;
+												}
 											}
 										}
 									}
