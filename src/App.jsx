@@ -1,5 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
-import { useMoralis, useMoralisCloudFunction } from "react-moralis";
+import {
+	useMoralis,
+	useMoralisCloudFunction,
+	useWeb3ExecuteFunction,
+} from "react-moralis";
 import { Layout } from "antd";
 import {
 	BrowserRouter as Router,
@@ -10,6 +14,9 @@ import {
 } from "react-router-dom";
 import { useWindowSize } from "./hooks/useWindowSize";
 import { ReactComponent as LogoImg } from "./assets/logoSvg.svg";
+
+import { ELO_TOKEN_ADDRESS } from "./contracts/address";
+import { eloAbi } from "./contracts/eloAbi";
 
 import Account from "./components/Account";
 import Chains from "./components/Chains";
@@ -38,9 +45,27 @@ const App = ({ isServerInfo }) => {
 	const [isPairing, setIsPairing] = useState(false);
 	const [pairingParams, setPairingParams] = useState({});
 
+	const {
+		data: elo,
+		error: eloError,
+		fetch: fetchElo,
+		isFetching: isFetchingElo,
+	} = useWeb3ExecuteFunction({
+		abi: eloAbi,
+		contractAddress: ELO_TOKEN_ADDRESS,
+		functionName: "getElo",
+		params: {
+			_player: user?.get("ethAddress"),
+		},
+	});
+
 	useEffect(() => {
 		if (isAuthenticated && !isWeb3Enabled && !isWeb3EnableLoading) enableWeb3();
 	}, [isAuthenticated, isWeb3Enabled]);
+
+	useEffect(() => {
+		if (user) fetchElo();
+	}, [user, isWeb3Enabled]);
 
 	return (
 		<Layout style={{ height: "100vh", overflow: "auto" }}>
@@ -49,10 +74,10 @@ const App = ({ isServerInfo }) => {
 				{/* Antd Notification wrapped inside Route*/}
 				<ActiveChallengeNotification setIsPairing={setIsPairing} />
 				{width > 860 ? (
-					<Nav />
+					<Nav elo={elo} />
 				) : (
 					<>
-						<NavSmTop />
+						<NavSmTop elo={elo} />
 						<NavSmBtm />
 					</>
 				)}
@@ -63,6 +88,7 @@ const App = ({ isServerInfo }) => {
 								setIsPairing={setIsPairing}
 								setPairingParams={setPairingParams}
 								pairingParams={pairingParams}
+								elo={elo}
 							/>
 						</Route>
 						<Route path="/stakes">
@@ -123,7 +149,7 @@ const ActiveChallengeNotification = ({ setIsPairing }) => {
 		}
 	);
 	useEffect(() => {
-		if (challenge && !location.pathname.includes("live-chess")) {
+		if (challenge !== null && !location.pathname.includes("live-chess")) {
 			openNotification();
 		}
 		if (location.pathname.includes("live-chess") || !challenge) {
@@ -132,26 +158,26 @@ const ActiveChallengeNotification = ({ setIsPairing }) => {
 	}, [challenge, location, openNotification]);
 	return <></>;
 };
-const Nav = () => {
+const Nav = ({ elo }) => {
 	return (
 		<Header style={styles.header}>
 			<Logo />
 			<MenuItems />
 			<div style={styles.headerRight}>
 				<Chains />
-				<Account />
+				<Account elo={elo} />
 			</div>
 		</Header>
 	);
 };
 
-const NavSmTop = () => {
+const NavSmTop = ({ elo }) => {
 	return (
 		<Header style={styles.header}>
 			<Logo />
 			<div style={styles.headerRight}>
 				<Chains />
-				<Account />
+				<Account elo={elo} />
 			</div>
 		</Header>
 	);

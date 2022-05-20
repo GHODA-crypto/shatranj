@@ -83,7 +83,7 @@ Moralis.Cloud.define(
 									"$player1ELO",
 									params.gamePreferences?.upperElo
 										? user.get("ELO") + params.gamePreferences?.upperElo
-										: user.get("ELO") + 50,
+										: (user.get("ELO") + 50),
 								],
 							},
 							{
@@ -91,7 +91,7 @@ Moralis.Cloud.define(
 									"$player1ELO",
 									params.gamePreferences?.lowerElo
 										? user.get("ELO") - params.gamePreferences?.lowerElo
-										: user.get("ELO") - 50,
+										: (user.get("ELO") - 50),
 								],
 							},
 						],
@@ -538,34 +538,4 @@ Moralis.Cloud.afterSave("EloChange", async (request) => {
 
 	await user.save(null, { useMasterKey: true });
 	logger.info(`${user.get("ethAddress")} ELO changed to ${user.get("ELO")}`);
-});
-
-Moralis.Cloud.define("testOracle", async () => {
-	const config = await Moralis.Config.get({ useMasterKey: true });
-	const apiKey = config.get("apiKey");
-	const serverUrl = config.get("serverURL");
-
-	const logger = Moralis.Cloud.getLogger("testOracle");
-	logger.info("testOracle");
-	logger.info(`${serverUrl}/`);
-	const httpResponse = await Moralis.Cloud.httpRequest({
-		method: "GET",
-		url: `https://server.shatranj.ga/`,
-		headers: {
-			"Content-Type": "application/json;charset=utf-8",
-		},
-	})
-		.then(
-			async function (httpResponse) {
-				logger.info("httpResponse for test oracle");
-				logger.info(JSON.stringify(httpResponse));
-			},
-			async function (httpResponse) {
-				logger.error("httpResponse error for test oracle");
-				logger.error(JSON.stringify(httpResponse));
-			}
-		)
-		.catch((error) => {
-			throw Error(error);
-		});
 });

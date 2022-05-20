@@ -4,7 +4,7 @@ import { useState, useContext } from "react";
 import { useMoralisCloudFunction } from "react-moralis";
 import { LiveChessContext } from "../../context/LiveChessContext";
 
-const Modals = ({ joinLiveChess, setPairingParams }) => {
+const Modals = ({ joinLiveChess, setIsPairing, setPairingParams }) => {
 	const urlHistory = useHistory();
 	const [isConfirmVisible, setIsConfirmVisible] = useState(false);
 	const { liveGameAttributes, userSide, game, gameId, liveChallengeData } =
@@ -49,6 +49,8 @@ const Modals = ({ joinLiveChess, setPairingParams }) => {
 			upperElo: 100,
 		});
 		joinLiveChess();
+		setIsPairing(true);
+		window.location.reload();
 	};
 
 	// useEffect(()=>{

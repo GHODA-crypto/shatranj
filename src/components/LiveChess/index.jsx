@@ -54,6 +54,7 @@ const LiveChessWrapper = ({
 			<Modals
 				setPairingParams={setPairingParams}
 				joinLiveChess={joinLiveChess}
+				setIsPairing={setIsPairing}
 			/>
 			<ViewWrapper
 				isMobileDrawerVisible={isMobileDrawerVisible}

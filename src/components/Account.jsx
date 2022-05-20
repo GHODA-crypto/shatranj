@@ -23,7 +23,7 @@ const styles = {
 	},
 };
 
-function Account() {
+function Account({ elo }) {
 	const { user, authenticate, isAuthenticated, logout, account, chainId } =
 		useMoralis();
 	const [isModalVisible, setIsModalVisible] = useState(false);
@@ -74,7 +74,7 @@ function Account() {
 						copyable
 						style={{ fontSize: "20px" }}
 					/>
-					<div className="elo">ELO Rating: {user?.get("ELO")}</div>
+					<div className="elo">ELO Rating: {elo}</div>
 					<div style={{ marginTop: "10px", padding: "0 10px" }}>
 						<a
 							href={`${getExplorer(chainId)}/address/${user.get("ethAddress")}`}

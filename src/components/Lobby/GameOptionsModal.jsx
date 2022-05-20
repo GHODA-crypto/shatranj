@@ -13,6 +13,7 @@ const GameOptionsModal = ({
 	setPairingParams,
 	setIsPairing,
 	joinLiveChess,
+	elo,
 }) => {
 	const { user } = useMoralis();
 
@@ -178,7 +179,7 @@ const GameOptionsModal = ({
 							backgroundColor: "rgba(0,0,0,0.85)",
 							borderRadius: "0.5rem",
 						}}>
-						{user?.get("ELO")}
+						{elo}
 					</span>
 					<span
 						className="label dec"

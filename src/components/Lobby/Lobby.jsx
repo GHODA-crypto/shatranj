@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useHistory } from "react-router-dom";
 import { notification, Modal } from "antd";
 import {
 	useMoralis,
@@ -19,11 +20,12 @@ import "../../styles/lobby.scss";
 import Confirmation from "../../assets/chess_audio/Confirmation.mp3";
 import SocialNotify from "../../assets/chess_audio/SocialNotify.mp3";
 
-const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
+const Lobby = ({ setIsPairing, pairingParams, setPairingParams, elo }) => {
 	const [playConfirmation] = useSound(Confirmation);
 	const [playSocialNotify] = useSound(SocialNotify);
 	const { Moralis, isWeb3Enabled, user } = useMoralis();
 	const [isModalVisible, setIsModalVisible] = useState(false);
+	const urlHistory = useHistory();
 
 	const {
 		data: stakedBalance,
@@ -73,7 +75,7 @@ const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 		setIsModalVisible(true);
 	};
 
-	const quickMatch = (e) => {
+	const quickMatch = () => {
 		if (Moralis.Units.FromWei(stakedBalance) < 10) {
 			openStakeErrorNotification();
 			return;
@@ -84,6 +86,8 @@ const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 		}
 		joinLiveChess({ pairingParams });
 		setIsPairing(true);
+		urlHistory.push("/live-chess");
+		window.location.reload();
 	};
 
 	const { confirm } = Modal;
@@ -122,6 +126,7 @@ const Lobby = ({ setIsPairing, pairingParams, setPairingParams }) => {
 				setPairingParams={setPairingParams}
 				setIsPairing={setIsPairing}
 				joinLiveChess={joinLiveChess}
+				elo={elo}
 			/>
 
 			<section className="play">
